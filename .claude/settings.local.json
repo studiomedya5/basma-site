@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp -r \"C:\\\\Users\\\\mehdy\\\\OneDrive\\\\Documents\\\\Basma\\\\basma-site\\\\Photos\" \"C:\\\\Users\\\\mehdy\\\\OneDrive\\\\Documents\\\\Basma\\\\basma-site\\\\public\\\\photos\" && echo \"Done\")",
+      "Bash(cp -r \"C:\\\\Users\\\\mehdy\\\\OneDrive\\\\Documents\\\\Basma\\\\basma-site\\\\Photos\\\\3ibaya\" \"C:\\\\Users\\\\mehdy\\\\OneDrive\\\\Documents\\\\Basma\\\\basma-site\\\\public\\\\photos\\\\3ibaya\" && cp -r \"C:\\\\Users\\\\mehdy\\\\OneDrive\\\\Documents\\\\Basma\\\\basma-site\\\\Photos\\\\kids\" \"C:\\\\Users\\\\mehdy\\\\OneDrive\\\\Documents\\\\Basma\\\\basma-site\\\\public\\\\photos\\\\kids\" && cp -r \"C:\\\\Users\\\\mehdy\\\\OneDrive\\\\Documents\\\\Basma\\\\basma-site\\\\Photos\\\\pyjama\" \"C:\\\\Users\\\\mehdy\\\\OneDrive\\\\Documents\\\\Basma\\\\basma-site\\\\public\\\\photos\\\\pyjama\" && cp -r \"C:\\\\Users\\\\mehdy\\\\OneDrive\\\\Documents\\\\Basma\\\\basma-site\\\\Photos\\\\Robe\" \"C:\\\\Users\\\\mehdy\\\\OneDrive\\\\Documents\\\\Basma\\\\basma-site\\\\public\\\\photos\\\\Robe\" && cp -r \"C:\\\\Users\\\\mehdy\\\\OneDrive\\\\Documents\\\\Basma\\\\basma-site\\\\Photos\\\\set\" \"C:\\\\Users\\\\mehdy\\\\OneDrive\\\\Documents\\\\Basma\\\\basma-site\\\\public\\\\photos\\\\set\" && echo \"Done\")",
+      "Bash(rm -rf /c/Users/mehdy/OneDrive/Documents/Basma/basma-site/public/photos && cp -r /c/Users/mehdy/OneDrive/Documents/Basma/Photos /c/Users/mehdy/OneDrive/Documents/Basma/basma-site/public/photos && echo \"Done\" && ls /c/Users/mehdy/OneDrive/Documents/Basma/basma-site/public/photos/)",
+      "Bash(ls /c/Users/mehdy/OneDrive/Documents/Basma/basma-site/public/son*)",
+      "Bash(npx vite:*)",
+      "Bash(cd \"C:/Users/mehdy/OneDrive/Documents/Basma/basma-site\" && npm run build 2>&1 | tail -30)",
+      "Bash(cd \"C:/Users/mehdy/OneDrive/Documents/Basma/basma-site\" && npm run build 2>&1 | tail -15)",
+      "Bash(cd \"C:/Users/mehdy/OneDrive/Documents/Basma/basma-site\" && npm run build 2>&1 | tail -10)",
+      "Bash(cd \"C:/Users/mehdy/OneDrive/Documents/Basma/basma-site\" && npm run build 2>&1 | tail -8)",
+      "Bash(cd \"C:/Users/mehdy/OneDrive/Documents/Basma/basma-site\" && sed -i 's/ DH/ ت.د/g' src/App.jsx)",
+      "Bash(cd \"C:\\\\Users\\\\mehdy\\\\OneDrive\\\\Documents\\\\Basma\\\\basma-site\" && npm run build 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\mehdy\\\\OneDrive\\\\Documents\\\\Basma\\\\basma-site\" && npm run build 2>&1 | tail -5)",
+      "Bash(cd \"C:\\\\Users\\\\mehdy\\\\OneDrive\\\\Documents\\\\Basma\\\\basma-site\" && npm run build 2>&1 | tail -6)"
+    ]
+  }
+}
