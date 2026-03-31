@@ -89,7 +89,7 @@ export default function ContactPage({ onBack }) {
       </header>
 
       {/* ── Content ── */}
-      <div style={{
+      <div className="contact-content" style={{
         maxWidth: 680, margin: "0 auto",
         padding: "72px clamp(20px,4vw,60px) 100px",
         position: "relative", zIndex: 1
@@ -235,7 +235,7 @@ export default function ContactPage({ onBack }) {
         )}
 
         {/* Contact info */}
-        <div style={{
+        <div className="contact-links" style={{
           display: "flex", justifyContent: "center", gap: 48, marginTop: 48, flexWrap: "wrap"
         }}>
           {[

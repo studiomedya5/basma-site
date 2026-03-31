@@ -552,7 +552,7 @@ function CategoryGallery({ cat, onBack }) {
       )}
 
       {/* Header */}
-      <div style={{ background: "linear-gradient(135deg, var(--dark) 0%, #3D3328 100%)", padding: "50px clamp(20px,4vw,60px) 44px" }}>
+      <div className="cat-gallery-header" style={{ background: "linear-gradient(135deg, var(--dark) 0%, #3D3328 100%)", padding: "50px clamp(20px,4vw,60px) 44px" }}>
         <button onClick={onBack} style={{
           display: "flex", alignItems: "center", gap: 8, background: "none", border: "none",
           cursor: "pointer", fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "2px",
@@ -699,7 +699,7 @@ function CategoryGallery({ cat, onBack }) {
       </div>
 
       {/* Product grid */}
-      <div style={{ padding: "40px clamp(20px,4vw,60px) 80px", maxWidth: 1300, margin: "0 auto" }}>
+      <div className="cat-gallery-grid" style={{ padding: "40px clamp(20px,4vw,60px) 80px", maxWidth: 1300, margin: "0 auto" }}>
         {filtered.length === 0 ? (
           <div style={{
             textAlign: "center", padding: "60px 20px",

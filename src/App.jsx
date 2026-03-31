@@ -1454,7 +1454,7 @@ export default function App() {
           </section>
 
           {/* ── Notre Collection ── */}
-          <section ref={shopRef} style={{ background: "#FAF9F6", padding: "80px clamp(20px,4vw,60px) 80px" }}>
+          <section ref={shopRef} className="section-padding section-collection" style={{ background: "#FAF9F6", padding: "80px clamp(20px,4vw,60px) 80px" }}>
             <div style={{ textAlign: "center", marginBottom: 56 }}>
               <p style={{
                 fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "4px",
@@ -1487,6 +1487,7 @@ export default function App() {
 
           <section
             ref={nouvellesRef}
+            className="section-padding"
             style={{
               background: "radial-gradient(ellipse at 50% 0%, rgba(200,149,108,0.1) 0%, transparent 65%), #F5EDE4",
               padding: "80px clamp(20px,4vw,60px) 96px",
@@ -1527,7 +1528,7 @@ export default function App() {
             <div style={{ width: 100, height: 1, background: "#C9A84C" }} />
           </div>
 
-          <section style={{ padding: "80px clamp(20px,4vw,60px) 0", background: "white", marginBottom: 80 }}>
+          <section className="section-padding" style={{ padding: "80px clamp(20px,4vw,60px) 0", background: "white", marginBottom: 80 }}>
             <div
               className="features-grid"
               style={{
@@ -1597,7 +1598,7 @@ export default function App() {
             <div style={{ width: 100, height: 1, background: "#C9A84C" }} />
           </div>
 
-          <section ref={contactRef} style={{ padding: "80px clamp(20px,4vw,60px)", background: "white" }}>
+          <section ref={contactRef} className="section-padding section-newsletter" style={{ padding: "80px clamp(20px,4vw,60px)", background: "white" }}>
             <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center" }}>
               <p
                 style={{
@@ -1646,7 +1647,7 @@ export default function App() {
             </div>
           </section>
 
-          <footer style={{ background: "var(--dark)", color: "white", padding: "60px clamp(20px,4vw,60px) 30px" }}>
+          <footer className="footer-wrap" style={{ background: "var(--dark)", color: "white", padding: "60px clamp(20px,4vw,60px) 30px" }}>
             <div
               className="footer-grid"
               style={{
@@ -1716,7 +1717,7 @@ export default function App() {
               </div>
             </div>
 
-            <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 24, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10, maxWidth: 1200, margin: "0 auto" }}>
+            <div className="footer-bottom" style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 24, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10, maxWidth: 1200, margin: "0 auto" }}>
               <p style={{ fontFamily: "'Jost',sans-serif", color: "rgba(255,255,255,0.3)", fontSize: 12 }}>
                 © 2026 Basma Only Shop. Tous droits réservés.
               </p>
