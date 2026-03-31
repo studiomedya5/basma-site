@@ -28,6 +28,56 @@ input, select, textarea {
   input, select, textarea { font-size: inherit !important; }
 }
 
+/* ── Mobile : inputs, selects, icônes plus compacts ── */
+@media (max-width: 768px) {
+  input, select, textarea {
+    padding: 9px 10px !important;
+    font-size: 13px !important;
+    border-radius: 3px !important;
+  }
+  select {
+    padding: 8px 10px !important;
+    font-size: 12px !important;
+    height: auto !important;
+  }
+  label {
+    font-size: 10px !important;
+    margin-bottom: 3px !important;
+  }
+  /* Icônes fixes plus petites */
+  .mute-btn, .wa-btn, .scroll-top-btn {
+    width: 34px !important;
+    height: 34px !important;
+  }
+  .mute-btn svg, .wa-btn svg, .scroll-top-btn svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+  /* Boutons plus compacts */
+  .btn-gold, .btn-outline-gold {
+    padding: 10px 20px !important;
+    font-size: 11px !important;
+    letter-spacing: 1.5px !important;
+  }
+  /* Taille selectors + color circles plus petits */
+  .size-btn {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 11px !important;
+  }
+  /* Nav icônes */
+  nav button svg, nav a svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  /* Cart badge */
+  nav span[style*="borderRadius"] {
+    width: 16px !important;
+    height: 16px !important;
+    font-size: 9px !important;
+  }
+}
+
 body {
   font-family: 'Cormorant Garamond', serif;
   background: var(--cream);

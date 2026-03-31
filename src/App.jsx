@@ -1040,6 +1040,7 @@ export default function App() {
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         title="Retour en haut"
+        className="scroll-top-btn"
         style={{
           position: "fixed",
           bottom: 90,
