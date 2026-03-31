@@ -101,6 +101,8 @@ export default function OrderModal({ product, onClose }) {
         customer_phone: form.telephone,
         customer_email: form.email.trim() || null,
         product_name: product.name,
+        product_image: `https://basmaonlyshop.tn${activeImg}`,
+        product_price: product.price,
         size: form.size,
         quantity: form.qty,
         total_price: totalPrice,
