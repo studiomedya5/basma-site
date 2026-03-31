@@ -11,7 +11,7 @@ const PAGES = [
     category: "Abaya",
     name: "Abaya Collection",
     price: 120,
-    sizes: ["38","40","42","44","46","48"],
+    sizes: ["36","38","40","42","44","46","48","50","52"],
     desc: "Abaya élégante en tissu de haute qualité, coupe fluide et raffinée.",
   },
   {
@@ -21,7 +21,7 @@ const PAGES = [
     category: "Abaya",
     name: "Abaya Exclusive",
     price: 120,
-    sizes: ["38","40","42","44","46","48"],
+    sizes: ["36","38","40","42","44","46","48","50","52"],
     desc: "Abaya élégante en tissu de haute qualité, coupe fluide et raffinée.",
   },
   {
@@ -31,7 +31,7 @@ const PAGES = [
     category: "Jiba",
     name: "Jiba Moderne",
     price: 90,
-    sizes: ["38","40","42","44","46"],
+    sizes: ["36","38","40","42","44","46","48","50","52"],
     desc: "Jiba moderne au style traditionnel revisité.",
   },
   {
@@ -61,7 +61,7 @@ const PAGES = [
     category: "Robe",
     name: "Robe Élégance",
     price: 130,
-    sizes: ["38","40","42","44","46"],
+    sizes: ["36","38","40","42","44","46","48","50","52"],
     desc: "Robe aux couleurs vives et coupes flatteuses.",
   },
   {
@@ -91,7 +91,7 @@ const PAGES = [
     category: "Manteau",
     name: "Manteau Couture",
     price: 200,
-    sizes: ["38","40","42","44","46","48"],
+    sizes: ["36","38","40","42","44","46","48","50","52"],
     desc: "Manteau chic en tissu de qualité supérieure.",
   },
   {
@@ -131,7 +131,7 @@ const PAGES = [
     category: "MDB",
     name: "MDB Signature",
     price: 110,
-    sizes: ["38","40","42","44","46","48"],
+    sizes: ["36","38","40","42","44","46","48","50","52"],
     desc: "Ensemble MDB moderne et tendance.",
   },
 ];

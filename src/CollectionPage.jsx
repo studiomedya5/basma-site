@@ -6,7 +6,7 @@ import AnnouncementBar, { ANNOUNCE_H } from "./components/AnnouncementBar";
 
 const categories = [
   {
-    id: "3ibaya", label: "Abaya", price: 120, sizes: ["38","40","42","44","46","48"],
+    id: "3ibaya", label: "Abaya", price: 120, sizes: ["36","38","40","42","44","46","48","50","52"],
     desc: "Abaya élégante confectionnée avec des tissus de haute qualité. Coupe fluide et raffinée, parfaite pour toutes les occasions.",
     photos: ["487447137_1098233225650757_818704683323925263_n.jpg","488374854_1098231745650905_8820862824133621922_n.jpg","488656760_1098232708984142_7631459729480207435_n.jpg","641057449_17935739097179373_2825300746075166942_n.jpg","648102785_1371074615033282_5385296663968872502_n.jpg"],
   },
@@ -16,7 +16,7 @@ const categories = [
     photos: ["587840430_17925997047179373_2959763835755661799_n.jpg","588084802_17925997029179373_8431155902852837248_n.jpg","589062375_17925996990179373_8845487259511413527_n.jpg","595502671_1298811695592908_1151798460515221855_n.jpg"],
   },
   {
-    id: "jiba", label: "Jiba", price: 90, sizes: ["38","40","42","44","46"],
+    id: "jiba", label: "Jiba", price: 90, sizes: ["36","38","40","42","44","46","48","50","52"],
     desc: "Jiba moderne au style traditionnel revisité, tissu confortable et respirant pour un port quotidien.",
     photos: ["498947811_17903534622179373_3600286315845092783_n.jpg","499366748_17903534595179373_7559916904546442049_n.jpg","499406882_1134013042072775_8705946179588991738_n.jpg","499602625_17903534667179373_4535199890911258257_n.jpg","499833958_17903534649179373_903899459310677770_n.jpg"],
   },
@@ -26,12 +26,12 @@ const categories = [
     photos: ["645995833_1370344885106255_9157182548210132803_n.jpg","646076253_1370344838439593_3346000056858945782_n.jpg","649876591_1375551517918925_6681548330046473505_n.jpg","650825674_1375601961247214_9084526571701164849_n.jpg"],
   },
   {
-    id: "manteau", label: "Manteau", price: 200, sizes: ["38","40","42","44","46","48"],
+    id: "manteau", label: "Manteau", price: 200, sizes: ["36","38","40","42","44","46","48","50","52"],
     desc: "Manteau chic et chaud avec une coupe structurée et élégante, en tissu de qualité supérieure.",
     photos: ["579423101_1277387817735296_2206184981912267833_n.jpg","579550354_1277389351068476_4317445584969625127_n.jpg","631284553_17933675226179373_5747483335467394828_n.jpg","631604059_17933767830179373_7389489587997262940_n.jpg"],
   },
   {
-    id: "MDB", label: "MDB", price: 110, sizes: ["38","40","42","44","46","48"],
+    id: "MDB", label: "MDB", price: 110, sizes: ["36","38","40","42","44","46","48","50","52"],
     desc: "Ensemble MDB moderne et tendance, le confort et le style parfaitement réunis.",
     photos: ["496049480_1128525475954865_2540523400201882755_n.jpg","496263120_1128525229288223_2489261562133792631_n.jpg","497885050_1131003555707057_3874941570880894198_n.jpg","499066487_1132573475550065_5434042430597513079_n.jpg","505353945_1156440629830016_8647673457501953606_n.jpg"],
   },
@@ -41,7 +41,7 @@ const categories = [
     photos: ["490345086_1118998213574258_6134831431061358690_n.jpg","492617363_1119002820240464_4055654624926574235_n.jpg","579083507_1276299481177463_446330100554526195_n.jpg","589159541_17926554309179373_4773932076652099313_n.jpg"],
   },
   {
-    id: "Robe", label: "Robe", price: 130, sizes: ["38","40","42","44","46"],
+    id: "Robe", label: "Robe", price: 130, sizes: ["36","38","40","42","44","46","48","50","52"],
     desc: "Robe élégante aux couleurs vives et aux coupes flatteuses, parfaite pour toutes les occasions.",
     photos: ["649636396_1374861407987936_6370692347574891488_n.jpg","649665854_1374861444654599_6644258085429623943_n.jpg","650287811_1375865401220870_230421896988538844_n.jpg","650839941_1375865431220867_1210585044214971859_n.jpg"],
   },
@@ -471,7 +471,7 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart }) {
 }
 
 // ── Tailles disponibles pour le filtre ──
-const ALL_SIZES = ["38","40","42","44","46","48","S","M","L","XL","TU","2-3ans","4-5ans","6-7ans","8-9ans","10-11ans"];
+const ALL_SIZES = ["36","38","40","42","44","46","48","50","52","S","M","L","XL","TU","2-3ans","4-5ans","6-7ans","8-9ans","10-11ans"];
 
 // ── Gallery view ──────────────────────────────────────────────
 function CategoryGallery({ cat, onBack }) {
