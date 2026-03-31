@@ -1,47 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-
 export default function SwipeBack({ onBack, children }) {
-  const touchStart = useRef(null);
-  const touchY = useRef(null);
-  const [sliding, setSliding] = useState(false);
-
-  useEffect(() => {
-    const handleTouchStart = (e) => {
-      // Détecter seulement les swipes qui commencent près du bord gauche (< 40px)
-      // ou n'importe où si c'est un geste horizontal clair
-      touchStart.current = e.touches[0].clientX;
-      touchY.current = e.touches[0].clientY;
-    };
-
-    const handleTouchEnd = (e) => {
-      if (touchStart.current === null) return;
-      const dx = e.changedTouches[0].clientX - touchStart.current;
-      const dy = Math.abs(e.changedTouches[0].clientY - touchY.current);
-
-      // Swipe horizontal > 80px et pas trop vertical (pour ne pas interférer avec le scroll)
-      if (dx > 80 && dy < 60) {
-        setSliding(true);
-        setTimeout(() => onBack(), 300);
-      }
-      touchStart.current = null;
-      touchY.current = null;
-    };
-
-    document.addEventListener("touchstart", handleTouchStart, { passive: true });
-    document.addEventListener("touchend", handleTouchEnd, { passive: true });
-    return () => {
-      document.removeEventListener("touchstart", handleTouchStart);
-      document.removeEventListener("touchend", handleTouchEnd);
-    };
-  }, [onBack]);
-
   return (
-    <div style={{
-      transition: sliding ? "transform 0.3s ease, opacity 0.3s ease" : "none",
-      transform: sliding ? "translateX(100%)" : "translateX(0)",
-      opacity: sliding ? 0 : 1,
-    }}>
-      {/* Bouton retour fixe desktop */}
+    <div>
+      {/* Bouton retour fixe */}
       <button
         onClick={onBack}
         className="back-btn-fixed"

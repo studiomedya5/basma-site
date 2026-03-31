@@ -699,8 +699,13 @@ html, body {
   /* ── Cart drawer ── */
   .cart-drawer { width: 100vw !important; }
 
-  /* ── Bouton retour fixe — caché sur mobile (swipe) ── */
-  .back-btn-fixed { display: none !important; }
+  /* ── Bouton retour fixe — visible sur mobile, plus petit ── */
+  .back-btn-fixed {
+    width: 36px !important;
+    height: 36px !important;
+    top: 94px !important;
+    left: 12px !important;
+  }
 
   /* ── Boutons fixes (mute, whatsapp, scroll-top) ── */
   .mute-btn { bottom: 16px !important; left: 10px !important; width: 36px !important; height: 36px !important; }
