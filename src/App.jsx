@@ -205,6 +205,8 @@ function ExcluCard({ item, index, onNavigate }) {
             key={i}
             src={src}
             alt={item.label}
+            loading="lazy"
+            decoding="async"
             style={{
               position: "absolute",
               inset: 0,
@@ -527,6 +529,8 @@ function AvisGrid() {
               <img
                 src={`/photos/avis/${f}`}
                 alt={`Avis cliente ${i + 1}`}
+                loading="lazy"
+                decoding="async"
                 style={{
                   width: "100%",
                   display: "block",
@@ -739,6 +743,7 @@ function CollectionCategoryCard({ cat, delay, onClick }) {
             src={`/photos/${cat.id}/${photo}`}
             alt={cat.label}
             loading="lazy"
+            decoding="async"
             style={{
               position: "absolute", inset: 0,
               width: "100%", height: "100%",
@@ -1425,7 +1430,7 @@ export default function App() {
                   <div className="hero-slider" style={{ position: "relative", zIndex: 1, aspectRatio: "3/4", overflow: "hidden" }}>
                     {galleryPhotos.map((src, i) => (
                       <div key={i} className={`hero-slide${i === sliderIndex ? " hero-slide-active" : ""}`}>
-                        <img src={src} alt="" />
+                        <img src={src} alt="" loading={i === 0 ? "eager" : "lazy"} decoding="async" />
                       </div>
                     ))}
                   </div>
