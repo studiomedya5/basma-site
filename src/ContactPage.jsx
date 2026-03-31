@@ -66,7 +66,7 @@ export default function ContactPage({ onBack }) {
         position: "sticky", top: ANNOUNCE_H, zIndex: 100, height: 70,
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "0 clamp(20px,4vw,60px)",
-        background: "rgba(250,247,242,0.95)", backdropFilter: "blur(16px)",
+        background: "rgba(250,247,242,0.95)", WebkitBackdropFilter: "blur(16px)", backdropFilter: "blur(16px)",
         borderBottom: "1px solid rgba(200,149,108,0.18)"
       }}>
         {/* Logo */}
@@ -241,7 +241,7 @@ export default function ContactPage({ onBack }) {
           {[
             { label: "WhatsApp", value: "+216 29 930 212", href: "https://wa.me/21629930212" },
             { label: "Instagram", value: "@basma_onlyshop", href: "https://www.instagram.com/basma_onlyshop/" },
-            { label: "Facebook",  value: "Basma Only Shop", href: "https://www.facebook.com/profile.php?id=100063922697417" },
+            { label: "Facebook",  value: "Basma Only Shop", href: "https://www.facebook.com/basmaonlyshop" },
           ].map(({ label, value, href }) => (
             <a key={label} href={href} target="_blank" rel="noopener noreferrer" style={{
               textAlign: "center", textDecoration: "none", color: "var(--dark)"
@@ -270,7 +270,7 @@ export default function ContactPage({ onBack }) {
           background:"rgba(250,247,242,0.92)", border:"1px solid rgba(200,149,108,0.3)",
           display:"flex", alignItems:"center", justifyContent:"center",
           cursor:"pointer", boxShadow:"0 2px 12px rgba(0,0,0,0.08)",
-          backdropFilter:"blur(8px)", transition:"all 0.35s cubic-bezier(0.25,0.46,0.45,0.94)",
+          WebkitBackdropFilter:"blur(8px)", backdropFilter:"blur(8px)", transition:"all 0.35s cubic-bezier(0.25,0.46,0.45,0.94)",
           color:"var(--gold)",
           opacity: showTop ? 1 : 0,
           transform: showTop ? "translateY(0) scale(1)" : "translateY(14px) scale(0.8)",

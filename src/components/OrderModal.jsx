@@ -19,6 +19,7 @@ export default function OrderModal({ product, onClose }) {
   const [form, setForm] = useState({
     nom: "",
     telephone: "",
+    email: "",
     adresse: "",
     gouvernorat: "",
     qty: 1,
@@ -56,7 +57,9 @@ export default function OrderModal({ product, onClose }) {
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
 
     setStatus("loading");
-    const { error } = await supabase.from("orders").insert({
+
+    // Données de base (colonnes garanties)
+    const orderData = {
       product_id:     product.id ?? null,
       product_name:   product.name,
       size:           form.size,
@@ -67,10 +70,47 @@ export default function OrderModal({ product, onClose }) {
       address:        form.adresse,
       governorate:    form.gouvernorat,
       status:         "en_attente",
-    });
+    };
 
-    if (error) { setStatus("error"); return; }
+    // Ajouter email si la colonne existe (évite l'erreur si pas encore migrée)
+    if (form.email.trim()) orderData.customer_email = form.email.trim();
+
+    let { error } = await supabase.from("orders").insert(orderData);
+
+    // Si erreur à cause de customer_email inconnu, réessayer sans
+    if (error && error.message?.includes("customer_email")) {
+      delete orderData.customer_email;
+      const retry = await supabase.from("orders").insert(orderData);
+      error = retry.error;
+    }
+
+    if (error) { console.error("Order error:", error); setStatus("error"); return; }
     setStatus("success");
+
+    const colorLabel = hasColors ? `Couleur ${(colorIdx ?? 0) + 1}` : "—";
+
+    // Envoi email via Edge Function (non-bloquant)
+    fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-order-email`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({
+        customer_name: form.nom,
+        customer_phone: form.telephone,
+        customer_email: form.email.trim() || null,
+        product_name: product.name,
+        size: form.size,
+        quantity: form.qty,
+        total_price: totalPrice,
+        address: form.adresse,
+        governorate: form.gouvernorat,
+        color_label: colorLabel,
+      }),
+    }).catch(() => {});
+
+    // Les emails sont envoyés via la Edge Function ci-dessus
   };
 
   const inp = (key, placeholder, type = "text") => (
@@ -92,7 +132,7 @@ export default function OrderModal({ product, onClose }) {
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 2500, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }} />
+      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", WebkitBackdropFilter: "blur(4px)", backdropFilter: "blur(4px)" }} />
 
       <div className="order-modal-inner" style={{
         position: "relative", background: "white", width: "min(820px,96vw)", maxHeight: "95vh",
@@ -262,6 +302,14 @@ export default function OrderModal({ product, onClose }) {
                   {inp("telephone", "+216 XX XXX XXX", "tel")}
                   {errors.telephone && <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, color: "#e57373", marginTop: 3 }}>{errors.telephone}</p>}
                 </div>
+              </div>
+
+              {/* ── Email (optionnel) ── */}
+              <div style={{ marginBottom: 14 }}>
+                <label style={{ display: "block", fontFamily: "'Jost',sans-serif", fontSize: 11, color: "#666", marginBottom: 5 }}>
+                  Email <span style={{ color: "#bbb", fontWeight: 300 }}>(optionnel)</span>
+                </label>
+                {inp("email", "votre@email.com", "email")}
               </div>
 
               {/* ── Adresse + Gouvernorat ── */}

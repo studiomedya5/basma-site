@@ -72,7 +72,7 @@ export default function Cart() {
         style={{
           position: "fixed", inset: 0,
           background: "rgba(0,0,0,0.5)",
-          backdropFilter: "blur(2px)",
+          WebkitBackdropFilter: "blur(2px)", backdropFilter: "blur(2px)",
           zIndex: 2000,
           animation: "fadeIn 0.2s ease",
         }}

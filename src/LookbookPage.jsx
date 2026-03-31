@@ -263,7 +263,7 @@ export default function LookbookPage({ onClose, muteAudio }) {
               borderRadius: "50%", width: 44, height: 44,
               display: "flex", alignItems: "center", justifyContent: "center",
               cursor: "pointer", color: "white",
-              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)", backdropFilter: "blur(8px)",
               transition: "background 0.2s",
             }}
             onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.16)"}
@@ -305,7 +305,7 @@ export default function LookbookPage({ onClose, muteAudio }) {
               borderRadius: "50%", width: 52, height: 52,
               display: "flex", alignItems: "center", justifyContent: "center",
               cursor: "pointer", color: "white",
-              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)", backdropFilter: "blur(8px)",
               transition: "all 0.2s",
             }}
             onMouseEnter={e => { e.currentTarget.style.background = "rgba(200,149,108,0.3)"; e.currentTarget.style.borderColor = "var(--gold)"; }}
@@ -325,7 +325,7 @@ export default function LookbookPage({ onClose, muteAudio }) {
               borderRadius: "50%", width: 52, height: 52,
               display: "flex", alignItems: "center", justifyContent: "center",
               cursor: "pointer", color: "white",
-              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)", backdropFilter: "blur(8px)",
               transition: "all 0.2s",
             }}
             onMouseEnter={e => { e.currentTarget.style.background = "rgba(200,149,108,0.3)"; e.currentTarget.style.borderColor = "var(--gold)"; }}
@@ -395,7 +395,7 @@ export default function LookbookPage({ onClose, muteAudio }) {
                 border: "1px solid rgba(200,149,108,0.5)",
                 color: "white", cursor: "pointer",
                 fontFamily: "'Jost',sans-serif", letterSpacing: "2px", textTransform: "uppercase",
-                backdropFilter: "blur(8px)",
+                WebkitBackdropFilter: "blur(8px)", backdropFilter: "blur(8px)",
                 transition: "all 0.2s",
               }}
               onMouseEnter={e => { e.currentTarget.style.background = "var(--gold)"; e.currentTarget.style.borderColor = "var(--gold)"; }}

@@ -470,6 +470,9 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart }) {
   );
 }
 
+// ── Tailles disponibles pour le filtre ──
+const ALL_SIZES = ["38","40","42","44","46","48","S","M","L","XL","TU","2-3ans","4-5ans","6-7ans","8-9ans","10-11ans"];
+
 // ── Gallery view ──────────────────────────────────────────────
 function CategoryGallery({ cat, onBack }) {
   const [orderProduct, setOrderProduct] = useState(null);
@@ -477,10 +480,55 @@ function CategoryGallery({ cat, onBack }) {
   const { addItem } = useCart();
   const groups = productGroups[cat.id] || [];
 
+  // Filtres
+  const [filterSize, setFilterSize] = useState(null);
+  const [priceMin, setPriceMin] = useState("");
+  const [priceMax, setPriceMax] = useState("");
+  const [sortBy, setSortBy] = useState("default");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  // Tailles réellement présentes dans cette catégorie
+  const catSizes = cat.sizes || [];
+
+  const hasActiveFilter = filterSize || priceMin || priceMax || sortBy !== "default";
+
+  const resetFilters = () => {
+    setFilterSize(null);
+    setPriceMin("");
+    setPriceMax("");
+    setSortBy("default");
+  };
+
+  // Filtrage
+  let filtered = groups;
+  if (filterSize) {
+    filtered = filtered.filter(() => catSizes.includes(filterSize));
+  }
+  if (priceMin) {
+    filtered = filtered.filter(() => cat.price >= Number(priceMin));
+  }
+  if (priceMax) {
+    filtered = filtered.filter(() => cat.price <= Number(priceMax));
+  }
+
+  // Tri
+  if (sortBy === "price_asc") {
+    filtered = [...filtered].sort((a, b) => (cat.price - cat.price));
+  } else if (sortBy === "price_desc") {
+    filtered = [...filtered].sort((a, b) => (cat.price - cat.price));
+  } else if (sortBy === "newest") {
+    filtered = [...filtered].reverse();
+  }
+
   const handleAddToCart = (item) => {
     addItem(item);
     setToast(item.name);
     setTimeout(() => setToast(null), 2200);
+  };
+
+  const labelStyle = {
+    fontFamily: "'Jost',sans-serif", fontSize: 10, letterSpacing: "1.5px",
+    textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 6, display: "block",
   };
 
   return (
@@ -523,20 +571,164 @@ function CategoryGallery({ cat, onBack }) {
         </div>
       </div>
 
+      {/* ── Barre de filtres ── */}
+      <div style={{
+        background: "#FAF9F6", borderBottom: "1px solid rgba(200,149,108,0.15)",
+        padding: "0 clamp(20px,4vw,60px)",
+      }}>
+        {/* Bouton mobile pour toggler les filtres */}
+        <button
+          className="filter-toggle-mobile"
+          onClick={() => setFiltersOpen(o => !o)}
+          style={{
+            display: "none", width: "100%", padding: "14px 0",
+            background: "none", border: "none", cursor: "pointer",
+            fontFamily: "'Jost',sans-serif", fontSize: 12, letterSpacing: "1.5px",
+            textTransform: "uppercase", color: "var(--dark)",
+            justifyContent: "center", alignItems: "center", gap: 8,
+          }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="4" y1="6" x2="20" y2="6" /><line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="18" x2="20" y2="18" />
+            <circle cx="8" cy="6" r="2" fill="var(--gold)" stroke="var(--gold)" /><circle cx="16" cy="12" r="2" fill="var(--gold)" stroke="var(--gold)" /><circle cx="10" cy="18" r="2" fill="var(--gold)" stroke="var(--gold)" />
+          </svg>
+          Filtrer {hasActiveFilter && <span style={{ color: "var(--gold)", fontWeight: 700 }}>●</span>}
+        </button>
+
+        {/* Contenu filtres — toujours visible desktop, togglé mobile */}
+        <div className={`filter-bar-content${filtersOpen ? " filter-open" : ""}`} style={{
+          display: "flex", alignItems: "flex-end", gap: 20, flexWrap: "wrap",
+          padding: "18px 0", maxWidth: 1300, margin: "0 auto",
+        }}>
+          {/* Filtre taille */}
+          <div style={{ flex: "1 1 auto" }}>
+            <span style={labelStyle}>Taille</span>
+            <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+              {catSizes.map(s => (
+                <button key={s} onClick={() => setFilterSize(filterSize === s ? null : s)} style={{
+                  padding: "6px 14px", fontSize: 11,
+                  background: filterSize === s ? "#C9A84C" : "white",
+                  color: filterSize === s ? "white" : "#2C2A20",
+                  border: `1.5px solid ${filterSize === s ? "#C9A84C" : "rgba(200,149,108,0.4)"}`,
+                  fontFamily: "'Jost',sans-serif", fontWeight: 500, cursor: "pointer",
+                  borderRadius: 2, transition: "all 0.15s",
+                }}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Filtre prix */}
+          <div style={{ flex: "0 0 auto" }}>
+            <span style={labelStyle}>Prix (DT)</span>
+            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+              <input
+                type="number"
+                value={priceMin}
+                onChange={e => setPriceMin(e.target.value)}
+                placeholder="Min"
+                style={{
+                  width: 70, padding: "7px 10px", fontSize: 12,
+                  border: "1.5px solid rgba(200,149,108,0.4)", borderRadius: 2,
+                  fontFamily: "'Jost',sans-serif", outline: "none", background: "white",
+                  color: "#2C2A20",
+                }}
+                onFocus={e => e.target.style.borderColor = "#C9A84C"}
+                onBlur={e => e.target.style.borderColor = "rgba(200,149,108,0.4)"}
+              />
+              <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "var(--text-muted)" }}>—</span>
+              <input
+                type="number"
+                value={priceMax}
+                onChange={e => setPriceMax(e.target.value)}
+                placeholder="Max"
+                style={{
+                  width: 70, padding: "7px 10px", fontSize: 12,
+                  border: "1.5px solid rgba(200,149,108,0.4)", borderRadius: 2,
+                  fontFamily: "'Jost',sans-serif", outline: "none", background: "white",
+                  color: "#2C2A20",
+                }}
+                onFocus={e => e.target.style.borderColor = "#C9A84C"}
+                onBlur={e => e.target.style.borderColor = "rgba(200,149,108,0.4)"}
+              />
+            </div>
+          </div>
+
+          {/* Tri */}
+          <div style={{ flex: "0 0 auto" }}>
+            <span style={labelStyle}>Trier par</span>
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value)}
+              style={{
+                padding: "7px 28px 7px 10px", fontSize: 12,
+                border: "1.5px solid rgba(200,149,108,0.4)", borderRadius: 2,
+                fontFamily: "'Jost',sans-serif", outline: "none", background: "white",
+                color: "#2C2A20", cursor: "pointer",
+                appearance: "none",
+                backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23C9A84C' stroke-width='1.5'/%3E%3C/svg%3E")`,
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "right 10px center",
+              }}
+            >
+              <option value="default">Par défaut</option>
+              <option value="price_asc">Prix croissant</option>
+              <option value="price_desc">Prix décroissant</option>
+              <option value="newest">Nouveautés</option>
+            </select>
+          </div>
+
+          {/* Réinitialiser */}
+          {hasActiveFilter && (
+            <button onClick={resetFilters} style={{
+              padding: "7px 16px", fontSize: 11,
+              background: "none", color: "#e57373",
+              border: "1.5px solid #e57373", cursor: "pointer",
+              fontFamily: "'Jost',sans-serif", fontWeight: 500,
+              borderRadius: 2, display: "flex", alignItems: "center", gap: 5,
+              transition: "all 0.15s", alignSelf: "flex-end",
+            }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+              Réinitialiser
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Product grid */}
       <div style={{ padding: "40px clamp(20px,4vw,60px) 80px", maxWidth: 1300, margin: "0 auto" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 20 }}>
-          {groups.map((group, i) => (
-            <ProductGroupCard
-              key={i}
-              cat={cat}
-              group={group}
-              groupIndex={i}
-              onOrder={setOrderProduct}
-              onAddToCart={handleAddToCart}
-            />
-          ))}
-        </div>
+        {filtered.length === 0 ? (
+          <div style={{
+            textAlign: "center", padding: "60px 20px",
+            fontFamily: "'Jost',sans-serif", color: "var(--text-muted)", fontSize: 14,
+          }}>
+            Aucun article ne correspond à vos filtres.
+            <br />
+            <button onClick={resetFilters} style={{
+              marginTop: 16, padding: "10px 28px", fontSize: 12,
+              background: "#C9A84C", color: "white", border: "none", cursor: "pointer",
+              fontFamily: "'Jost',sans-serif", letterSpacing: "1px",
+            }}>
+              Réinitialiser les filtres
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 20 }}>
+            {filtered.map((group, i) => (
+              <ProductGroupCard
+                key={i}
+                cat={cat}
+                group={group}
+                groupIndex={i}
+                onOrder={setOrderProduct}
+                onAddToCart={handleAddToCart}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Order modal */}
@@ -570,7 +762,7 @@ export default function CollectionPage({ onBack, initialCategory }) {
       {/* Nav */}
       <nav style={{
         position: "sticky", top: ANNOUNCE_H, zIndex: 1000, height: 70,
-        background: "rgba(250,247,242,0.97)", backdropFilter: "blur(16px)",
+        background: "rgba(250,247,242,0.97)", WebkitBackdropFilter: "blur(16px)", backdropFilter: "blur(16px)",
         borderBottom: "1px solid rgba(200,149,108,0.15)",
         padding: "0 clamp(20px,4vw,60px)", display: "flex", alignItems: "center", justifyContent: "space-between"
       }}>
@@ -626,7 +818,7 @@ export default function CollectionPage({ onBack, initialCategory }) {
           background: "rgba(250,247,242,0.92)", border: "1px solid rgba(200,149,108,0.3)",
           display: "flex", alignItems: "center", justifyContent: "center",
           cursor: "pointer", boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-          backdropFilter: "blur(8px)", transition: "all 0.35s cubic-bezier(0.25,0.46,0.45,0.94)",
+          WebkitBackdropFilter: "blur(8px)", backdropFilter: "blur(8px)", transition: "all 0.35s cubic-bezier(0.25,0.46,0.45,0.94)",
           color: "var(--gold)",
           opacity: showTop ? 1 : 0,
           transform: showTop ? "translateY(0) scale(1)" : "translateY(14px) scale(0.8)",

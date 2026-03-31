@@ -58,6 +58,230 @@ const PackageIcon = () => (
   </svg>
 );
 
+const GOUVERNORATS = [
+  "Ariana","Béja","Ben Arous","Bizerte","Gabès","Gafsa","Jendouba",
+  "Kairouan","Kasserine","Kébili","Kef","Mahdia","Manouba","Médenine",
+  "Monastir","Nabeul","Sfax","Sidi Bouzid","Siliana","Sousse","Tataouine",
+  "Tozeur","Tunis","Zaghouan",
+];
+
+// ─── Icônes édition / suppression ────────────────────────────
+const EditIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+  </svg>
+);
+const TrashIcon2 = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+  </svg>
+);
+
+// ─── Modal d'édition de commande ─────────────────────────────
+function EditOrderModal({ order, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    status: order.status,
+    customer_name: order.customer_name,
+    customer_phone: order.customer_phone,
+    address: order.address,
+    governorate: order.governorate,
+    size: order.size,
+    quantity: order.quantity,
+  });
+  const [saving, setSaving] = useState(false);
+
+  const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+  const handleSave = async () => {
+    setSaving(true);
+    const { error } = await supabase.from("orders").update(form).eq("id", order.id);
+    setSaving(false);
+    if (!error) onSaved(order.id, form);
+  };
+
+  const inputStyle = {
+    width: "100%", padding: "10px 12px", border: "1px solid #ddd", borderRadius: 4,
+    fontFamily: "'Jost',sans-serif", fontSize: 13, outline: "none", background: "white",
+    color: "#2C2A20", boxSizing: "border-box",
+  };
+  const labelStyle = {
+    display: "block", fontFamily: "'Jost',sans-serif", fontSize: 11,
+    color: "#666", marginBottom: 5, fontWeight: 500,
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)", WebkitBackdropFilter: "blur(3px)", backdropFilter: "blur(3px)" }} />
+      <div style={{
+        position: "relative", background: "white", width: "min(500px, 94vw)", maxHeight: "90vh",
+        borderRadius: 10, overflow: "auto", padding: "28px 24px",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.2)", animation: "fadeUp 0.25s ease",
+      }}>
+        <button onClick={onClose} style={{ position: "absolute", top: 14, right: 14, background: "none", border: "none", cursor: "pointer", color: "#999", padding: 4 }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+
+        <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, letterSpacing: "2px", textTransform: "uppercase", color: "#C9A84C", marginBottom: 4 }}>
+          Modifier la commande
+        </p>
+        <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, fontWeight: 500, color: "#2C2A20", marginBottom: 20 }}>
+          {order.product_name}
+        </h2>
+
+        {/* Statut */}
+        <div style={{ marginBottom: 14 }}>
+          <label style={labelStyle}>Statut</label>
+          <select value={form.status} onChange={e => set("status", e.target.value)}
+            style={{ ...inputStyle, cursor: "pointer" }}>
+            {STATUTS.map(s => <option key={s} value={s}>{STATUT_STYLE[s].label}</option>)}
+          </select>
+        </div>
+
+        {/* Nom + Téléphone */}
+        <div style={{ display: "flex", gap: 12, marginBottom: 14 }}>
+          <div style={{ flex: 1 }}>
+            <label style={labelStyle}>Nom</label>
+            <input value={form.customer_name} onChange={e => set("customer_name", e.target.value)} style={inputStyle} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <label style={labelStyle}>Téléphone</label>
+            <input value={form.customer_phone} onChange={e => set("customer_phone", e.target.value)} style={inputStyle} />
+          </div>
+        </div>
+
+        {/* Adresse + Gouvernorat */}
+        <div style={{ display: "flex", gap: 12, marginBottom: 14 }}>
+          <div style={{ flex: 1 }}>
+            <label style={labelStyle}>Adresse</label>
+            <input value={form.address} onChange={e => set("address", e.target.value)} style={inputStyle} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <label style={labelStyle}>Gouvernorat</label>
+            <select value={form.governorate} onChange={e => set("governorate", e.target.value)}
+              style={{ ...inputStyle, cursor: "pointer" }}>
+              {GOUVERNORATS.map(g => <option key={g} value={g}>{g}</option>)}
+            </select>
+          </div>
+        </div>
+
+        {/* Taille + Quantité */}
+        <div style={{ display: "flex", gap: 12, marginBottom: 22 }}>
+          <div style={{ flex: 1 }}>
+            <label style={labelStyle}>Taille</label>
+            <input value={form.size} onChange={e => set("size", e.target.value)} style={inputStyle} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <label style={labelStyle}>Quantité</label>
+            <input type="number" min="1" value={form.quantity} onChange={e => set("quantity", Number(e.target.value))} style={inputStyle} />
+          </div>
+        </div>
+
+        <button onClick={handleSave} disabled={saving}
+          style={{
+            width: "100%", padding: "13px", border: "none", borderRadius: 4,
+            background: "#C9A84C", color: "white", cursor: saving ? "wait" : "pointer",
+            fontFamily: "'Jost',sans-serif", fontSize: 12, letterSpacing: "1.5px",
+            textTransform: "uppercase", opacity: saving ? 0.6 : 1,
+          }}>
+          {saving ? "Sauvegarde..." : "Sauvegarder"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Modal de confirmation suppression ───────────────────────
+function DeleteConfirmModal({ order, onClose, onDeleted }) {
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    const { error } = await supabase.from("orders").delete().eq("id", order.id);
+    setDeleting(false);
+    if (!error) onDeleted(order.id);
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)", WebkitBackdropFilter: "blur(3px)", backdropFilter: "blur(3px)" }} />
+      <div style={{
+        position: "relative", background: "white", width: "min(400px, 90vw)",
+        borderRadius: 10, padding: "32px 28px", textAlign: "center",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.2)", animation: "fadeUp 0.25s ease",
+      }}>
+        <div style={{ fontSize: 40, marginBottom: 16 }}>🗑️</div>
+        <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 20, fontWeight: 500, color: "#2C2A20", marginBottom: 8 }}>
+          Supprimer cette commande ?
+        </h3>
+        <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 13, color: "#666", lineHeight: 1.7, marginBottom: 24 }}>
+          Êtes-vous sûr de vouloir supprimer cette commande ?<br />
+          <strong>{order.product_name}</strong> — {order.customer_name}
+        </p>
+        <div style={{ display: "flex", gap: 12 }}>
+          <button onClick={onClose} style={{
+            flex: 1, padding: "12px", border: "1px solid #ddd", borderRadius: 4,
+            background: "white", color: "#666", cursor: "pointer",
+            fontFamily: "'Jost',sans-serif", fontSize: 12, letterSpacing: "1px",
+          }}>
+            Annuler
+          </button>
+          <button onClick={handleDelete} disabled={deleting} style={{
+            flex: 1, padding: "12px", border: "none", borderRadius: 4,
+            background: "#e53e3e", color: "white", cursor: deleting ? "wait" : "pointer",
+            fontFamily: "'Jost',sans-serif", fontSize: 12, letterSpacing: "1px",
+            textTransform: "uppercase", opacity: deleting ? 0.6 : 1,
+          }}>
+            {deleting ? "Suppression..." : "Supprimer"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Photos statiques par catégorie (fallback) ──────────────
+const STATIC_PHOTOS = {
+  "3ibaya":  "/photos/3ibaya/487447137_1098233225650757_818704683323925263_n.jpg",
+  echarpe:   "/photos/echarpe/587840430_17925997047179373_2959763835755661799_n.jpg",
+  jiba:      "/photos/jiba/498947811_17903534622179373_3600286315845092783_n.jpg",
+  kids:      "/photos/kids/645995833_1370344885106255_9157182548210132803_n.jpg",
+  manteau:   "/photos/manteau/579423101_1277387817735296_2206184981912267833_n.jpg",
+  MDB:       "/photos/MDB/496049480_1128525475954865_2540523400201882755_n.jpg",
+  pyjama:    "/photos/pyjama/490345086_1118998213574258_6134831431061358690_n.jpg",
+  Robe:      "/photos/Robe/649636396_1374861407987936_6370692347574891488_n.jpg",
+  Sac:       "/photos/Sac/631720297_1352112070262870_4847811711877564932_n.jpg",
+  set:       "/photos/set/493138870_1143811757759570_6677303497939193345_n.jpg",
+};
+
+// Correspondance nom produit → catégorie statique
+function guessStaticPhoto(productName) {
+  if (!productName) return null;
+  const n = productName.toLowerCase();
+  if (n.includes("abaya") || n.includes("3ibaya")) return STATIC_PHOTOS["3ibaya"];
+  if (n.includes("écharpe") || n.includes("echarpe")) return STATIC_PHOTOS.echarpe;
+  if (n.includes("jiba")) return STATIC_PHOTOS.jiba;
+  if (n.includes("kids") || n.includes("enfant")) return STATIC_PHOTOS.kids;
+  if (n.includes("manteau")) return STATIC_PHOTOS.manteau;
+  if (n.includes("mdb")) return STATIC_PHOTOS.MDB;
+  if (n.includes("pyjama")) return STATIC_PHOTOS.pyjama;
+  if (n.includes("robe")) return STATIC_PHOTOS.Robe;
+  if (n.includes("sac")) return STATIC_PHOTOS.Sac;
+  if (n.includes("set")) return STATIC_PHOTOS.set;
+  return null;
+}
+
+// ── Icône placeholder vêtement ─────────────────────────────
+const HangerIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2a3 3 0 0 0-3 3c0 1.1.6 2 1.5 2.5L3 14h18l-7.5-6.5c.9-.5 1.5-1.4 1.5-2.5a3 3 0 0 0-3-3z" />
+    <path d="M3 14v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4" />
+  </svg>
+);
+
 // ─── Helpers ──────────────────────────────────────────────────
 function formatDate(iso) {
   if (!iso) return "—";
@@ -130,8 +354,8 @@ function StatCard({ label, value, color }) {
 }
 
 // ─── Carte commande (mobile) ──────────────────────────────────
-function OrderCard({ order, onStatutChange }) {
-  const photo = order.products?.images?.[0] ?? null;
+function OrderCard({ order, onStatutChange, onEdit, onDelete }) {
+  const photo = order._photo ?? null;
 
   return (
     <div style={{
@@ -146,12 +370,13 @@ function OrderCard({ order, onStatutChange }) {
       }}>
         {/* Photo */}
         <div style={{
-          width: 56, height: 70, borderRadius: 6, overflow: "hidden", flexShrink: 0,
+          width: 60, height: 60, borderRadius: 8, overflow: "hidden", flexShrink: 0,
           background: "#F0EBE4", display: "flex", alignItems: "center", justifyContent: "center",
+          border: "1px solid #C9A84C",
         }}>
           {photo
             ? <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            : <span style={{ color: "#C9A84C", opacity: 0.5 }}><PackageIcon /></span>
+            : <HangerIcon />
           }
         </div>
         {/* Produit + prix */}
@@ -218,6 +443,22 @@ function OrderCard({ order, onStatutChange }) {
             fullWidth
           />
         </div>
+
+        {/* Actions */}
+        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", paddingTop: 4 }}>
+          <button onClick={() => onEdit(order)} title="Modifier"
+            style={{ background: "none", border: "none", cursor: "pointer", color: "#C9A84C", padding: 4, display: "flex", alignItems: "center", gap: 5, fontFamily: "'Jost',sans-serif", fontSize: 11, transition: "opacity 0.2s" }}
+            onMouseEnter={e => e.currentTarget.style.opacity = "0.65"}
+            onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+            <EditIcon /> Modifier
+          </button>
+          <button onClick={() => onDelete(order)} title="Supprimer"
+            style={{ background: "none", border: "none", cursor: "pointer", color: "#e53e3e", padding: 4, display: "flex", alignItems: "center", gap: 5, fontFamily: "'Jost',sans-serif", fontSize: 11, transition: "opacity 0.2s" }}
+            onMouseEnter={e => e.currentTarget.style.opacity = "0.65"}
+            onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+            <TrashIcon2 /> Supprimer
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -231,8 +472,8 @@ const thBase = {
   textAlign: "left", borderBottom: "2px solid #EDE8E0", whiteSpace: "nowrap", background: "#FAF9F6",
 };
 
-function OrderRow({ order, onStatutChange, index, isTablet }) {
-  const photo = order.products?.images?.[0] ?? null;
+function OrderRow({ order, onStatutChange, onEdit, onDelete, index, isTablet }) {
+  const photo = order._photo ?? null;
   const isEven = index % 2 === 0;
 
   return (
@@ -241,12 +482,13 @@ function OrderRow({ order, onStatutChange, index, isTablet }) {
       {!isTablet && (
         <td style={tdBase}>
           <div style={{
-            width: 48, height: 60, borderRadius: 4, overflow: "hidden",
+            width: 60, height: 60, borderRadius: 8, overflow: "hidden",
             background: "#F0EBE4", display: "flex", alignItems: "center", justifyContent: "center",
+            border: "1px solid #C9A84C",
           }}>
             {photo
               ? <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              : <span style={{ color: "#C9A84C", opacity: 0.5 }}><PackageIcon /></span>
+              : <HangerIcon />
             }
           </div>
         </td>
@@ -329,6 +571,24 @@ function OrderRow({ order, onStatutChange, index, isTablet }) {
         <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "#999" }}>
           {formatDate(order.created_at)}
         </span>
+      </td>
+
+      {/* Actions */}
+      <td style={{ ...tdBase, whiteSpace: "nowrap" }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <button onClick={() => onEdit(order)} title="Modifier"
+            style={{ background: "none", border: "none", cursor: "pointer", color: "#C9A84C", padding: 4, display: "flex", transition: "opacity 0.2s" }}
+            onMouseEnter={e => e.currentTarget.style.opacity = "0.55"}
+            onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+            <EditIcon />
+          </button>
+          <button onClick={() => onDelete(order)} title="Supprimer"
+            style={{ background: "none", border: "none", cursor: "pointer", color: "#e53e3e", padding: 4, display: "flex", transition: "opacity 0.2s" }}
+            onMouseEnter={e => e.currentTarget.style.opacity = "0.55"}
+            onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+            <TrashIcon2 />
+          </button>
+        </div>
       </td>
     </tr>
   );
@@ -414,16 +674,49 @@ export default function AdminPage({ onBack }) {
   const [error, setError] = useState(null);
   const [filterStatut, setFilterStatut] = useState("tous");
   const [search, setSearch] = useState("");
+  const [editOrder, setEditOrder] = useState(null);
+  const [deleteOrder, setDeleteOrder] = useState(null);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const { data, error: err } = await supabase
-      .from("orders")
-      .select("*, products(images)")
-      .order("created_at", { ascending: false });
-    if (err) setError("Impossible de charger les commandes. Vérifiez les politiques RLS Supabase.");
-    else setOrders(data ?? []);
+
+    // Charger commandes + produits en parallèle
+    const [ordersRes, productsRes] = await Promise.all([
+      supabase.from("orders").select("*, products(images)").order("created_at", { ascending: false }),
+      supabase.from("products").select("id, name, images"),
+    ]);
+
+    if (ordersRes.error) {
+      setError("Impossible de charger les commandes. Vérifiez les politiques RLS Supabase.");
+      setLoading(false);
+      return;
+    }
+
+    // Map produits par nom (lowercase) pour fallback
+    const productsByName = {};
+    (productsRes.data ?? []).forEach(p => {
+      if (p.name) productsByName[p.name.toLowerCase()] = p;
+    });
+
+    // Résoudre la photo pour chaque commande
+    const enriched = (ordersRes.data ?? []).map(o => {
+      // 1. Photo via join (product_id existe)
+      let photo = o.products?.images?.[0] ?? null;
+
+      // 2. Fallback : chercher par nom dans la table products
+      if (!photo && o.product_name) {
+        const match = productsByName[o.product_name.toLowerCase()];
+        if (match?.images?.[0]) photo = match.images[0];
+      }
+
+      // 3. Fallback : photo statique par catégorie (noms du catalogue)
+      if (!photo) photo = guessStaticPhoto(o.product_name);
+
+      return { ...o, _photo: photo };
+    });
+
+    setOrders(enriched);
     setLoading(false);
   }, []);
 
@@ -432,17 +725,27 @@ export default function AdminPage({ onBack }) {
   const handleStatutChange = (id, statut) =>
     setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: statut } : o)));
 
+  const handleOrderSaved = (id, updatedFields) => {
+    setOrders(prev => prev.map(o => o.id === id ? { ...o, ...updatedFields } : o));
+    setEditOrder(null);
+  };
+
+  const handleOrderDeleted = (id) => {
+    setOrders(prev => prev.filter(o => o.id !== id));
+    setDeleteOrder(null);
+  };
+
   if (!auth) return <LoginScreen onLogin={() => setAuth(true)} />;
 
-  // Filtrage
+  // Filtrage (avec null-safety)
   const filtered = orders.filter((o) => {
     const matchStatut = filterStatut === "tous" || o.status === filterStatut;
     const q = search.toLowerCase();
     const matchSearch = !q
-      || o.customer_name.toLowerCase().includes(q)
-      || o.product_name.toLowerCase().includes(q)
-      || o.customer_phone.includes(q)
-      || o.governorate.toLowerCase().includes(q);
+      || (o.customer_name || "").toLowerCase().includes(q)
+      || (o.product_name || "").toLowerCase().includes(q)
+      || (o.customer_phone || "").includes(q)
+      || (o.governorate || "").toLowerCase().includes(q);
     return matchStatut && matchSearch;
   });
 
@@ -453,13 +756,13 @@ export default function AdminPage({ onBack }) {
     confirmée:  orders.filter((o) => o.status === "confirmée").length,
     livrée:     orders.filter((o) => o.status === "livrée").length,
     annulée:    orders.filter((o) => o.status === "annulée").length,
-    ca: orders.filter((o) => o.status !== "annulée").reduce((s, o) => s + Number(o.total_price), 0),
+    ca: orders.filter((o) => o.status !== "annulée").reduce((s, o) => s + Number(o.total_price || 0), 0),
   };
 
   // Colonnes du tableau selon la taille
   const tableHeaders = isTablet
-    ? ["Produit", "Taille", "Qté", "Cliente", "Gouvernorat", "Statut", "Date"]
-    : ["Photo", "Produit", "Taille", "Qté", "Prix", "Cliente", "Adresse", "Statut", "Date"];
+    ? ["Produit", "Taille", "Qté", "Cliente", "Gouvernorat", "Statut", "Date", ""]
+    : ["Photo", "Produit", "Taille", "Qté", "Prix", "Cliente", "Adresse", "Statut", "Date", ""];
 
   return (
     <div style={{ minHeight: "100vh", background: "#FAF9F6" }}>
@@ -636,7 +939,7 @@ export default function AdminPage({ onBack }) {
           /* ── MOBILE : cartes empilées ── */
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {filtered.map((order) => (
-              <OrderCard key={order.id} order={order} onStatutChange={handleStatutChange} />
+              <OrderCard key={order.id} order={order} onStatutChange={handleStatutChange} onEdit={setEditOrder} onDelete={setDeleteOrder} />
             ))}
           </div>
 
@@ -661,6 +964,8 @@ export default function AdminPage({ onBack }) {
                       order={order}
                       index={i}
                       onStatutChange={handleStatutChange}
+                      onEdit={setEditOrder}
+                      onDelete={setDeleteOrder}
                       isTablet={isTablet}
                     />
                   ))}
@@ -679,6 +984,14 @@ export default function AdminPage({ onBack }) {
 
         </>}
       </main>
+
+      {/* ── Modals ── */}
+      {editOrder && (
+        <EditOrderModal order={editOrder} onClose={() => setEditOrder(null)} onSaved={handleOrderSaved} />
+      )}
+      {deleteOrder && (
+        <DeleteConfirmModal order={deleteOrder} onClose={() => setDeleteOrder(null)} onDeleted={handleOrderDeleted} />
+      )}
     </div>
   );
 }

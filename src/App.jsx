@@ -593,7 +593,7 @@ function AvisGrid() {
             inset: 0,
             zIndex: 3000,
             background: "rgba(0,0,0,0.92)",
-            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)", backdropFilter: "blur(8px)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -985,7 +985,7 @@ export default function App() {
           justifyContent: "center",
           cursor: "pointer",
           boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)", backdropFilter: "blur(8px)",
           transition: "all 0.25s",
           color: "var(--gold)",
         }}
@@ -1023,7 +1023,7 @@ export default function App() {
           alignItems: "center",
           justifyContent: "center",
           boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)", backdropFilter: "blur(8px)",
           transition: "all 0.25s",
           textDecoration: "none",
         }}
@@ -1052,7 +1052,7 @@ export default function App() {
           justifyContent: "center",
           cursor: "pointer",
           boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)", backdropFilter: "blur(8px)",
           transition: "all 0.35s cubic-bezier(0.25,0.46,0.45,0.94)",
           color: "var(--gold)",
           opacity: showTop ? 1 : 0,
@@ -1121,7 +1121,7 @@ export default function App() {
               zIndex: 1000,
               height: 70,
               background: scrolled ? "rgba(250,247,242,0.97)" : "transparent",
-              backdropFilter: scrolled ? "blur(16px)" : "none",
+              WebkitBackdropFilter: scrolled ? "blur(16px)" : "none", backdropFilter: scrolled ? "blur(16px)" : "none",
               borderBottom: scrolled ? "1px solid rgba(200,149,108,0.15)" : "none",
               transition: "all 0.4s ease",
               padding: "0 clamp(20px,4vw,60px)",
@@ -1159,7 +1159,7 @@ export default function App() {
                       alignItems: "center",
                       border: "1px solid rgba(200,149,108,0.4)",
                       background: "rgba(250,247,242,0.97)",
-                      backdropFilter: "blur(8px)",
+                      WebkitBackdropFilter: "blur(8px)", backdropFilter: "blur(8px)",
                       animation: "fadeIn 0.2s ease",
                     }}
                   >
@@ -1696,9 +1696,9 @@ export default function App() {
                   Suivez-nous
                 </h4>
                 {[
-                  { label: "Instagram", href: "https://www.instagram.com/basma_only_shop/" },
+                  { label: "Instagram", href: "https://www.instagram.com/basma_onlyshop/" },
                   { label: "Facebook",  href: "https://www.facebook.com/basmaonlyshop" },
-                  { label: "TikTok",    href: "https://www.tiktok.com/@basma_only_shop" },
+                  { label: "TikTok",    href: "https://www.tiktok.com/@___basmas___" },
                   { label: "WhatsApp",  href: "https://wa.me/21629930212" },
                 ].map(({ label, href }) => (
                   <a
@@ -1732,7 +1732,7 @@ export default function App() {
             <div style={{ position: "fixed", inset: 0, zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <div
                 onClick={() => setShowProduct(null)}
-                style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}
+                style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)", WebkitBackdropFilter: "blur(4px)", backdropFilter: "blur(4px)" }}
               />
               <div
                 className="product-modal-inner"
