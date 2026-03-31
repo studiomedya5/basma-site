@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import RamadanDecor from "./RamadanDecor";
-import OrderModal from "./OrderModal";
+import OrderModal from "./components/OrderModal";
+import { useCart } from "./context/CartContext";
+import AnnouncementBar, { ANNOUNCE_H } from "./components/AnnouncementBar";
 
 const categories = [
   {
@@ -69,6 +71,74 @@ const allPhotos = {
   set: ["493138870_1143811757759570_6677303497939193345_n.jpg","499925101_1144400861033993_3334460381609834918_n.jpg","502718263_1142868121187267_7543409463613258642_n.jpg","503500541_1143811721092907_1680371617944796245_n.jpg","503569778_1143811497759596_3674557093428282379_n.jpg","503595961_1144400911033988_4417601806757851793_n.jpg","504340305_17908169688179373_3078039285403121081_n.jpg","505812551_1150586390415440_3398345728921221780_n.jpg","511485784_17908169715179373_2597644327160038580_n.jpg","513232148_1162920135848732_640458654718534692_n.jpg","516557932_1171681738305905_5568169525824036400_n.jpg","516834321_1171681248305954_816674332074357088_n.jpg","516931359_1171681771639235_6173034236830453975_n.jpg","518280685_1171681634972582_1394436318256511318_n.jpg","527696326_1193082216165857_2391913245333609_n.jpg","549864507_1232854562188622_2760973217095054367_n.jpg","549891570_1232853485522063_8313864331863025481_n.jpg","550191500_1232854068855338_7784190896425698556_n.jpg","550959373_1231666955640716_3175971721681877697_n.jpg","558231485_1245859930888085_2590677230750125516_n.jpg","558256105_1245861110887967_5328630611717327634_n.jpg","565717486_1256087316532013_3935270618204365316_n.jpg","627056759_17932957533179373_8778773970641450727_n.jpg","634743500_17934788058179373_1514141254197804076_n.jpg","648685767_17937284784179373_1588006055100656717_n.jpg","648745377_17937284775179373_8845368223558810388_n.jpg","648769271_17937284802179373_8564353339299130636_n.jpg","649225515_17937284793179373_8339320576981707966_n.jpg","649227514_17937284766179373_491563886336157365_n.jpg"],
 };
 
+// Helper: pick photos by 1-based indices from a photo array
+const pick = (arr, ...nums) => nums.map(n => arr[n - 1]);
+
+// Product groups per category (each group = one card with color selector)
+const productGroups = {
+  "3ibaya": [
+    { label: "Abaya Groupe 1", photos: pick(allPhotos["3ibaya"], 1, 3) },
+    { label: "Abaya Groupe 2", photos: pick(allPhotos["3ibaya"], 2, 5, 8) },
+    { label: "Abaya Groupe 3", photos: pick(allPhotos["3ibaya"], 4, 6, 7) },
+    { label: "Abaya Groupe 4", photos: pick(allPhotos["3ibaya"], 9, 10, 11) },
+    { label: "Abaya Groupe 5", photos: pick(allPhotos["3ibaya"], 12, 15, 16, 18) },
+    { label: "Abaya Groupe 6", photos: pick(allPhotos["3ibaya"], 13, 14) },
+    { label: "Abaya Groupe 7", photos: pick(allPhotos["3ibaya"], 17, 21) },
+    { label: "Abaya Groupe 8", photos: pick(allPhotos["3ibaya"], 19, 20, 22) },
+  ],
+  echarpe: [
+    { label: "Écharpe Louis Vuitton", photos: pick(allPhotos.echarpe, 1, 2, 3, 4, 5, 6, 8, 9, 10) },
+    { label: "Écharpe Christian Dior", photos: pick(allPhotos.echarpe, 7) },
+    { label: "Écharpe Hermès",         photos: pick(allPhotos.echarpe, 11) },
+    { label: "Écharpe Fendi",          photos: pick(allPhotos.echarpe, 12) },
+    { label: "Écharpe Guess",          photos: pick(allPhotos.echarpe, 13) },
+  ],
+  jiba: [
+    { label: "Jiba", photos: allPhotos.jiba },
+  ],
+  kids: [
+    { label: "Kids Lacoste",   photos: pick(allPhotos.kids, 1, 2, 3) },
+    { label: "Kids Vert ZARA", photos: pick(allPhotos.kids, 4, 9, 10) },
+    { label: "Kids Groupe 3",  photos: pick(allPhotos.kids, 5, 6, 7, 8, 11) },
+  ],
+  manteau: [
+    { label: "Manteau Groupe 1", photos: pick(allPhotos.manteau, 1, 2, 3, 7) },
+    { label: "Manteau Groupe 2", photos: pick(allPhotos.manteau, 4, 5, 6) },
+    { label: "Manteau Groupe 3", photos: pick(allPhotos.manteau, 8, 9, 10, 11, 12, 13) },
+    { label: "Manteau Groupe 4", photos: pick(allPhotos.manteau, 14) },
+  ],
+  MDB: [
+    { label: "MDB Groupe 1", photos: pick(allPhotos.MDB, 10, 11, 12, 13, 14) },
+    { label: "MDB Groupe 2", photos: pick(allPhotos.MDB, 15, 16, 17) },
+    { label: "MDB Groupe 3", photos: pick(allPhotos.MDB, 18) },
+    { label: "MDB Groupe 4", photos: pick(allPhotos.MDB, 1, 2, 3, 4, 5, 6, 7, 8, 9) },
+  ],
+  pyjama: [
+    { label: "Pyjama Groupe 1", photos: pick(allPhotos.pyjama, 1, 2, 3, 5) },
+    { label: "Pyjama Groupe 2", photos: pick(allPhotos.pyjama, 4, 6, 7, 8) },
+    { label: "Pyjama Groupe 3", photos: pick(allPhotos.pyjama, 9, 10, 13, 14, 15) },
+    { label: "Pyjama Groupe 4", photos: pick(allPhotos.pyjama, 11, 12, 16) },
+    { label: "Pyjama Groupe 5", photos: pick(allPhotos.pyjama, 17) },
+    { label: "Pyjama Groupe 6", photos: pick(allPhotos.pyjama, 18, 19) },
+    { label: "Pyjama Groupe 7", photos: pick(allPhotos.pyjama, 20) },
+  ],
+  Robe: [
+    { label: "Robe Groupe 1", photos: pick(allPhotos.Robe, 1, 2) },
+    { label: "Robe Groupe 2", photos: pick(allPhotos.Robe, 3, 4) },
+  ],
+  Sac: [
+    { label: "Sac Groupe 1", photos: pick(allPhotos.Sac, 1, 2, 3) },
+    { label: "Sac Groupe 2", photos: pick(allPhotos.Sac, 4) },
+  ],
+  set: [
+    { label: "Set Groupe 1", photos: pick(allPhotos.set, 1, 2, 4, 5, 6) },
+    { label: "Set Groupe 2", photos: pick(allPhotos.set, 3, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18) },
+    { label: "Set Groupe 3", photos: pick(allPhotos.set, 19, 20, 21, 22, 23) },
+    { label: "Set Groupe 4", photos: pick(allPhotos.set, 24) },
+    { label: "Set Groupe 5", photos: pick(allPhotos.set, 25, 26, 27, 28, 29) },
+  ],
+};
+
 // ── Square category card ──────────────────────────────────────
 function CategoryCard({ cat, onClick, delay }) {
   const [hovered, setHovered] = useState(false);
@@ -86,20 +156,18 @@ function CategoryCard({ cat, onClick, delay }) {
           : "0 2px 16px rgba(0,0,0,0.07)",
         transform: hovered ? "translateY(-6px)" : "translateY(0)",
         transition: "transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94), box-shadow 0.4s ease",
-        animation: `fadeUp 0.6s ease ${delay*0.07}s both`,
+        animation: `fadeUp 0.6s ease ${delay * 0.07}s both`,
       }}>
 
       {/* ── Photo zone ── */}
       <div className="sq-card" style={{ margin: 0 }}>
         <img src={src0} alt="" loading="lazy" className="sq-img sq-img-a" style={{ opacity: hovered ? 0 : 1 }} />
         <img src={src1} alt="" loading="lazy" className="sq-img sq-img-b" style={{ opacity: hovered ? 1 : 0 }} />
-        {/* subtle top-to-bottom dark vignette at bottom edge */}
         <div style={{
           position: "absolute", bottom: 0, left: 0, right: 0, height: "28%",
           background: "linear-gradient(transparent, rgba(0,0,0,0.18))",
           zIndex: 3, pointerEvents: "none",
         }} />
-        {/* Gold line animated at bottom of photo */}
         <div style={{
           position: "absolute", bottom: 0, left: 0, height: 2,
           background: "var(--gold)", zIndex: 5,
@@ -149,66 +217,324 @@ function CategoryCard({ cat, onClick, delay }) {
   );
 }
 
+// ── Product group card (one card per color group) ─────────────
+function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart }) {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [hovered, setHovered] = useState(false);
+  const [showMiniPopup, setShowMiniPopup] = useState(false);
+  const [popupColorIdx, setPopupColorIdx] = useState(0);
+  const [popupSize, setPopupSize] = useState(cat.sizes?.[0] ?? "TU");
+  const [popupError, setPopupError] = useState("");
+
+  const activeSrc = `/photos/${cat.id}/${group.photos[activeIdx]}`;
+
+  const handleAddToCart = () => {
+    if (group.photos.length > 1 && popupColorIdx === null) {
+      setPopupError("Veuillez choisir une couleur");
+      return;
+    }
+    setPopupError("");
+    onAddToCart({
+      name: group.label,
+      price: cat.price,
+      img: `/photos/${cat.id}/${group.photos[popupColorIdx ?? 0]}`,
+      category: cat.label,
+      size: popupSize,
+      colorIdx: popupColorIdx ?? 0,
+      photos: group.photos,
+      catId: cat.id,
+    });
+    setShowMiniPopup(false);
+  };
+
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: "white",
+        overflow: "hidden",
+        boxShadow: hovered ? "0 12px 32px rgba(0,0,0,0.13)" : "0 2px 16px rgba(0,0,0,0.07)",
+        transform: hovered ? "translateY(-6px)" : "none",
+        transition: "transform 0.3s, box-shadow 0.3s",
+        animation: `fadeUp 0.5s ease ${groupIndex * 0.05}s both`,
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+      }}
+    >
+      {/* Photo */}
+      <div style={{ overflow: "hidden", aspectRatio: "3/4", position: "relative", flexShrink: 0 }}>
+        <img
+          src={activeSrc}
+          alt={group.label}
+          loading="lazy"
+          style={{
+            width: "100%", height: "100%", objectFit: "cover", display: "block",
+            transition: "transform 0.5s",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.05)"; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
+        />
+      </div>
+
+      {/* Info */}
+      <div style={{ padding: "14px 14px 16px", display: "flex", flexDirection: "column", flex: 1 }}>
+        <p style={{
+          fontFamily: "'Jost',sans-serif", fontSize: 10, color: "var(--gold)",
+          letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 4,
+        }}>{cat.label}</p>
+        <h3 style={{ fontSize: 15, fontWeight: 500, marginBottom: 6, lineHeight: 1.3 }}>{group.label}</h3>
+        <p style={{
+          fontFamily: "'Jost',sans-serif", fontSize: 12, color: "var(--text-muted)",
+          lineHeight: 1.6, marginBottom: 10,
+        }}>{cat.desc}</p>
+
+        {/* Aperçu couleurs (cliquables pour changer la photo) */}
+        {group.photos.length > 1 && (
+          <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap", alignItems: "center" }}>
+            {group.photos.map((photo, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveIdx(i)}
+                title={`Couleur ${i + 1}`}
+                style={{
+                  width: 30, height: 30, padding: 0, borderRadius: "50%",
+                  border: i === activeIdx ? "2.5px solid var(--gold)" : "2.5px solid transparent",
+                  outline: i === activeIdx ? "2px solid var(--gold)" : "1.5px solid rgba(200,149,108,0.3)",
+                  outlineOffset: 2,
+                  cursor: "pointer", overflow: "hidden", background: "none", flexShrink: 0,
+                  transition: "border-color 0.2s, transform 0.15s",
+                  transform: i === activeIdx ? "scale(1.12)" : "scale(1)",
+                }}
+              >
+                <img
+                  src={`/photos/${cat.id}/${photo}`}
+                  loading="lazy" alt=""
+                  style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%", display: "block" }}
+                />
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Prix + deux boutons */}
+        <div style={{ marginTop: "auto" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 18, fontWeight: 700, color: "var(--gold)" }}>
+              {cat.price} ت.د
+            </span>
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            {/* Bouton Panier */}
+            <button
+              onClick={() => {
+                setPopupColorIdx(group.photos.length > 1 ? null : 0);
+                setPopupSize(cat.sizes?.[0] ?? "TU");
+                setPopupError("");
+                setShowMiniPopup(true);
+              }}
+              style={{
+                flex: 1, padding: "11px 4px", fontSize: 11,
+                background: "white", color: "var(--gold)",
+                border: "1.5px solid var(--gold)", cursor: "pointer",
+                fontFamily: "'Jost',sans-serif", letterSpacing: "1px", textTransform: "uppercase",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                transition: "opacity 0.2s",
+              }}
+              onMouseEnter={e => e.currentTarget.style.opacity = "0.8"}
+              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+            >
+              <span style={{ fontSize: 13 }}>🛒</span> Panier
+            </button>
+            {/* Bouton Commander */}
+            <button
+              onClick={() => onOrder({
+                name: group.label,
+                price: cat.price,
+                img: activeSrc,
+                category: cat.label,
+                sizes: cat.sizes,
+                desc: cat.desc,
+                photos: group.photos,
+                catId: cat.id,
+                initialColorIdx: activeIdx,
+              })}
+              style={{
+                flex: 1, padding: "11px 4px", fontSize: 11,
+                background: "#C9A84C", color: "white",
+                border: "1.5px solid #C9A84C", cursor: "pointer",
+                fontFamily: "'Jost',sans-serif", letterSpacing: "1px", textTransform: "uppercase",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                transition: "opacity 0.2s",
+              }}
+              onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
+              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+            >
+              Commander
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Mini popup couleur + taille pour panier ── */}
+      {showMiniPopup && (
+        <>
+          <div onClick={() => setShowMiniPopup(false)} style={{ position: "fixed", inset: 0, zIndex: 1999 }} />
+          <div style={{
+            position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2000,
+            background: "white", padding: "16px 14px",
+            boxShadow: "0 -8px 30px rgba(0,0,0,0.18)",
+            borderTop: "2px solid var(--gold)",
+            animation: "fadeUp 0.2s ease",
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", color: "var(--dark)" }}>
+                Choisir les options
+              </p>
+              <button onClick={() => setShowMiniPopup(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#999", padding: 2 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Couleur */}
+            {group.photos.length > 1 && (
+              <div style={{ marginBottom: 10 }}>
+                <p style={{
+                  fontFamily: "'Jost',sans-serif", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase",
+                  color: popupError ? "#e57373" : "var(--text-muted)", marginBottom: 6,
+                }}>
+                  Couleur {popupError && <span style={{ fontSize: 9, letterSpacing: 0 }}>— {popupError}</span>}
+                </p>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {group.photos.map((photo, i) => (
+                    <button
+                      key={i}
+                      onClick={() => { setPopupColorIdx(i); setPopupError(""); }}
+                      style={{
+                        width: 28, height: 28, padding: 0, borderRadius: "50%",
+                        border: i === popupColorIdx ? "2.5px solid var(--gold)" : "2.5px solid transparent",
+                        outline: i === popupColorIdx ? "2px solid var(--gold)" : "1.5px solid rgba(200,149,108,0.3)",
+                        outlineOffset: 1, cursor: "pointer", overflow: "hidden", background: "none", flexShrink: 0,
+                        transform: i === popupColorIdx ? "scale(1.1)" : "scale(1)",
+                        transition: "all 0.15s",
+                      }}
+                    >
+                      <img src={`/photos/${cat.id}/${photo}`} loading="lazy" alt=""
+                        style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%", display: "block" }} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Taille */}
+            {cat.sizes && cat.sizes.length > 1 && (
+              <div style={{ marginBottom: 12 }}>
+                <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 6 }}>
+                  Taille
+                </p>
+                <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                  {cat.sizes.map(s => (
+                    <button key={s} onClick={() => setPopupSize(s)} style={{
+                      padding: "5px 12px", fontSize: 11,
+                      border: popupSize === s ? "2px solid var(--gold)" : "1px solid #ddd",
+                      background: popupSize === s ? "var(--gold)" : "white",
+                      color: popupSize === s ? "white" : "var(--dark)",
+                      fontFamily: "'Jost',sans-serif", fontWeight: 500, cursor: "pointer", borderRadius: 2,
+                    }}>
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={handleAddToCart}
+              style={{
+                width: "100%", padding: "10px", fontSize: 11,
+                background: "#C9A84C", color: "white", border: "none", cursor: "pointer",
+                fontFamily: "'Jost',sans-serif", letterSpacing: "1px", textTransform: "uppercase",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              }}
+            >
+              <span style={{ fontSize: 13 }}>🛒</span> Ajouter au panier
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── Gallery view ──────────────────────────────────────────────
 function CategoryGallery({ cat, onBack }) {
   const [orderProduct, setOrderProduct] = useState(null);
-  const srcs = (allPhotos[cat.id] || cat.photos).map(p => `/photos/${cat.id}/${p}`);
+  const [toast, setToast] = useState(null);
+  const { addItem } = useCart();
+  const groups = productGroups[cat.id] || [];
+
+  const handleAddToCart = (item) => {
+    addItem(item);
+    setToast(item.name);
+    setTimeout(() => setToast(null), 2200);
+  };
 
   return (
-    <div style={{ animation:"fadeIn 0.35s ease" }}>
-      {/* Header */}
-      <div style={{ background:"linear-gradient(135deg, var(--dark) 0%, #3D3328 100%)", padding:"50px clamp(20px,4vw,60px) 44px" }}>
-        <button onClick={onBack} style={{
-          display:"flex", alignItems:"center", gap:8, background:"none", border:"none",
-          cursor:"pointer", fontFamily:"'Jost',sans-serif", fontSize:11, letterSpacing:"2px",
-          textTransform:"uppercase", color:"rgba(255,255,255,0.45)", marginBottom:28,
+    <div style={{ animation: "fadeIn 0.35s ease" }}>
+      {/* Toast notification */}
+      {toast && (
+        <div style={{
+          position: "fixed", top: 80, right: 24, zIndex: 3000,
+          background: "var(--dark)", color: "white",
+          padding: "12px 24px", borderRadius: 50,
+          fontFamily: "'Jost',sans-serif", fontSize: 13, fontWeight: 500,
+          animation: "notifSlide 0.3s ease",
+          boxShadow: "0 8px 30px rgba(0,0,0,0.18)",
+          display: "flex", alignItems: "center", gap: 8,
         }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="15 18 9 12 15 6"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="3">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          Ajouté au panier
+        </div>
+      )}
+
+      {/* Header */}
+      <div style={{ background: "linear-gradient(135deg, var(--dark) 0%, #3D3328 100%)", padding: "50px clamp(20px,4vw,60px) 44px" }}>
+        <button onClick={onBack} style={{
+          display: "flex", alignItems: "center", gap: 8, background: "none", border: "none",
+          cursor: "pointer", fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "2px",
+          textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 28,
+        }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="15 18 9 12 15 6" /></svg>
           Collection
         </button>
-        <p style={{ fontFamily:"'Jost',sans-serif", fontSize:11, letterSpacing:"3px", textTransform:"uppercase", color:"var(--gold)", marginBottom:12 }}>✦ Basma Only Shop</p>
-        <h2 style={{ color:"white", fontSize:"clamp(28px,4vw,46px)", fontWeight:300, letterSpacing:"-0.5px", marginBottom:10 }}>{cat.label}</h2>
-        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-          <div style={{ width:32, height:1, background:"var(--gold)" }} />
-          <span style={{ fontFamily:"'Jost',sans-serif", fontSize:11, color:"rgba(255,255,255,0.4)", letterSpacing:"2px" }}>{srcs.length} pièces · à partir de {cat.price} ت.د</span>
+        <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "3px", textTransform: "uppercase", color: "var(--gold)", marginBottom: 12 }}>✦ Basma Only Shop</p>
+        <h2 style={{ color: "white", fontSize: "clamp(28px,4vw,46px)", fontWeight: 300, letterSpacing: "-0.5px", marginBottom: 10 }}>{cat.label}</h2>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 32, height: 1, background: "var(--gold)" }} />
+          <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "rgba(255,255,255,0.4)", letterSpacing: "2px" }}>
+            {groups.length} article{groups.length > 1 ? "s" : ""} · à partir de {cat.price} ت.د
+          </span>
         </div>
       </div>
 
       {/* Product grid */}
-      <div style={{ padding:"40px clamp(20px,4vw,60px) 80px", maxWidth:1300, margin:"0 auto" }}>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))", gap:20 }}>
-          {srcs.map((src, i) => (
-            <div key={i} style={{
-              background:"white", overflow:"hidden",
-              boxShadow:"0 2px 16px rgba(0,0,0,0.07)",
-              animation:`fadeUp 0.5s ease ${i*0.04}s both`,
-              transition:"transform 0.3s, box-shadow 0.3s",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform="translateY(-6px)"; e.currentTarget.style.boxShadow="0 12px 32px rgba(0,0,0,0.13)"; }}
-            onMouseLeave={e => { e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="0 2px 16px rgba(0,0,0,0.07)"; }}>
-              {/* Photo */}
-              <div style={{ overflow:"hidden", aspectRatio:"3/4", position:"relative" }}>
-                <img src={src} alt={`${cat.label} ${i+1}`} loading="lazy"
-                  style={{ width:"100%", height:"100%", objectFit:"cover", display:"block", transition:"transform 0.5s" }}
-                  onMouseEnter={e => e.target.style.transform="scale(1.05)"}
-                  onMouseLeave={e => e.target.style.transform="scale(1)"}
-                />
-              </div>
-              {/* Info */}
-              <div style={{ padding:"14px 14px 16px" }}>
-                <p style={{ fontFamily:"'Jost',sans-serif", fontSize:10, color:"var(--gold)", letterSpacing:"1.5px", textTransform:"uppercase", marginBottom:4 }}>{cat.label}</p>
-                <h3 style={{ fontSize:16, fontWeight:500, marginBottom:6, lineHeight:1.3 }}>{cat.label} N°{i+1}</h3>
-                <p style={{ fontFamily:"'Jost',sans-serif", fontSize:12, color:"var(--text-muted)", lineHeight:1.6, marginBottom:12 }}>{cat.desc}</p>
-                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                  <span style={{ fontFamily:"'Jost',sans-serif", fontSize:18, fontWeight:700, color:"var(--gold)" }}>{cat.price} ت.د</span>
-                  <button className="btn-gold"
-                    onClick={() => setOrderProduct({ name:`${cat.label} N°${i+1}`, price:cat.price, img:src, category:cat.label, sizes:cat.sizes, desc:cat.desc })}
-                    style={{ padding:"9px 18px", fontSize:11 }}>
-                    Commander
-                  </button>
-                </div>
-              </div>
-            </div>
+      <div style={{ padding: "40px clamp(20px,4vw,60px) 80px", maxWidth: 1300, margin: "0 auto" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 20 }}>
+          {groups.map((group, i) => (
+            <ProductGroupCard
+              key={i}
+              cat={cat}
+              group={group}
+              groupIndex={i}
+              onOrder={setOrderProduct}
+              onAddToCart={handleAddToCart}
+            />
           ))}
         </div>
       </div>
@@ -224,6 +550,7 @@ export default function CollectionPage({ onBack, initialCategory }) {
   const [selected, setSelected] = useState(initialCategory || null);
   const selectedCat = categories.find(c => c.id === selected);
   const [showTop, setShowTop] = useState(false);
+  const { count: cartCount, setIsOpen: openCart } = useCart();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -237,52 +564,77 @@ export default function CollectionPage({ onBack, initialCategory }) {
 
   return (
     <div className="collection-page">
+      <AnnouncementBar />
       <RamadanDecor />
 
       {/* Nav */}
       <nav style={{
-        position:"sticky", top:0, zIndex:1000, height:70,
-        background:"rgba(250,247,242,0.97)", backdropFilter:"blur(16px)",
-        borderBottom:"1px solid rgba(200,149,108,0.15)",
-        padding:"0 clamp(20px,4vw,60px)", display:"flex", alignItems:"center", justifyContent:"space-between"
+        position: "sticky", top: ANNOUNCE_H, zIndex: 1000, height: 70,
+        background: "rgba(250,247,242,0.97)", backdropFilter: "blur(16px)",
+        borderBottom: "1px solid rgba(200,149,108,0.15)",
+        padding: "0 clamp(20px,4vw,60px)", display: "flex", alignItems: "center", justifyContent: "space-between"
       }}>
-        <img src="/images/logo.png" alt="Basma" onClick={onBack} style={{ height:42, cursor:"pointer" }} />
+        <img src="/images/logo.png" alt="Basma" onClick={onBack} style={{ height: 42, cursor: "pointer" }} />
 
-        <div className="nav-links-desktop" style={{ display:"flex", gap:36, alignItems:"center" }}>
+        <div className="nav-links-desktop" style={{ display: "flex", gap: 36, alignItems: "center" }}>
           {[
-            { label:"ACCUEIL",    action: onBack },
-            { label:"EXCLUSIFS",  action: onBack },
-            { label:"COLLECTION", action: () => setSelected(null) },
-            { label:"CONTACT",    action: onBack },
+            { label: "ACCUEIL",    action: onBack },
+            { label: "COLLECTION", action: () => setSelected(null) },
+            { label: "CONTACT",    action: onBack },
           ].map(({ label, action }) => (
             <a key={label} className="nav-link" onClick={action}>{label}</a>
           ))}
         </div>
 
-        <button className="coll-back-btn" onClick={selected ? () => setSelected(null) : onBack}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-          {selected ? "Collections" : "Retour"}
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {/* Cart icon */}
+          <button
+            onClick={() => openCart(true)}
+            style={{ position: "relative", background: "none", border: "none", cursor: "pointer", color: "var(--dark)", padding: 4 }}
+            title="Mon panier"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+            </svg>
+            {cartCount > 0 && (
+              <span style={{
+                position: "absolute", top: -5, right: -7,
+                background: "var(--gold)", color: "white",
+                fontSize: 10, fontWeight: 700, width: 18, height: 18,
+                borderRadius: "50%", display: "flex", alignItems: "center",
+                justifyContent: "center", fontFamily: "'Jost',sans-serif",
+              }}>
+                {cartCount}
+              </span>
+            )}
+          </button>
+
+          <button className="coll-back-btn" onClick={selected ? () => setSelected(null) : onBack}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
+            {selected ? "Collections" : "Retour"}
+          </button>
+        </div>
       </nav>
 
       {/* Scroll to top */}
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         style={{
-          position:"fixed", bottom:90, right:24, zIndex:900,
-          width:42, height:42, borderRadius:"50%",
-          background:"rgba(250,247,242,0.92)", border:"1px solid rgba(200,149,108,0.3)",
-          display:"flex", alignItems:"center", justifyContent:"center",
-          cursor:"pointer", boxShadow:"0 2px 12px rgba(0,0,0,0.08)",
-          backdropFilter:"blur(8px)", transition:"all 0.35s cubic-bezier(0.25,0.46,0.45,0.94)",
-          color:"var(--gold)",
+          position: "fixed", bottom: 90, right: 24, zIndex: 900,
+          width: 42, height: 42, borderRadius: "50%",
+          background: "rgba(250,247,242,0.92)", border: "1px solid rgba(200,149,108,0.3)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          cursor: "pointer", boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+          backdropFilter: "blur(8px)", transition: "all 0.35s cubic-bezier(0.25,0.46,0.45,0.94)",
+          color: "var(--gold)",
           opacity: showTop ? 1 : 0,
           transform: showTop ? "translateY(0) scale(1)" : "translateY(14px) scale(0.8)",
           pointerEvents: showTop ? "auto" : "none",
         }}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+          <line x1="12" y1="19" x2="12" y2="5" /><polyline points="5 12 12 5 19 12" />
         </svg>
       </button>
 

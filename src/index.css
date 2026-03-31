@@ -54,6 +54,10 @@ body {
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
 }
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -476,6 +480,11 @@ html, body {
   /* ── Nav ── */
   .nav-links-desktop { display: none !important; }
   .mobile-btn        { display: flex !important; }
+  .nav-logo-wrap {
+    position: absolute !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
 
   /* ── Hero ── */
   .hero-grid {
@@ -529,8 +538,6 @@ html, body {
 
   /* ── Collection grid ── */
   .sq-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 8px !important;
     padding: 0 12px 60px !important;
   }
 
@@ -590,7 +597,6 @@ html, body {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 6px !important;
   }
-  .sq-grid { grid-template-columns: 1fr !important; }
   .footer-grid { gap: 18px !important; }
   .order-modal-photo { max-height: 44vw !important; }
 }

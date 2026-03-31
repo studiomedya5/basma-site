@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import RamadanDecor from "./RamadanDecor";
+import AnnouncementBar, { ANNOUNCE_H } from "./components/AnnouncementBar";
 
 const CloseIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -57,11 +58,12 @@ export default function ContactPage({ onBack }) {
 
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, var(--cream) 0%, #F5EDE4 50%, #EDE3D8 100%)", position: "relative" }}>
+      <AnnouncementBar />
       <RamadanDecor />
 
       {/* ── Header / Nav ── */}
       <header style={{
-        position: "sticky", top: 0, zIndex: 100, height: 70,
+        position: "sticky", top: ANNOUNCE_H, zIndex: 100, height: 70,
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "0 clamp(20px,4vw,60px)",
         background: "rgba(250,247,242,0.95)", backdropFilter: "blur(16px)",
