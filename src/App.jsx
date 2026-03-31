@@ -9,6 +9,8 @@ import Cart from "./components/Cart";
 import { useCart } from "./context/CartContext";
 import AnnouncementBar, { ANNOUNCE_H } from "./components/AnnouncementBar";
 import LookbookPage from "./LookbookPage";
+import OnboardingTour from "./components/OnboardingTour";
+import SwipeBack from "./components/SwipeBack";
 
 // ─── Translations ────────────────────────────────────────────
 const TRANSLATIONS = {
@@ -1009,6 +1011,7 @@ export default function App() {
         href="https://wa.me/21629930212"
         target="_blank"
         rel="noopener noreferrer"
+        className="wa-btn"
         style={{
           position: "fixed",
           bottom: 24,
@@ -1069,15 +1072,19 @@ export default function App() {
       {page === "admin" ? (
         <AdminPage onBack={() => { setPage("home"); window.history.pushState({}, "", "/"); }} />
       ) : page === "collection" ? (
-        <CollectionPage
-          onBack={() => {
-            setPage("home");
-            setCollectionTarget(null);
-          }}
-          initialCategory={collectionTarget}
-        />
+        <SwipeBack onBack={() => { setPage("home"); setCollectionTarget(null); }}>
+          <CollectionPage
+            onBack={() => {
+              setPage("home");
+              setCollectionTarget(null);
+            }}
+            initialCategory={collectionTarget}
+          />
+        </SwipeBack>
       ) : page === "contact" ? (
-        <ContactPage onBack={() => setPage("home")} />
+        <SwipeBack onBack={() => setPage("home")}>
+          <ContactPage onBack={() => setPage("home")} />
+        </SwipeBack>
       ) : (
         <>
           <RamadanDecor />
@@ -1898,6 +1905,9 @@ export default function App() {
           }}
         />
       )}
+
+      {/* ── Onboarding tour (première visite uniquement) ── */}
+      {page === "home" && <OnboardingTour />}
     </>
   );
 }

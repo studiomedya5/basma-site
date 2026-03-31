@@ -89,6 +89,10 @@ body {
   from { transform: translateY(-100%) translateX(-50%); opacity: 0; }
   to { transform: translateY(0) translateX(-50%); opacity: 1; }
 }
+@keyframes confettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
 
 /* Product Cards */
 .product-card {
@@ -694,6 +698,9 @@ html, body {
 
   /* ── Cart drawer ── */
   .cart-drawer { width: 100vw !important; }
+
+  /* ── Bouton retour fixe — caché sur mobile (swipe) ── */
+  .back-btn-fixed { display: none !important; }
 
   /* ── Boutons fixes (mute, whatsapp, scroll-top) ── */
   .mute-btn { bottom: 16px !important; left: 10px !important; width: 36px !important; height: 36px !important; }
