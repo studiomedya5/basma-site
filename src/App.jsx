@@ -1364,11 +1364,11 @@ export default function App() {
                     color: "var(--dark)",
                   }}
                 >
-                  L'Élégance
+                  <span className="hero-word-left">L'Élégance</span>
                   <br />
-                  <em style={{ fontWeight: 500, color: "var(--gold)" }}>Authentique</em>
+                  <em className="hero-word-center" style={{ fontWeight: 500, color: "var(--gold)" }}>Authentique</em>
                   <br />
-                  par Basma
+                  <span className="hero-word-right">par Basma</span>
                 </h1>
 
                 <p
