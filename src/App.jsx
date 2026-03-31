@@ -1315,6 +1315,7 @@ export default function App() {
           )}
 
           <section
+            className="hero-section"
             style={{
               minHeight: "100vh",
               display: "flex",
@@ -1338,6 +1339,7 @@ export default function App() {
             >
               <div style={{ flex: 1, animation: "fadeUp 0.8s ease" }}>
                 <p
+                  className="hero-eyebrow"
                   style={{
                     fontFamily: "'Jost',sans-serif",
                     fontSize: 12,
@@ -1370,6 +1372,7 @@ export default function App() {
                 </h1>
 
                 <p
+                  className="hero-desc"
                   style={{
                     fontFamily: "'Jost',sans-serif",
                     color: "var(--text-muted)",
