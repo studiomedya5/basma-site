@@ -3,8 +3,29 @@ import { supabase } from "../lib/supabase";
 
 // ─── Constantes ───────────────────────────────────────────────
 const CATEGORIES = ["Abaya", "Jiba", "Pyjama", "Robe", "Set", "Sac", "Manteau", "Kids", "MDB", "Écharpe"];
-const TAILLES    = ["36", "38", "40", "42", "44", "46", "48", "50", "52"];
 const STORAGE_BUCKET = "products";
+
+// Presets de tailles
+const TAILLES_PRESETS = {
+  numeric: ["36", "38", "40", "42", "44", "46", "48", "50", "52"],
+  letters: ["XS", "S", "M", "L", "XL", "XXL"],
+  kids:    ["2-3ans", "4-5ans", "6-7ans", "8-9ans", "10-11ans"],
+  none:    [], // taille unique TU, pas de sélecteur
+};
+
+// Type de tailles par défaut selon la catégorie
+const CATEGORY_SIZE_TYPE = {
+  "Abaya":   "numeric",
+  "Jiba":    "numeric",
+  "Robe":    "numeric",
+  "Manteau": "numeric",
+  "Pyjama":  "letters",
+  "Set":     "letters",
+  "MDB":     "letters",
+  "Kids":    "kids",
+  "Sac":     "none",
+  "Écharpe": "none",
+};
 
 const EMPTY_FORM = {
   name: "", category: CATEGORIES[0], description: "",
@@ -115,6 +136,11 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
   const fileInputRef = useRef();
   const isEdit = !!initial?.id;
 
+  // Type de tailles : "numeric" | "letters" | "kids" | "none"
+  const [sizeType, setSizeType] = useState(
+    () => CATEGORY_SIZE_TYPE[initial?.category ?? CATEGORIES[0]] ?? "numeric"
+  );
+
   // Générer les previews pour newFiles
   useEffect(() => {
     const urls = form.newFiles.map((f) => URL.createObjectURL(f));
@@ -123,6 +149,20 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
   }, [form.newFiles]);
 
   const set = (k, v) => { setForm((p) => ({ ...p, [k]: v })); setErrors((p) => ({ ...p, [k]: "" })); };
+
+  // Quand la catégorie change → reset les tailles et mettre le bon type par défaut
+  const handleCategoryChange = (cat) => {
+    const type = CATEGORY_SIZE_TYPE[cat] ?? "numeric";
+    setSizeType(type);
+    set("category", cat);
+    set("sizes", type === "none" ? ["TU"] : []);
+  };
+
+  // Quand le type de taille change manuellement
+  const handleSizeTypeChange = (type) => {
+    setSizeType(type);
+    set("sizes", type === "none" ? ["TU"] : []);
+  };
 
   const toggleSize = (s) =>
     set("sizes", form.sizes.includes(s) ? form.sizes.filter((x) => x !== s) : [...form.sizes, s]);
@@ -146,7 +186,7 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
     if (!form.name.trim())   e.name  = "Requis";
     if (!form.price)         e.price = "Requis";
     if (isNaN(Number(form.price)) || Number(form.price) < 0) e.price = "Prix invalide";
-    if (form.sizes.length === 0) e.sizes = "Choisissez au moins une taille";
+    if (sizeType !== "none" && form.sizes.length === 0) e.sizes = "Choisissez au moins une taille";
     const totalPhotos = form.existingPhotos.length + form.newFiles.length;
     if (totalPhotos === 0) e.photos = "Au moins une photo requise";
     return e;
@@ -238,7 +278,7 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
           {/* Catégorie */}
           <div style={fieldWrap}>
             <label style={labelStyle}>Catégorie *</label>
-            <select value={form.category} onChange={(e) => set("category", e.target.value)}
+            <select value={form.category} onChange={(e) => handleCategoryChange(e.target.value)}
               style={inp({ cursor: "pointer" })}
               onFocus={(e) => (e.target.style.borderColor = "#C9A84C")}
               onBlur={(e) => (e.target.style.borderColor = "#ddd")}
@@ -287,22 +327,51 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
           {/* Tailles */}
           <div style={fieldWrap}>
             <label style={labelStyle}>Tailles disponibles *</label>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {TAILLES.map((s) => {
-                const active = form.sizes.includes(s);
-                return (
-                  <button key={s} type="button" onClick={() => toggleSize(s)} style={{
-                    width: 44, height: 44, border: active ? "2px solid #C9A84C" : "1px solid #ddd",
-                    background: active ? "#C9A84C" : "white",
-                    color: active ? "white" : "#2C2A20",
-                    fontFamily: "'Jost',sans-serif", fontSize: 13, fontWeight: 500,
-                    cursor: "pointer", borderRadius: 6, transition: "all 0.15s",
-                  }}>
-                    {s}
-                  </button>
-                );
-              })}
+
+            {/* Sélecteur de type */}
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
+              {[
+                { key: "numeric", label: "36–52" },
+                { key: "letters", label: "S–XXL" },
+                { key: "kids",    label: "Kids" },
+                { key: "none",    label: "Sans taille" },
+              ].map(({ key, label }) => (
+                <button key={key} type="button" onClick={() => handleSizeTypeChange(key)} style={{
+                  padding: "5px 12px", fontSize: 11, fontFamily: "'Jost',sans-serif", fontWeight: 500,
+                  cursor: "pointer", borderRadius: 20, transition: "all 0.15s",
+                  border: sizeType === key ? "1.5px solid #C9A84C" : "1px solid #ddd",
+                  background: sizeType === key ? "#C9A84C" : "white",
+                  color: sizeType === key ? "white" : "#666",
+                }}>
+                  {label}
+                </button>
+              ))}
             </div>
+
+            {/* Grille des tailles (masquée si "sans taille") */}
+            {sizeType === "none" ? (
+              <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 12, color: "#999", fontStyle: "italic" }}>
+                Taille unique (TU) — aucune sélection nécessaire
+              </p>
+            ) : (
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {TAILLES_PRESETS[sizeType].map((s) => {
+                  const active = form.sizes.includes(s);
+                  return (
+                    <button key={s} type="button" onClick={() => toggleSize(s)} style={{
+                      minWidth: 44, height: 44, padding: "0 8px",
+                      border: active ? "2px solid #C9A84C" : "1px solid #ddd",
+                      background: active ? "#C9A84C" : "white",
+                      color: active ? "white" : "#2C2A20",
+                      fontFamily: "'Jost',sans-serif", fontSize: 12, fontWeight: 500,
+                      cursor: "pointer", borderRadius: 6, transition: "all 0.15s",
+                    }}>
+                      {s}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             {errors.sizes && <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "#e57373", marginTop: 6 }}>{errors.sizes}</p>}
           </div>
 

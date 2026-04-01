@@ -3,6 +3,7 @@ import RamadanDecor from "./RamadanDecor";
 import OrderModal from "./components/OrderModal";
 import { useCart } from "./context/CartContext";
 import AnnouncementBar, { ANNOUNCE_H } from "./components/AnnouncementBar";
+import { supabase } from "./lib/supabase";
 
 const categories = [
   {
@@ -223,10 +224,13 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart }) {
   const [hovered, setHovered] = useState(false);
   const [showMiniPopup, setShowMiniPopup] = useState(false);
   const [popupColorIdx, setPopupColorIdx] = useState(0);
-  const [popupSize, setPopupSize] = useState(cat.sizes?.[0] ?? "TU");
+  const effectiveSizes = group.sizes ?? cat.sizes ?? [];
+  const [popupSize, setPopupSize] = useState(effectiveSizes[0] ?? "TU");
   const [popupError, setPopupError] = useState("");
 
-  const activeSrc = `/photos/${cat.id}/${group.photos[activeIdx]}`;
+  // Support URLs absolues (Supabase) et chemins relatifs (statiques)
+  const photoSrc = (photo) => photo.startsWith("http") ? photo : `/photos/${cat.id}/${photo}`;
+  const activeSrc = photoSrc(group.photos[activeIdx]);
 
   const handleAddToCart = () => {
     if (group.photos.length > 1 && popupColorIdx === null) {
@@ -236,8 +240,8 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart }) {
     setPopupError("");
     onAddToCart({
       name: group.label,
-      price: cat.price,
-      img: `/photos/${cat.id}/${group.photos[popupColorIdx ?? 0]}`,
+      price: group.price ?? cat.price,
+      img: photoSrc(group.photos[popupColorIdx ?? 0]),
       category: cat.label,
       size: popupSize,
       colorIdx: popupColorIdx ?? 0,
@@ -309,7 +313,7 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart }) {
                 }}
               >
                 <img
-                  src={`/photos/${cat.id}/${photo}`}
+                  src={photoSrc(photo)}
                   loading="lazy" alt=""
                   style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%", display: "block" }}
                 />
@@ -322,7 +326,7 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart }) {
         <div style={{ marginTop: "auto" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
             <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 18, fontWeight: 700, color: "var(--gold)" }}>
-              {cat.price} ت.د
+              {group.price ?? cat.price} ت.د
             </span>
           </div>
           <div style={{ display: "flex", gap: 6 }}>
@@ -330,7 +334,7 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart }) {
             <button
               onClick={() => {
                 setPopupColorIdx(group.photos.length > 1 ? null : 0);
-                setPopupSize(cat.sizes?.[0] ?? "TU");
+                setPopupSize(effectiveSizes[0] ?? "TU");
                 setPopupError("");
                 setShowMiniPopup(true);
               }}
@@ -350,12 +354,13 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart }) {
             {/* Bouton Commander */}
             <button
               onClick={() => onOrder({
+                id: group.supabaseId,
                 name: group.label,
-                price: cat.price,
+                price: group.price ?? cat.price,
                 img: activeSrc,
                 category: cat.label,
-                sizes: cat.sizes,
-                desc: cat.desc,
+                sizes: effectiveSizes,
+                desc: group.description ?? cat.desc,
                 photos: group.photos,
                 catId: cat.id,
                 initialColorIdx: activeIdx,
@@ -422,7 +427,7 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart }) {
                         transition: "all 0.15s",
                       }}
                     >
-                      <img src={`/photos/${cat.id}/${photo}`} loading="lazy" alt=""
+                      <img src={photoSrc(photo)} loading="lazy" alt=""
                         style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%", display: "block" }} />
                     </button>
                   ))}
@@ -431,13 +436,13 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart }) {
             )}
 
             {/* Taille */}
-            {cat.sizes && cat.sizes.length > 1 && (
+            {effectiveSizes.length > 1 && (
               <div style={{ marginBottom: 12 }}>
                 <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 6 }}>
                   Taille
                 </p>
                 <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                  {cat.sizes.map(s => (
+                  {effectiveSizes.map(s => (
                     <button key={s} onClick={() => setPopupSize(s)} style={{
                       padding: "5px 12px", fontSize: 11,
                       border: popupSize === s ? "2px solid var(--gold)" : "1px solid #ddd",
@@ -478,7 +483,33 @@ function CategoryGallery({ cat, onBack }) {
   const [orderProduct, setOrderProduct] = useState(null);
   const [toast, setToast] = useState(null);
   const { addItem } = useCart();
-  const groups = productGroups[cat.id] || [];
+
+  // Chargement produits Supabase
+  const [supabaseProducts, setSupabaseProducts] = useState([]);
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase
+        .from("products")
+        .select("*")
+        .eq("category", cat.label)
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+      setSupabaseProducts(data ?? []);
+    };
+    load();
+  }, [cat.label]);
+
+  // Fusion produits statiques + Supabase
+  const staticGroups = productGroups[cat.id] ?? [];
+  const dynamicGroups = supabaseProducts.map(p => ({
+    label: p.name,
+    photos: p.images ?? [],
+    price: p.price,
+    sizes: p.sizes ?? cat.sizes,
+    description: p.description,
+    supabaseId: p.id,
+  })).filter(g => g.photos.length > 0);
+  const groups = [...staticGroups, ...dynamicGroups];
 
   // Filtres
   const [filterSize, setFilterSize] = useState(null);
@@ -487,8 +518,10 @@ function CategoryGallery({ cat, onBack }) {
   const [sortBy, setSortBy] = useState("default");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  // Tailles réellement présentes dans cette catégorie
-  const catSizes = cat.sizes || [];
+  // Tailles réellement présentes dans tous les produits (statiques + Supabase)
+  const SIZE_ORDER = ["XS","S","M","L","XL","XXL","36","38","40","42","44","46","48","50","52","2-3ans","4-5ans","6-7ans","8-9ans","10-11ans","TU"];
+  const allSizes = [...new Set(groups.flatMap(g => g.sizes ?? cat.sizes ?? []))];
+  const catSizes = allSizes.sort((a, b) => SIZE_ORDER.indexOf(a) - SIZE_ORDER.indexOf(b));
 
   const hasActiveFilter = filterSize || priceMin || priceMax || sortBy !== "default";
 
@@ -499,23 +532,23 @@ function CategoryGallery({ cat, onBack }) {
     setSortBy("default");
   };
 
-  // Filtrage
+  // Filtrage (utilise le prix et les tailles propres à chaque groupe)
   let filtered = groups;
   if (filterSize) {
-    filtered = filtered.filter(() => catSizes.includes(filterSize));
+    filtered = filtered.filter(g => (g.sizes ?? cat.sizes ?? []).includes(filterSize));
   }
   if (priceMin) {
-    filtered = filtered.filter(() => cat.price >= Number(priceMin));
+    filtered = filtered.filter(g => (g.price ?? cat.price) >= Number(priceMin));
   }
   if (priceMax) {
-    filtered = filtered.filter(() => cat.price <= Number(priceMax));
+    filtered = filtered.filter(g => (g.price ?? cat.price) <= Number(priceMax));
   }
 
   // Tri
   if (sortBy === "price_asc") {
-    filtered = [...filtered].sort((a, b) => (cat.price - cat.price));
+    filtered = [...filtered].sort((a, b) => (a.price ?? cat.price) - (b.price ?? cat.price));
   } else if (sortBy === "price_desc") {
-    filtered = [...filtered].sort((a, b) => (cat.price - cat.price));
+    filtered = [...filtered].sort((a, b) => (b.price ?? cat.price) - (a.price ?? cat.price));
   } else if (sortBy === "newest") {
     filtered = [...filtered].reverse();
   }
@@ -566,7 +599,7 @@ function CategoryGallery({ cat, onBack }) {
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ width: 32, height: 1, background: "var(--gold)" }} />
           <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "rgba(255,255,255,0.4)", letterSpacing: "2px" }}>
-            {groups.length} article{groups.length > 1 ? "s" : ""} · à partir de {cat.price} ت.د
+            {groups.length} article{groups.length > 1 ? "s" : ""} · à partir de {Math.min(...groups.map(g => g.price ?? cat.price), cat.price)} ت.د
           </span>
         </div>
       </div>

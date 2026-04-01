@@ -28,8 +28,11 @@ export default function OrderModal({ product, onClose }) {
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle");
 
+  const resolvePhoto = (photo) =>
+    photo && photo.startsWith("http") ? photo : `/photos/${product.catId}/${photo}`;
+
   const activeImg = product.photos
-    ? `/photos/${product.catId}/${product.photos[colorIdx ?? 0]}`
+    ? resolvePhoto(product.photos[colorIdx ?? 0])
     : product.img;
 
   const subtotal = product.price * form.qty;
@@ -237,7 +240,7 @@ export default function OrderModal({ product, onClose }) {
                         }}
                       >
                         <img
-                          src={`/photos/${product.catId}/${photo}`}
+                          src={resolvePhoto(photo)}
                           loading="lazy" alt=""
                           style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%", display: "block" }}
                         />
