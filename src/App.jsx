@@ -1663,86 +1663,6 @@ export default function App() {
             </div>
           </section>
 
-          <footer className="footer-wrap" style={{ background: "var(--dark)", color: "white", padding: "60px clamp(20px,4vw,60px) 30px" }}>
-            <div
-              className="footer-grid"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "2fr 1fr 1fr 1fr",
-                gap: 50,
-                maxWidth: 1200,
-                margin: "0 auto",
-                marginBottom: 50,
-              }}
-            >
-              {/* Logo + description */}
-              <div>
-                <img src="/images/logo.png" alt="Basma" style={{ height: 50, marginBottom: 16, filter: "brightness(10)" }} />
-                <p style={{ fontFamily: "'Jost',sans-serif", color: "rgba(255,255,255,0.5)", fontSize: 13, lineHeight: 1.8, fontWeight: 300 }}>
-                  Mode élégante pour femme. Abayas, robes et ensembles de qualité, confectionnés avec des tissus nobles et un savoir-faire artisanal.
-                </p>
-              </div>
-
-              {/* Boutique */}
-              <div>
-                <h4 style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "2.5px", textTransform: "uppercase", color: "var(--gold)", marginBottom: 20, fontWeight: 600 }}>
-                  Boutique
-                </h4>
-                {["Abaya", "Jiba", "Pyjama", "Robe", "Set", "Sac", "Manteau", "Kids"].map((item) => (
-                  <p key={item} style={{ fontFamily: "'Jost',sans-serif", color: "rgba(255,255,255,0.5)", fontSize: 13, marginBottom: 10, fontWeight: 300, cursor: "pointer" }}>
-                    {item}
-                  </p>
-                ))}
-              </div>
-
-              {/* Service */}
-              <div>
-                <h4 style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "2.5px", textTransform: "uppercase", color: "var(--gold)", marginBottom: 20, fontWeight: 600 }}>
-                  Service
-                </h4>
-                {["Livraison gratuite", "Paiement à la livraison", "Échange & retour", "Nous contacter"].map((item) => (
-                  <p key={item} style={{ fontFamily: "'Jost',sans-serif", color: "rgba(255,255,255,0.5)", fontSize: 13, marginBottom: 10, fontWeight: 300 }}>
-                    {item}
-                  </p>
-                ))}
-              </div>
-
-              {/* Suivez-nous */}
-              <div>
-                <h4 style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "2.5px", textTransform: "uppercase", color: "var(--gold)", marginBottom: 20, fontWeight: 600 }}>
-                  Suivez-nous
-                </h4>
-                {[
-                  { label: "Instagram", href: "https://www.instagram.com/basma_onlyshop/" },
-                  { label: "Facebook",  href: "https://www.facebook.com/basmaonlyshop" },
-                  { label: "TikTok",    href: "https://www.tiktok.com/@___basmas___" },
-                  { label: "WhatsApp",  href: "https://wa.me/21629930212" },
-                ].map(({ label, href }) => (
-                  <a
-                    key={label}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ display: "block", fontFamily: "'Jost',sans-serif", color: "rgba(255,255,255,0.5)", fontSize: 13, marginBottom: 10, textDecoration: "none", fontWeight: 300, transition: "color 0.2s" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = "var(--gold)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
-                  >
-                    {label}
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            <div className="footer-bottom" style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 24, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10, maxWidth: 1200, margin: "0 auto" }}>
-              <p style={{ fontFamily: "'Jost',sans-serif", color: "rgba(255,255,255,0.3)", fontSize: 12 }}>
-                © 2026 Basma Only Shop. Tous droits réservés.
-              </p>
-              <p style={{ fontFamily: "'Jost',sans-serif", color: "rgba(255,255,255,0.3)", fontSize: 12 }}>
-                Fait avec ♥ en Tunisie
-              </p>
-            </div>
-          </footer>
-
           {orderProduct && <OrderModal product={orderProduct} onClose={() => setOrderProduct(null)} />}
 
           {showProduct && (
@@ -1896,6 +1816,89 @@ export default function App() {
             </div>
           )}
         </>
+      )}
+
+      {/* ── Footer global (toutes les pages sauf admin) ── */}
+      {page !== "admin" && (
+        <footer className="footer-wrap" style={{ background: "var(--dark)", color: "white", padding: "60px clamp(20px,4vw,60px) 30px" }}>
+          <div
+            className="footer-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "2fr 1fr 1fr 1fr",
+              gap: 50,
+              maxWidth: 1200,
+              margin: "0 auto",
+              marginBottom: 50,
+            }}
+          >
+            {/* Logo + description */}
+            <div>
+              <img src="/images/logo.png" alt="Basma" style={{ height: 50, marginBottom: 16, filter: "brightness(10)" }} />
+              <p style={{ fontFamily: "'Jost',sans-serif", color: "rgba(255,255,255,0.5)", fontSize: 13, lineHeight: 1.8, fontWeight: 300 }}>
+                Mode élégante pour femme. Abayas, robes et ensembles de qualité, confectionnés avec des tissus nobles et un savoir-faire artisanal.
+              </p>
+            </div>
+
+            {/* Boutique */}
+            <div>
+              <h4 style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "2.5px", textTransform: "uppercase", color: "var(--gold)", marginBottom: 20, fontWeight: 600 }}>
+                Boutique
+              </h4>
+              {["Abaya", "Jiba", "Pyjama", "Robe", "Set", "Sac", "Manteau", "Kids"].map((item) => (
+                <p key={item} style={{ fontFamily: "'Jost',sans-serif", color: "rgba(255,255,255,0.5)", fontSize: 13, marginBottom: 10, fontWeight: 300, cursor: "pointer" }}>
+                  {item}
+                </p>
+              ))}
+            </div>
+
+            {/* Service */}
+            <div>
+              <h4 style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "2.5px", textTransform: "uppercase", color: "var(--gold)", marginBottom: 20, fontWeight: 600 }}>
+                Service
+              </h4>
+              {["Livraison gratuite", "Paiement à la livraison", "Échange & retour", "Nous contacter"].map((item) => (
+                <p key={item} style={{ fontFamily: "'Jost',sans-serif", color: "rgba(255,255,255,0.5)", fontSize: 13, marginBottom: 10, fontWeight: 300 }}>
+                  {item}
+                </p>
+              ))}
+            </div>
+
+            {/* Suivez-nous */}
+            <div>
+              <h4 style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "2.5px", textTransform: "uppercase", color: "var(--gold)", marginBottom: 20, fontWeight: 600 }}>
+                Suivez-nous
+              </h4>
+              {[
+                { label: "Instagram", href: "https://www.instagram.com/basma_onlyshop/" },
+                { label: "Facebook",  href: "https://www.facebook.com/basmaonlyshop" },
+                { label: "TikTok",    href: "https://www.tiktok.com/@___basmas___" },
+                { label: "WhatsApp",  href: "https://wa.me/21629930212" },
+              ].map(({ label, href }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ display: "block", fontFamily: "'Jost',sans-serif", color: "rgba(255,255,255,0.5)", fontSize: 13, marginBottom: 10, textDecoration: "none", fontWeight: 300, transition: "color 0.2s" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "var(--gold)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
+                >
+                  {label}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <div className="footer-bottom" style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 24, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10, maxWidth: 1200, margin: "0 auto" }}>
+            <p style={{ fontFamily: "'Jost',sans-serif", color: "rgba(255,255,255,0.3)", fontSize: 12 }}>
+              © 2026 Basma Only Shop. Tous droits réservés.
+            </p>
+            <p style={{ fontFamily: "'Jost',sans-serif", color: "rgba(255,255,255,0.3)", fontSize: 12 }}>
+              Made with ♥ Medya
+            </p>
+          </div>
+        </footer>
       )}
 
       {/* ── Cart drawer (global, shown above all pages) ── */}

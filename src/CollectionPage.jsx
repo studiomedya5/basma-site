@@ -528,7 +528,7 @@ function CategoryGallery({ cat, onBack }) {
 
   const labelStyle = {
     fontFamily: "'Jost',sans-serif", fontSize: 10, letterSpacing: "1.5px",
-    textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 6, display: "block",
+    textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 0, display: "block",
   };
 
   return (
@@ -552,17 +552,17 @@ function CategoryGallery({ cat, onBack }) {
       )}
 
       {/* Header */}
-      <div className="cat-gallery-header" style={{ background: "linear-gradient(135deg, var(--dark) 0%, #3D3328 100%)", padding: "50px clamp(20px,4vw,60px) 44px" }}>
+      <div className="cat-gallery-header" style={{ background: "linear-gradient(135deg, var(--dark) 0%, #3D3328 100%)", padding: "22px clamp(20px,4vw,60px) 18px" }}>
         <button onClick={onBack} style={{
           display: "flex", alignItems: "center", gap: 8, background: "none", border: "none",
           cursor: "pointer", fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "2px",
-          textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 28,
+          textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 12,
         }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="15 18 9 12 15 6" /></svg>
           Collection
         </button>
-        <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "3px", textTransform: "uppercase", color: "var(--gold)", marginBottom: 12 }}>✦ Basma Only Shop</p>
-        <h2 style={{ color: "white", fontSize: "clamp(28px,4vw,46px)", fontWeight: 300, letterSpacing: "-0.5px", marginBottom: 10 }}>{cat.label}</h2>
+        <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, letterSpacing: "3px", textTransform: "uppercase", color: "var(--gold)", marginBottom: 6 }}>✦ Basma Only Shop</p>
+        <h2 style={{ color: "white", fontSize: "clamp(22px,3vw,32px)", fontWeight: 300, letterSpacing: "-0.5px", marginBottom: 6 }}>{cat.label}</h2>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ width: 32, height: 1, background: "var(--gold)" }} />
           <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "rgba(255,255,255,0.4)", letterSpacing: "2px" }}>
@@ -597,21 +597,21 @@ function CategoryGallery({ cat, onBack }) {
 
         {/* Contenu filtres — toujours visible desktop, togglé mobile */}
         <div className={`filter-bar-content${filtersOpen ? " filter-open" : ""}`} style={{
-          display: "flex", alignItems: "flex-end", gap: 20, flexWrap: "wrap",
-          padding: "18px 0", maxWidth: 1300, margin: "0 auto",
+          display: "flex", alignItems: "center", gap: 14, flexWrap: "nowrap",
+          padding: "8px 0", maxWidth: 1300, margin: "0 auto",
         }}>
           {/* Filtre taille */}
-          <div style={{ flex: "1 1 auto" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
             <span style={labelStyle}>Taille</span>
-            <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
               {catSizes.map(s => (
                 <button key={s} onClick={() => setFilterSize(filterSize === s ? null : s)} style={{
-                  padding: "6px 14px", fontSize: 11,
+                  padding: "4px 10px", fontSize: 10,
                   background: filterSize === s ? "#C9A84C" : "white",
                   color: filterSize === s ? "white" : "#2C2A20",
                   border: `1.5px solid ${filterSize === s ? "#C9A84C" : "rgba(200,149,108,0.4)"}`,
                   fontFamily: "'Jost',sans-serif", fontWeight: 500, cursor: "pointer",
-                  borderRadius: 2, transition: "all 0.15s",
+                  borderRadius: 2, transition: "all 0.15s", height: 24, boxSizing: "border-box",
                 }}>
                   {s}
                 </button>
@@ -619,75 +619,63 @@ function CategoryGallery({ cat, onBack }) {
             </div>
           </div>
 
+          <div style={{ flex: 1 }} />
+
+          <div style={{ width: 1, height: 20, background: "rgba(200,149,108,0.2)", flexShrink: 0 }} />
+
           {/* Filtre prix */}
-          <div style={{ flex: "0 0 auto" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
             <span style={labelStyle}>Prix (DT)</span>
-            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
               <input
-                type="number"
+                type="text"
                 value={priceMin}
                 onChange={e => setPriceMin(e.target.value)}
-                placeholder="Min"
-                style={{
-                  width: 70, padding: "7px 10px", fontSize: 12,
-                  border: "1.5px solid rgba(200,149,108,0.4)", borderRadius: 2,
-                  fontFamily: "'Jost',sans-serif", outline: "none", background: "white",
-                  color: "#2C2A20",
-                }}
+                placeholder="min"
+                style={{ width: 44, padding: "4px 6px", fontSize: 9, border: "1.5px solid rgba(200,149,108,0.4)", borderRadius: 2, fontFamily: "'Jost',sans-serif", outline: "none", background: "white", color: "#2C2A20", height: 24, boxSizing: "border-box" }}
                 onFocus={e => e.target.style.borderColor = "#C9A84C"}
                 onBlur={e => e.target.style.borderColor = "rgba(200,149,108,0.4)"}
               />
-              <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "var(--text-muted)" }}>—</span>
+              <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 9, color: "var(--text-muted)" }}>—</span>
               <input
-                type="number"
+                type="text"
                 value={priceMax}
                 onChange={e => setPriceMax(e.target.value)}
-                placeholder="Max"
-                style={{
-                  width: 70, padding: "7px 10px", fontSize: 12,
-                  border: "1.5px solid rgba(200,149,108,0.4)", borderRadius: 2,
-                  fontFamily: "'Jost',sans-serif", outline: "none", background: "white",
-                  color: "#2C2A20",
-                }}
+                placeholder="max"
+                style={{ width: 44, padding: "4px 6px", fontSize: 9, border: "1.5px solid rgba(200,149,108,0.4)", borderRadius: 2, fontFamily: "'Jost',sans-serif", outline: "none", background: "white", color: "#2C2A20", height: 24, boxSizing: "border-box" }}
                 onFocus={e => e.target.style.borderColor = "#C9A84C"}
                 onBlur={e => e.target.style.borderColor = "rgba(200,149,108,0.4)"}
               />
             </div>
           </div>
 
+          <div style={{ width: 1, height: 20, background: "rgba(200,149,108,0.2)", flexShrink: 0 }} />
+
           {/* Tri */}
-          <div style={{ flex: "0 0 auto" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
             <span style={labelStyle}>Trier par</span>
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value)}
-              style={{
-                padding: "7px 28px 7px 10px", fontSize: 12,
-                border: "1.5px solid rgba(200,149,108,0.4)", borderRadius: 2,
-                fontFamily: "'Jost',sans-serif", outline: "none", background: "white",
-                color: "#2C2A20", cursor: "pointer",
-                appearance: "none",
-                backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23C9A84C' stroke-width='1.5'/%3E%3C/svg%3E")`,
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "right 10px center",
-              }}
+              style={{ padding: "4px 20px 4px 6px", fontSize: 9, border: "1.5px solid rgba(200,149,108,0.4)", borderRadius: 2, fontFamily: "'Jost',sans-serif", outline: "none", background: "white", color: "#2C2A20", cursor: "pointer", height: 24, boxSizing: "border-box", appearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg width='8' height='5' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23C9A84C' stroke-width='1.5'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 5px center" }}
             >
-              <option value="default">Par défaut</option>
-              <option value="price_asc">Prix croissant</option>
-              <option value="price_desc">Prix décroissant</option>
-              <option value="newest">Nouveautés</option>
+              <option value="default">par défaut</option>
+              <option value="price_asc">prix croissant</option>
+              <option value="price_desc">prix décroissant</option>
+              <option value="newest">nouveautés</option>
             </select>
           </div>
 
           {/* Réinitialiser */}
           {hasActiveFilter && (
             <button onClick={resetFilters} style={{
-              padding: "7px 16px", fontSize: 11,
+              padding: "4px 10px", fontSize: 10,
               background: "none", color: "#e57373",
               border: "1.5px solid #e57373", cursor: "pointer",
               fontFamily: "'Jost',sans-serif", fontWeight: 500,
               borderRadius: 2, display: "flex", alignItems: "center", gap: 5,
-              transition: "all 0.15s", alignSelf: "flex-end",
+              transition: "all 0.15s",
+              height: 24, boxSizing: "border-box", flexShrink: 0,
             }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
