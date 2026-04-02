@@ -714,16 +714,23 @@ html, body {
     width: 100vw !important;
     max-height: 100dvh !important;
     border-radius: 0 !important;
-    overflow-y: auto !important;
+    overflow: hidden !important;
   }
   .order-modal-photo {
     flex: 0 0 auto !important;
-    min-height: unset !important;
-    max-height: 50vw !important;
+    height: 52vw !important;
+    min-height: 200px !important;
+    max-height: 280px !important;
     width: 100% !important;
   }
-  .order-modal-form  { padding: 16px 14px !important; }
-  .order-form-row    { flex-direction: column !important; gap: 10px !important; }
+  .order-modal-form {
+    padding: 16px 16px 24px !important;
+    overflow-y: auto !important;
+    flex: 1 !important;
+  }
+  .order-form-row        { flex-direction: column !important; gap: 10px !important; }
+  .order-modal-back-btn  { display: flex !important; }
+  .order-modal-close-btn { display: none !important; }
 
   /* ── Product detail modal ── */
   .product-modal-inner {
@@ -754,7 +761,8 @@ html, body {
   /* ── Boutons fixes (mute, whatsapp, scroll-top) ── */
   .mute-btn { bottom: 16px !important; left: 10px !important; width: 36px !important; height: 36px !important; }
   .fixed-btn-right { right: 10px !important; width: 36px !important; height: 36px !important; }
-  .scroll-top-btn { bottom: 62px !important; right: 10px !important; width: 36px !important; height: 36px !important; }
+  .wa-btn         { right: 10px !important; bottom: 16px !important; width: 34px !important; height: 34px !important; }
+  .scroll-top-btn { bottom: 58px !important; right: 10px !important; width: 34px !important; height: 34px !important; }
 
   /* ── Search bar ── */
   .search-input-wrap {
@@ -810,7 +818,7 @@ html, body {
     gap: 10px !important;
   }
   .footer-grid { gap: 16px !important; }
-  .order-modal-photo { max-height: 44vw !important; }
+  .order-modal-photo { max-height: 260px !important; }
   .hero-grid > div:first-child { padding: 6px 10px 4px !important; }
   .hero-title { font-size: clamp(16px, 5vw, 22px) !important; }
   .hero-section { padding-top: 88px !important; }

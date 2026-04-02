@@ -1042,13 +1042,14 @@ export default function App() {
         </svg>
       </a>
 
+      {/* Bouton scroll-to-top uniquement sur la home (les autres pages ont le leur) */}
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         title="Retour en haut"
         className="scroll-top-btn"
         style={{
           position: "fixed",
-          bottom: 90,
+          bottom: 74,
           right: 24,
           zIndex: 900,
           width: 42,
@@ -1064,9 +1065,9 @@ export default function App() {
           WebkitBackdropFilter: "blur(8px)", backdropFilter: "blur(8px)",
           transition: "all 0.35s cubic-bezier(0.25,0.46,0.45,0.94)",
           color: "var(--gold)",
-          opacity: showTop ? 1 : 0,
-          transform: showTop ? "translateY(0) scale(1)" : "translateY(14px) scale(0.8)",
-          pointerEvents: showTop ? "auto" : "none",
+          opacity: showTop && page === "home" ? 1 : 0,
+          transform: showTop && page === "home" ? "translateY(0) scale(1)" : "translateY(14px) scale(0.8)",
+          pointerEvents: showTop && page === "home" ? "auto" : "none",
         }}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

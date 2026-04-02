@@ -834,7 +834,7 @@ export default function CollectionPage({ onBack, initialCategory }) {
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         style={{
-          position: "fixed", bottom: 90, right: 24, zIndex: 900,
+          position: "fixed", bottom: 74, right: 24, zIndex: 900,
           width: 42, height: 42, borderRadius: "50%",
           background: "rgba(250,247,242,0.92)", border: "1px solid rgba(200,149,108,0.3)",
           display: "flex", alignItems: "center", justifyContent: "center",
