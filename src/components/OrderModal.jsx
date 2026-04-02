@@ -77,6 +77,14 @@ export default function OrderModal({ product, onClose }) {
     }
     if (error) { console.error(error); setStatus("error"); return; }
     setStatus("success");
+    if (window.fbq) {
+      window.fbq('track', 'Purchase', {
+        value: totalPrice,
+        currency: 'TND',
+        content_name: product.name,
+        content_type: 'product'
+      });
+    }
 
     fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-order-email`, {
       method:"POST",
