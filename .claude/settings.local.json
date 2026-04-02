@@ -19,7 +19,11 @@
       "Bash(node -e \"const {createClient} = require\\(''./node_modules/@supabase/supabase-js''\\); try { const c = createClient\\(''https://tpvumzwkekuyrggllffj.supabase.co'', ''sb_publishable_F1xoahP24AUPBtHvZs3TpQ_fwQzsMLR''\\); console.log\\(''OK''\\); } catch\\(e\\) { console.error\\(''ERROR:'', e.message\\); }\")",
       "Bash(supabase --version)",
       "Bash(npx supabase:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(git add:*)",
+      "Bash(git rm:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)"
     ]
   }
 }
