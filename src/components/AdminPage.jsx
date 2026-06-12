@@ -682,13 +682,21 @@ export default function AdminPage({ onBack }) {
     setError(null);
 
     // Charger commandes + produits en parallèle
+    // NB : pas de join FK products(images) ici — il casse si la relation
+    // n'est pas détectée par PostgREST. On résout la photo via le fallback
+    // par nom de produit ci-dessous (plus robuste).
     const [ordersRes, productsRes] = await Promise.all([
-      supabase.from("orders").select("*, products(images)").order("created_at", { ascending: false }),
+      supabase.from("orders").select("*").order("created_at", { ascending: false }),
       supabase.from("products").select("id, name, images"),
     ]);
 
     if (ordersRes.error) {
-      setError("Impossible de charger les commandes. Vérifiez les politiques RLS Supabase.");
+      console.error("Erreur chargement commandes :", ordersRes.error);
+      setError(
+        "Impossible de charger les commandes : " +
+        (ordersRes.error.message || "erreur inconnue") +
+        ". Vérifiez les politiques RLS de la table orders dans Supabase."
+      );
       setLoading(false);
       return;
     }
@@ -701,16 +709,15 @@ export default function AdminPage({ onBack }) {
 
     // Résoudre la photo pour chaque commande
     const enriched = (ordersRes.data ?? []).map(o => {
-      // 1. Photo via join (product_id existe)
-      let photo = o.products?.images?.[0] ?? null;
+      let photo = null;
 
-      // 2. Fallback : chercher par nom dans la table products
-      if (!photo && o.product_name) {
+      // 1. Chercher par nom dans la table products
+      if (o.product_name) {
         const match = productsByName[o.product_name.toLowerCase()];
         if (match?.images?.[0]) photo = match.images[0];
       }
 
-      // 3. Fallback : photo statique par catégorie (noms du catalogue)
+      // 2. Fallback : photo statique par catégorie (noms du catalogue)
       if (!photo) photo = guessStaticPhoto(o.product_name);
 
       return { ...o, _photo: photo };
