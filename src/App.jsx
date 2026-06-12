@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "./lib/supabase";
 import CollectionPage from "./CollectionPage";
 import ContactPage from "./ContactPage";
-import RamadanDecor from "./RamadanDecor";
+import SummerDecor from "./SummerDecor";
 import OrderModal from "./components/OrderModal";
 import AdminPage from "./components/AdminPage";
 import Cart from "./components/Cart";
@@ -709,7 +709,7 @@ function AvisGrid() {
 }
 
 // ─── Homepage Collection Card (avec carrousel) ───────────────
-function CollectionCategoryCard({ cat, delay, onClick }) {
+function CollectionCategoryCard({ cat, delay, onClick, comingSoon }) {
   const [imgIdx, setImgIdx] = useState(0);
   const [hovered, setHovered] = useState(false);
   const pausedRef = useRef(false);
@@ -758,9 +758,35 @@ function CollectionCategoryCard({ cat, delay, onClick }) {
               opacity: i === imgIdx ? 1 : 0,
               transition: "opacity 1.2s cubic-bezier(0.4,0,0.2,1)",
               zIndex: i === imgIdx ? 2 : 1,
+              filter: comingSoon ? "grayscale(0.55) brightness(0.9)" : "none",
             }}
           />
         ))}
+
+        {/* Voile + badge Coming Soon */}
+        {comingSoon && (
+          <div style={{
+            position: "absolute", inset: 0, zIndex: 6,
+            background: "rgba(20,14,8,0.42)",
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+            gap: 8, pointerEvents: "none",
+          }}>
+            <span style={{
+              fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "3px",
+              textTransform: "uppercase", color: "white",
+              border: "1px solid rgba(255,255,255,0.7)", padding: "8px 18px",
+              background: "rgba(201,168,76,0.85)",
+            }}>
+              Coming Soon
+            </span>
+            <span style={{
+              fontFamily: "'Jost',sans-serif", fontSize: 10, letterSpacing: "1.5px",
+              color: "rgba(255,255,255,0.85)",
+            }}>
+              Bientôt disponible
+            </span>
+          </div>
+        )}
 
         {/* Navigation dots */}
         <div style={{
@@ -804,12 +830,18 @@ function CollectionCategoryCard({ cat, delay, onClick }) {
             {cat.label}
           </span>
           <span style={{ display: "block", fontFamily: "'Jost',sans-serif", fontSize: 11, color: "var(--text-muted)", letterSpacing: "0.5px" }}>
-            À partir de
+            {comingSoon ? "Nouvelle collection" : "À partir de"}
           </span>
         </div>
-        <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 18, fontWeight: 700, color: "var(--gold)", whiteSpace: "nowrap" }}>
-          {cat.price} ت.د
-        </span>
+        {comingSoon ? (
+          <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, fontWeight: 600, color: "var(--gold)", letterSpacing: "1.5px", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+            Bientôt
+          </span>
+        ) : (
+          <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 18, fontWeight: 700, color: "var(--gold)", whiteSpace: "nowrap" }}>
+            {cat.price} ت.د
+          </span>
+        )}
       </div>
     </div>
   );
@@ -818,6 +850,7 @@ function CollectionCategoryCard({ cat, delay, onClick }) {
 // ─── Main App ───────────────────────────────────────────────
 export default function App() {
   const [products, setProducts] = useState([]);
+  const [productsLoaded, setProductsLoaded] = useState(false);
   const [page, setPage] = useState(() =>
     window.location.pathname === "/admin" ? "admin" : DEEP_LINK ? "collection" : "home"
   );
@@ -873,6 +906,7 @@ export default function App() {
           sizes: p.sizes ?? ["S", "M", "L", "XL"],
         }))
       );
+      setProductsLoaded(true);
     };
 
     loadProducts();
@@ -905,6 +939,16 @@ export default function App() {
     document.addEventListener("click", play, { once: true });
     return () => document.removeEventListener("click", play);
   }, []);
+
+  // Catégories ayant au moins un produit actif (tri + "Coming Soon")
+  const activeCatLabels = new Set(
+    products.filter((p) => p.is_active).map((p) => p.category)
+  );
+  const sortedCollectionCats = [...COLLECTION_CATEGORIES].sort((a, b) => {
+    const ax = activeCatLabels.has(a.label) ? 0 : 1;
+    const bx = activeCatLabels.has(b.label) ? 0 : 1;
+    return ax - bx;
+  });
 
   const filtered = products
     .filter((p) => activeCategory === "Tout" || p.tag === activeCategory)
@@ -1104,7 +1148,7 @@ export default function App() {
         </SwipeBack>
       ) : (
         <>
-          <RamadanDecor />
+          <SummerDecor />
 
           {notification && (
             <div
@@ -1374,7 +1418,7 @@ export default function App() {
                     fontWeight: 500,
                   }}
                 >
-                  ✦ Collection Exclusive 2026
+                  ✦ Collection Été 2026
                 </p>
 
                 <h1
@@ -1472,7 +1516,7 @@ export default function App() {
                       Nouveauté
                     </p>
                     <p style={{ fontSize: 17, fontWeight: 600, letterSpacing: "-0.3px" }}>
-                      Ramadan 2026
+                      Été 2026
                     </p>
                   </div>
                 </div>
@@ -1498,11 +1542,12 @@ export default function App() {
             </div>
 
             <div className="sq-grid">
-              {COLLECTION_CATEGORIES.map((cat, i) => (
+              {sortedCollectionCats.map((cat, i) => (
                 <CollectionCategoryCard
                   key={cat.id}
                   cat={cat}
                   delay={i}
+                  comingSoon={productsLoaded && !activeCatLabels.has(cat.label)}
                   onClick={() => {
                     setCollectionTarget(cat.id);
                     setPage("collection");

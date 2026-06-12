@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import RamadanDecor from "./RamadanDecor";
+import SummerDecor from "./SummerDecor";
 import OrderModal from "./components/OrderModal";
 import ProductDetailModal from "./components/ProductDetailModal";
 import { useCart } from "./context/CartContext";
@@ -144,7 +144,7 @@ const productGroups = {
 };
 
 // ── Square category card ──────────────────────────────────────
-function CategoryCard({ cat, onClick, delay }) {
+function CategoryCard({ cat, onClick, delay, comingSoon }) {
   const [hovered, setHovered] = useState(false);
   const src0 = `/photos/${cat.id}/${cat.photos[0]}`;
   const src1 = `/photos/${cat.id}/${cat.photos[1] ?? cat.photos[0]}`;
@@ -165,13 +165,41 @@ function CategoryCard({ cat, onClick, delay }) {
 
       {/* ── Photo zone ── */}
       <div className="sq-card" style={{ margin: 0 }}>
-        <img src={src0} alt="" loading="lazy" className="sq-img sq-img-a" style={{ opacity: hovered ? 0 : 1 }} />
-        <img src={src1} alt="" loading="lazy" className="sq-img sq-img-b" style={{ opacity: hovered ? 1 : 0 }} />
+        <img src={src0} alt="" loading="lazy" className="sq-img sq-img-a"
+          style={{ opacity: hovered ? 0 : 1, filter: comingSoon ? "grayscale(0.55) brightness(0.9)" : "none" }} />
+        <img src={src1} alt="" loading="lazy" className="sq-img sq-img-b"
+          style={{ opacity: hovered ? 1 : 0, filter: comingSoon ? "grayscale(0.55) brightness(0.9)" : "none" }} />
         <div style={{
           position: "absolute", bottom: 0, left: 0, right: 0, height: "28%",
           background: "linear-gradient(transparent, rgba(0,0,0,0.18))",
           zIndex: 3, pointerEvents: "none",
         }} />
+
+        {/* ── Voile + badge Coming Soon ── */}
+        {comingSoon && (
+          <div style={{
+            position: "absolute", inset: 0, zIndex: 6,
+            background: "rgba(20,14,8,0.42)",
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+            gap: 8, pointerEvents: "none",
+          }}>
+            <span style={{
+              fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "3px",
+              textTransform: "uppercase", color: "white",
+              border: "1px solid rgba(255,255,255,0.7)", padding: "8px 18px",
+              background: "rgba(201,168,76,0.85)",
+            }}>
+              Coming Soon
+            </span>
+            <span style={{
+              fontFamily: "'Jost',sans-serif", fontSize: 10, letterSpacing: "1.5px",
+              color: "rgba(255,255,255,0.85)",
+            }}>
+              Bientôt disponible
+            </span>
+          </div>
+        )}
+
         <div style={{
           position: "absolute", bottom: 0, left: 0, height: 2,
           background: "var(--gold)", zIndex: 5,
@@ -207,15 +235,27 @@ function CategoryCard({ cat, onClick, delay }) {
             fontSize: 11,
             color: "var(--text-muted)",
             letterSpacing: "0.5px",
-          }}>À partir de</span>
+          }}>{comingSoon ? "Nouvelle collection" : "À partir de"}</span>
         </div>
-        <span style={{
-          fontFamily: "'Jost', sans-serif",
-          fontSize: 18,
-          fontWeight: 700,
-          color: "var(--gold)",
-          whiteSpace: "nowrap",
-        }}>{cat.price} ت.د</span>
+        {comingSoon ? (
+          <span style={{
+            fontFamily: "'Jost', sans-serif",
+            fontSize: 11,
+            fontWeight: 600,
+            color: "var(--gold)",
+            letterSpacing: "1.5px",
+            textTransform: "uppercase",
+            whiteSpace: "nowrap",
+          }}>Bientôt</span>
+        ) : (
+          <span style={{
+            fontFamily: "'Jost', sans-serif",
+            fontSize: 18,
+            fontWeight: 700,
+            color: "var(--gold)",
+            whiteSpace: "nowrap",
+          }}>{cat.price} ت.د</span>
+        )}
       </div>
     </div>
   );
@@ -888,6 +928,20 @@ export default function CollectionPage({ onBack, initialCategory, initialProduct
   // Clé produit issue d'un lien partagé (consommée une fois ouverte)
   const [pendingProductKey, setPendingProductKey] = useState(initialProductKey || null);
 
+  // Catégories ayant au moins un produit actif (pour tri + "Coming Soon")
+  const [activeCats, setActiveCats] = useState(null); // null = en cours de chargement
+  useEffect(() => {
+    supabase.from("products").select("category").eq("is_active", true)
+      .then(({ data }) => setActiveCats(new Set((data ?? []).map(p => p.category))));
+  }, []);
+
+  // Tri : collections existantes (avec produits) en premier
+  const sortedCategories = [...categories].sort((a, b) => {
+    const ax = activeCats?.has(a.label) ? 0 : 1;
+    const bx = activeCats?.has(b.label) ? 0 : 1;
+    return ax - bx;
+  });
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [selected]);
@@ -901,7 +955,7 @@ export default function CollectionPage({ onBack, initialCategory, initialProduct
   return (
     <div className="collection-page">
       <AnnouncementBar />
-      <RamadanDecor />
+      <SummerDecor />
 
       {/* Nav */}
       <nav style={{
@@ -993,8 +1047,14 @@ export default function CollectionPage({ onBack, initialCategory, initialProduct
             </div>
           </div>
           <div className="sq-grid">
-            {categories.map((cat, i) => (
-              <CategoryCard key={cat.id} cat={cat} delay={i} onClick={() => setSelected(cat.id)} />
+            {sortedCategories.map((cat, i) => (
+              <CategoryCard
+                key={cat.id}
+                cat={cat}
+                delay={i}
+                comingSoon={activeCats !== null && !activeCats.has(cat.label)}
+                onClick={() => setSelected(cat.id)}
+              />
             ))}
           </div>
         </>

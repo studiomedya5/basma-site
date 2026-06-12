@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import RamadanDecor from "./RamadanDecor";
+import SummerDecor from "./SummerDecor";
 import AnnouncementBar, { ANNOUNCE_H } from "./components/AnnouncementBar";
 
 const CloseIcon = () => (
@@ -59,7 +59,7 @@ export default function ContactPage({ onBack }) {
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, var(--cream) 0%, #F5EDE4 50%, #EDE3D8 100%)", position: "relative" }}>
       <AnnouncementBar />
-      <RamadanDecor />
+      <SummerDecor />
 
       {/* ── Header / Nav ── */}
       <header style={{
