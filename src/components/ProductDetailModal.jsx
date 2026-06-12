@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { fbTrack } from "../lib/pixel";
 
 const GOLD = "#C9A84C";
 const DARK = "#2C2A20";
@@ -31,6 +32,16 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
     window.addEventListener("resize", h);
     return () => window.removeEventListener("resize", h);
   }, []);
+
+  // Pixel : vue produit (étape du tunnel pour la campagne Vente)
+  useEffect(() => {
+    fbTrack("ViewContent", {
+      content_name: product.label,
+      content_category: product.category,
+      content_type: "product",
+      value: product.price,
+    });
+  }, [product.label, product.category, product.price]);
 
   // Gère l'URL : /produit/<clé> à l'ouverture, restaure à la fermeture
   useEffect(() => {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
+import { fbTrack } from "../lib/pixel";
 
 const GOUVERNORATS = [
   "Ariana","Béja","Ben Arous","Bizerte","Gabès","Gafsa","Jendouba",
@@ -37,6 +38,16 @@ export default function OrderModal({ product, onClose }) {
     window.addEventListener("resize", h);
     return () => window.removeEventListener("resize", h);
   }, []);
+
+  // Pixel : début de commande (étape clé du tunnel Vente)
+  useEffect(() => {
+    fbTrack("InitiateCheckout", {
+      content_name: product.name,
+      content_category: product.category,
+      content_type: "product",
+      value: product.price,
+    });
+  }, [product.name, product.category, product.price]);
 
   const resolvePhoto = (p) => p?.startsWith("http") ? p : `/photos/${product.catId}/${p}`;
   const activeImg    = product.photos ? resolvePhoto(product.photos[colorIdx ?? 0]) : product.img;
@@ -77,14 +88,12 @@ export default function OrderModal({ product, onClose }) {
     }
     if (error) { console.error(error); setStatus("error"); return; }
     setStatus("success");
-    if (window.fbq) {
-      window.fbq('track', 'Purchase', {
-        value: totalPrice,
-        currency: 'TND',
-        content_name: product.name,
-        content_type: 'product'
-      });
-    }
+    fbTrack("Purchase", {
+      value: totalPrice,
+      content_name: product.name,
+      content_category: product.category,
+      content_type: "product",
+    });
 
     fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-order-email`, {
       method:"POST",

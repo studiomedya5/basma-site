@@ -6,6 +6,7 @@ import { useCart } from "./context/CartContext";
 import AnnouncementBar, { ANNOUNCE_H } from "./components/AnnouncementBar";
 import { supabase } from "./lib/supabase";
 import { makeProductKey } from "./lib/productKey";
+import { fbTrack } from "./lib/pixel";
 
 const categories = [
   {
@@ -593,6 +594,12 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
 
   const handleAddToCart = (item) => {
     addItem(item);
+    fbTrack("AddToCart", {
+      content_name: item.name,
+      content_category: item.category,
+      content_type: "product",
+      value: item.price,
+    });
     setToast(item.name);
     setTimeout(() => setToast(null), 2200);
   };
