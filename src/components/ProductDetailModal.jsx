@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
-import { productUrl } from "../lib/productKey";
 
 const GOLD = "#C9A84C";
 const DARK = "#2C2A20";
 const CREAM = "#FAF9F6";
+
+// Lien Messenger vers la page Basma Only Shop
+const MESSENGER_BASE = "https://m.me/basmaonlyshop";
 
 /* ─────────────────────────────────────────────────────────────
    Fenêtre détail produit (ouverte au clic sur une card).
@@ -22,7 +24,6 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
 
   const [colorIdx, setColorIdx] = useState(product.initialColorIdx ?? 0);
   const [size, setSize] = useState(sizes[0] ?? "TU");
-  const [copied, setCopied] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -59,21 +60,11 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
   const resolvePhoto = (p) => (p?.startsWith("http") ? p : `/photos/${product.catId}/${p}`);
   const activeSrc = resolvePhoto(photos[colorIdx] ?? photos[0]);
 
-  const copyLink = async () => {
-    const url = productUrl(shareKey);
-    try {
-      await navigator.clipboard.writeText(url);
-    } catch {
-      // Fallback navigateurs anciens
-      const ta = document.createElement("textarea");
-      ta.value = url;
-      document.body.appendChild(ta);
-      ta.select();
-      try { document.execCommand("copy"); } catch { /* ignore */ }
-      document.body.removeChild(ta);
-    }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  // Ouvre Messenger vers la page Basma (ref = produit pour le contexte côté page)
+  const openMessenger = () => {
+    const ref = `produit-${shareKey || ""}`.replace(/[^a-zA-Z0-9_-]/g, "");
+    const url = ref ? `${MESSENGER_BASE}?ref=${ref}` : MESSENGER_BASE;
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const handleOrder = () => {
@@ -251,33 +242,25 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
             </button>
           </div>
 
-          {/* ── Copier le lien (pour le sponsoring / Ads Manager) ── */}
-          <button onClick={copyLink} style={{
-            width: "100%", padding: "11px 8px", fontSize: 11,
-            background: copied ? "rgba(46,125,50,0.08)" : CREAM,
-            color: copied ? "#2e7d32" : "var(--text-muted,#777)",
-            border: `1px dashed ${copied ? "#4caf50" : "rgba(200,149,108,0.5)"}`,
+          {/* ── Plus d'info — Envoyer un message sur Messenger ── */}
+          <button onClick={openMessenger} style={{
+            width: "100%", padding: "13px 8px", fontSize: 12,
+            background: CREAM, color: DARK,
+            border: `1.5px solid ${GOLD}`,
             cursor: "pointer", fontFamily: "'Jost',sans-serif", letterSpacing: "1px",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
             transition: "all 0.2s",
-          }}>
-            {copied ? (
-              <>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
-                Lien copié !
-              </>
-            ) : (
-              <>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                </svg>
-                Copier le lien du produit
-              </>
-            )}
+          }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = GOLD; e.currentTarget.style.color = "white"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = CREAM; e.currentTarget.style.color = DARK; }}
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.19 5.44 3.14 7.19.16.14.26.35.27.57l.05 1.78c.03.57.61.94 1.13.71l1.99-.88c.17-.07.36-.09.54-.04 1.03.28 2.12.43 3.27.43 5.64 0 10-4.13 10-9.7C22 6.13 17.64 2 12 2zm6 7.46l-2.94 4.66c-.47.74-1.47.93-2.18.4l-2.34-1.75a.6.6 0 0 0-.72 0l-3.16 2.4c-.42.32-.97-.18-.69-.63l2.94-4.66c.47-.74 1.47-.93 2.18-.4l2.34 1.75a.6.6 0 0 0 .72 0l3.16-2.4c.42-.32.97.18.69.63z" />
+            </svg>
+            Plus d'info — Envoyer un message
           </button>
           <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, color: "#aaa", textAlign: "center", marginTop: 8, letterSpacing: "0.5px" }}>
-            Lien à utiliser dans vos publicités Facebook / Instagram
+            Une question ? Écrivez-nous sur Messenger
           </p>
         </div>
       </div>
