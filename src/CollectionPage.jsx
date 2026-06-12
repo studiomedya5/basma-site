@@ -512,6 +512,7 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
 
   // Chargement produits Supabase
   const [supabaseProducts, setSupabaseProducts] = useState([]);
+  const [loaded, setLoaded] = useState(false);
   useEffect(() => {
     const load = async () => {
       const { data } = await supabase
@@ -521,12 +522,13 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
         .eq("is_active", true)
         .order("created_at", { ascending: false });
       setSupabaseProducts(data ?? []);
+      setLoaded(true);
     };
     load();
   }, [cat.label]);
 
-  // Fusion produits statiques + Supabase
-  const staticGroups = productGroups[cat.id] ?? [];
+  // Uniquement les produits Supabase (les démos statiques sont retirées).
+  // Une catégorie sans produit Supabase affiche "Coming Soon".
   const dynamicGroups = supabaseProducts.map(p => ({
     label: p.name,
     photos: p.images ?? [],
@@ -535,7 +537,10 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
     description: p.description,
     supabaseId: p.id,
   })).filter(g => g.photos.length > 0);
-  const groups = [...staticGroups, ...dynamicGroups];
+  const groups = dynamicGroups;
+
+  // Catégorie sans aucun produit (une fois Supabase chargé) → "Coming Soon"
+  const isEmpty = loaded && groups.length === 0;
 
   // Ouverture automatique du produit depuis un lien partagé (/produit/<clé>)
   useEffect(() => {
@@ -644,11 +649,58 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ width: 32, height: 1, background: "var(--gold)" }} />
           <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "rgba(255,255,255,0.4)", letterSpacing: "2px" }}>
-            {groups.length} article{groups.length > 1 ? "s" : ""} · à partir de {Math.min(...groups.map(g => g.price ?? cat.price), cat.price)} ت.د
+            {!loaded
+              ? "Chargement…"
+              : isEmpty
+                ? "Bientôt disponible"
+                : `${groups.length} article${groups.length > 1 ? "s" : ""} · à partir de ${Math.min(...groups.map(g => g.price ?? cat.price))} ت.د`}
           </span>
         </div>
       </div>
 
+      {isEmpty ? (
+        /* ── Catégorie sans produit : Coming Soon ── */
+        <div style={{
+          minHeight: "46vh", display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center", textAlign: "center",
+          padding: "70px 24px 90px", animation: "fadeUp 0.5s ease",
+        }}>
+          <div style={{ fontSize: 30, color: "var(--gold)", marginBottom: 18, letterSpacing: "4px" }}>✦</div>
+          <p style={{
+            fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "4px",
+            textTransform: "uppercase", color: "var(--gold)", marginBottom: 14,
+          }}>
+            {cat.label}
+          </p>
+          <h3 style={{
+            fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(30px,5vw,46px)",
+            fontWeight: 400, color: "var(--dark)", lineHeight: 1.1, marginBottom: 16,
+          }}>
+            Coming Soon
+          </h3>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+            <div style={{ width: 28, height: 1, background: "rgba(200,149,108,0.5)" }} />
+            <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 12, color: "var(--text-muted)", letterSpacing: "2px" }}>
+              Bientôt disponible
+            </span>
+            <div style={{ width: 28, height: 1, background: "rgba(200,149,108,0.5)" }} />
+          </div>
+          <p style={{
+            fontFamily: "'Jost',sans-serif", fontSize: 13, color: "var(--text-muted)",
+            lineHeight: 1.7, maxWidth: 380, marginBottom: 28,
+          }}>
+            Notre nouvelle collection {cat.label} arrive très prochainement. Reviens vite la découvrir !
+          </p>
+          <button onClick={onBack} style={{
+            padding: "13px 34px", fontSize: 11, background: "var(--dark)", color: "var(--gold)",
+            border: "none", cursor: "pointer", fontFamily: "'Jost',sans-serif",
+            letterSpacing: "2.5px", textTransform: "uppercase",
+          }}>
+            Voir les autres catégories
+          </button>
+        </div>
+      ) : (
+      <>
       {/* ── Barre de filtres ── */}
       <div style={{
         background: "#FAF9F6", borderBottom: "1px solid rgba(200,149,108,0.15)",
@@ -797,6 +849,8 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
           </div>
         )}
       </div>
+      </>
+      )}
 
       {/* Fenêtre détail produit (couleurs + lien partageable) */}
       {detailGroup && (
