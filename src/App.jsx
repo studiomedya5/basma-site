@@ -874,6 +874,39 @@ export default function App() {
   const [orderProduct, setOrderProduct] = useState(null);
   const [collectionTarget, setCollectionTarget] = useState(() => DEEP_LINK ? catIdFromKey(DEEP_LINK) : null);
   const [deepLink, setDeepLink] = useState(DEEP_LINK);
+
+  // ── Intégration de l'historique navigateur ─────────────────
+  // Empêche le bouton "précédent" (et le geste retour mobile) de quitter
+  // le site : chaque navigation pousse une entrée, et "retour" remonte
+  // d'un niveau au lieu de sortir.
+  const pageRef = useRef(page);
+  const collRef = useRef(collectionTarget);
+  useEffect(() => { pageRef.current = page; }, [page]);
+  useEffect(() => { collRef.current = collectionTarget; }, [collectionTarget]);
+
+  const pushTrap = () => window.history.pushState({ basma: true }, "", window.location.pathname);
+  const navHome = () => { setPage("home"); setCollectionTarget(null); setDeepLink(null); };
+  const navCollection = (catId = null) => { setPage("collection"); setCollectionTarget(catId); pushTrap(); };
+  const navContact = () => { setPage("contact"); pushTrap(); };
+  const goBack = () => window.history.back();
+
+  useEffect(() => {
+    const onPop = () => {
+      if (window.__basmaModalOpen) return; // la fenêtre produit gère son propre retour
+      const p = pageRef.current, sel = collRef.current;
+      if (p === "collection" && sel) {
+        setCollectionTarget(null); // catégorie → grille des collections
+        pushTrap();                // on reste dans le site
+      } else if (p === "collection" || p === "contact" || p === "admin") {
+        navHome();                 // grille / contact / admin → accueil
+      }
+      // p === "home" → on laisse le navigateur quitter le site
+    };
+    if (pageRef.current !== "home") pushTrap(); // tampon si on arrive en profondeur
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [showLookbook, setShowLookbook] = useState(false);
   const [lang, setLang] = useState("fr");
 
@@ -993,8 +1026,8 @@ export default function App() {
 
   const navActions = [
     scrollToTop,
-    () => setPage("collection"),
-    () => setPage("contact"),
+    () => navCollection(null),
+    () => navContact(),
   ];
 
   const sliderNext = useCallback(
@@ -1129,22 +1162,20 @@ export default function App() {
       </button>
 
       {page === "admin" ? (
-        <AdminPage onBack={() => { setPage("home"); window.history.pushState({}, "", "/"); }} />
+        <AdminPage onBack={() => { navHome(); window.history.pushState({}, "", "/"); }} />
       ) : page === "collection" ? (
-        <SwipeBack onBack={() => { setPage("home"); setCollectionTarget(null); setDeepLink(null); }}>
+        <SwipeBack onBack={goBack}>
           <CollectionPage
-            onBack={() => {
-              setPage("home");
-              setCollectionTarget(null);
-              setDeepLink(null);
-            }}
-            initialCategory={collectionTarget}
+            onBack={navHome}
+            selected={collectionTarget}
+            onOpenCategory={(catId) => navCollection(catId)}
+            goBack={goBack}
             initialProductKey={deepLink}
           />
         </SwipeBack>
       ) : page === "contact" ? (
-        <SwipeBack onBack={() => setPage("home")}>
-          <ContactPage onBack={() => setPage("home")} />
+        <SwipeBack onBack={goBack}>
+          <ContactPage onBack={navHome} />
         </SwipeBack>
       ) : (
         <>
@@ -1548,10 +1579,7 @@ export default function App() {
                   cat={cat}
                   delay={i}
                   comingSoon={productsLoaded && !activeCatLabels.has(cat.label)}
-                  onClick={() => {
-                    setCollectionTarget(cat.id);
-                    setPage("collection");
-                  }}
+                  onClick={() => navCollection(cat.id)}
                 />
               ))}
             </div>

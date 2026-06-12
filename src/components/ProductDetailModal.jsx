@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { fbTrack } from "../lib/pixel";
 
 const GOLD = "#C9A84C";
@@ -43,18 +43,31 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
     });
   }, [product.label, product.category, product.price]);
 
-  // Gère l'URL : /produit/<clé> à l'ouverture, restaure à la fermeture
+  // onClose à jour sans relancer l'effet d'historique à chaque rendu
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; });
+
+  // Gère l'URL /produit/<clé> + le bouton "précédent" (ferme la fenêtre)
   useEffect(() => {
-    if (!shareKey) return;
-    const prev = window.location.pathname + window.location.search;
-    const target = `/produit/${shareKey}`;
-    if (prev !== target) window.history.pushState({ product: shareKey }, "", target);
+    // Signale aux autres handlers que la fenêtre gère son propre retour
+    window.__basmaModalOpen = true;
+    const onPop = () => onCloseRef.current?.();
+    window.addEventListener("popstate", onPop);
+
+    if (shareKey) {
+      const prev = window.location.pathname + window.location.search;
+      const target = `/produit/${shareKey}`;
+      if (prev !== target) window.history.pushState({ product: shareKey }, "", target);
+    }
     // Empêche le scroll du fond
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+
     return () => {
+      window.__basmaModalOpen = false;
+      window.removeEventListener("popstate", onPop);
       document.body.style.overflow = prevOverflow;
-      // Restaure une URL propre quand on ferme
+      // Restaure une URL propre si on ferme autrement que par "précédent"
       if (window.location.pathname.startsWith("/produit/")) {
         window.history.pushState({}, "", "/");
       }

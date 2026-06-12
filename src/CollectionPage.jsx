@@ -919,8 +919,8 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
 }
 
 // ── Main ──────────────────────────────────────────────────────
-export default function CollectionPage({ onBack, initialCategory, initialProductKey }) {
-  const [selected, setSelected] = useState(initialCategory || null);
+export default function CollectionPage({ onBack, selected, onOpenCategory, goBack, initialProductKey }) {
+  // `selected` (catégorie active) est contrôlé par App pour gérer l'historique.
   const selectedCat = categories.find(c => c.id === selected);
   const [showTop, setShowTop] = useState(false);
   const { count: cartCount, setIsOpen: openCart } = useCart();
@@ -969,7 +969,7 @@ export default function CollectionPage({ onBack, initialCategory, initialProduct
         <div className="nav-links-desktop" style={{ display: "flex", gap: 36, alignItems: "center" }}>
           {[
             { label: "ACCUEIL",    action: onBack },
-            { label: "COLLECTION", action: () => setSelected(null) },
+            { label: "COLLECTION", action: () => { if (selected) goBack(); } },
             { label: "CONTACT",    action: onBack },
           ].map(({ label, action }) => (
             <a key={label} className="nav-link" onClick={action}>{label}</a>
@@ -1000,7 +1000,7 @@ export default function CollectionPage({ onBack, initialCategory, initialProduct
             )}
           </button>
 
-          <button className="coll-back-btn" onClick={selected ? () => setSelected(null) : onBack}>
+          <button className="coll-back-btn" onClick={goBack}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
             {selected ? "Collections" : "Retour"}
           </button>
@@ -1031,7 +1031,7 @@ export default function CollectionPage({ onBack, initialCategory, initialProduct
       {selected && selectedCat ? (
         <CategoryGallery
           cat={selectedCat}
-          onBack={() => setSelected(null)}
+          onBack={goBack}
           openProductKey={pendingProductKey}
           onDeepLinkConsumed={() => setPendingProductKey(null)}
         />
@@ -1053,7 +1053,7 @@ export default function CollectionPage({ onBack, initialCategory, initialProduct
                 cat={cat}
                 delay={i}
                 comingSoon={activeCats !== null && !activeCats.has(cat.label)}
-                onClick={() => setSelected(cat.id)}
+                onClick={() => onOpenCategory(cat.id)}
               />
             ))}
           </div>
