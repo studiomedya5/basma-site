@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import RamadanDecor from "./RamadanDecor";
 import OrderModal from "./components/OrderModal";
+import ProductDetailModal from "./components/ProductDetailModal";
 import { useCart } from "./context/CartContext";
 import AnnouncementBar, { ANNOUNCE_H } from "./components/AnnouncementBar";
 import { supabase } from "./lib/supabase";
+import { makeProductKey } from "./lib/productKey";
 
 const categories = [
   {
@@ -219,7 +221,7 @@ function CategoryCard({ cat, onClick, delay }) {
 }
 
 // ── Product group card (one card per color group) ─────────────
-function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart }) {
+function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpenDetail }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [hovered, setHovered] = useState(false);
   const [showMiniPopup, setShowMiniPopup] = useState(false);
@@ -267,8 +269,11 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart }) {
         position: "relative",
       }}
     >
-      {/* Photo */}
-      <div style={{ overflow: "hidden", aspectRatio: "3/4", position: "relative", flexShrink: 0 }}>
+      {/* Photo — cliquable pour ouvrir le détail produit */}
+      <div
+        onClick={() => onOpenDetail?.(group)}
+        style={{ overflow: "hidden", aspectRatio: "3/4", position: "relative", flexShrink: 0, cursor: "pointer" }}
+      >
         <img
           src={activeSrc}
           alt={group.label}
@@ -280,6 +285,24 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart }) {
           onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.05)"; }}
           onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
         />
+        {/* Indice "voir le produit" au survol */}
+        <div style={{
+          position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
+          background: "linear-gradient(to top, rgba(44,33,23,0.45), transparent 55%)",
+          opacity: hovered ? 1 : 0, transition: "opacity 0.3s ease", pointerEvents: "none",
+        }}>
+          <span style={{
+            position: "absolute", bottom: 14,
+            fontFamily: "'Jost',sans-serif", fontSize: 10, letterSpacing: "2px", textTransform: "uppercase",
+            color: "white", background: "rgba(201,168,76,0.92)", padding: "7px 16px",
+            display: "flex", alignItems: "center", gap: 6,
+          }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            Voir le produit
+          </span>
+        </div>
       </div>
 
       {/* Info */}
@@ -288,7 +311,7 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart }) {
           fontFamily: "'Jost',sans-serif", fontSize: 10, color: "var(--gold)",
           letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 4,
         }}>{cat.label}</p>
-        <h3 style={{ fontSize: 15, fontWeight: 500, marginBottom: 6, lineHeight: 1.3 }}>{group.label}</h3>
+        <h3 onClick={() => onOpenDetail?.(group)} style={{ fontSize: 15, fontWeight: 500, marginBottom: 6, lineHeight: 1.3, cursor: "pointer" }}>{group.label}</h3>
         <p style={{
           fontFamily: "'Jost',sans-serif", fontSize: 12, color: "var(--text-muted)",
           lineHeight: 1.6, marginBottom: 10,
@@ -479,10 +502,12 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart }) {
 const ALL_SIZES = ["36","38","40","42","44","46","48","50","52","S","M","L","XL","TU","2-3ans","4-5ans","6-7ans","8-9ans","10-11ans"];
 
 // ── Gallery view ──────────────────────────────────────────────
-function CategoryGallery({ cat, onBack }) {
+function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
   const [orderProduct, setOrderProduct] = useState(null);
+  const [detailGroup, setDetailGroup] = useState(null);
   const [toast, setToast] = useState(null);
   const { addItem } = useCart();
+  const deepLinkDone = useRef(false);
 
   // Chargement produits Supabase
   const [supabaseProducts, setSupabaseProducts] = useState([]);
@@ -510,6 +535,19 @@ function CategoryGallery({ cat, onBack }) {
     supabaseId: p.id,
   })).filter(g => g.photos.length > 0);
   const groups = [...staticGroups, ...dynamicGroups];
+
+  // Ouverture automatique du produit depuis un lien partagé (/produit/<clé>)
+  useEffect(() => {
+    if (!openProductKey || deepLinkDone.current) return;
+    const match = groups.find(g => makeProductKey(cat.id, g) === openProductKey);
+    if (match) {
+      deepLinkDone.current = true;
+      setDetailGroup(match);
+      onDeepLinkConsumed?.();
+    }
+    // On attend que les produits Supabase soient chargés avant d'abandonner
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openProductKey, supabaseProducts]);
 
   // Filtres
   const [filterSize, setFilterSize] = useState(null);
@@ -746,11 +784,32 @@ function CategoryGallery({ cat, onBack }) {
                 groupIndex={i}
                 onOrder={setOrderProduct}
                 onAddToCart={handleAddToCart}
+                onOpenDetail={setDetailGroup}
               />
             ))}
           </div>
         )}
       </div>
+
+      {/* Fenêtre détail produit (couleurs + lien partageable) */}
+      {detailGroup && (
+        <ProductDetailModal
+          shareKey={makeProductKey(cat.id, detailGroup)}
+          product={{
+            catId: cat.id,
+            category: cat.label,
+            label: detailGroup.label,
+            price: detailGroup.price ?? cat.price,
+            desc: detailGroup.description ?? cat.desc,
+            sizes: detailGroup.sizes ?? cat.sizes ?? [],
+            photos: detailGroup.photos ?? [],
+            supabaseId: detailGroup.supabaseId,
+          }}
+          onClose={() => setDetailGroup(null)}
+          onOrder={(p) => { setDetailGroup(null); setOrderProduct(p); }}
+          onAddToCart={handleAddToCart}
+        />
+      )}
 
       {/* Order modal */}
       {orderProduct && <OrderModal product={orderProduct} onClose={() => setOrderProduct(null)} />}
@@ -759,11 +818,14 @@ function CategoryGallery({ cat, onBack }) {
 }
 
 // ── Main ──────────────────────────────────────────────────────
-export default function CollectionPage({ onBack, initialCategory }) {
+export default function CollectionPage({ onBack, initialCategory, initialProductKey }) {
   const [selected, setSelected] = useState(initialCategory || null);
   const selectedCat = categories.find(c => c.id === selected);
   const [showTop, setShowTop] = useState(false);
   const { count: cartCount, setIsOpen: openCart } = useCart();
+
+  // Clé produit issue d'un lien partagé (consommée une fois ouverte)
+  const [pendingProductKey, setPendingProductKey] = useState(initialProductKey || null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -852,7 +914,12 @@ export default function CollectionPage({ onBack, initialCategory }) {
       </button>
 
       {selected && selectedCat ? (
-        <CategoryGallery cat={selectedCat} onBack={() => setSelected(null)} />
+        <CategoryGallery
+          cat={selectedCat}
+          onBack={() => setSelected(null)}
+          openProductKey={pendingProductKey}
+          onDeepLinkConsumed={() => setPendingProductKey(null)}
+        />
       ) : (
         <>
           <div className="coll-title-section">

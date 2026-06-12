@@ -11,6 +11,13 @@ import AnnouncementBar, { ANNOUNCE_H } from "./components/AnnouncementBar";
 import LookbookPage from "./LookbookPage";
 import OnboardingTour from "./components/OnboardingTour";
 import SwipeBack from "./components/SwipeBack";
+import { catIdFromKey } from "./lib/productKey";
+
+// Détecte un lien produit partagé : /produit/<clé> (sponsoring Facebook)
+const DEEP_LINK = (() => {
+  const m = window.location.pathname.match(/^\/produit\/(.+)$/);
+  return m ? decodeURIComponent(m[1].replace(/\/$/, "")) : null;
+})();
 
 // ─── Translations ────────────────────────────────────────────
 const TRANSLATIONS = {
@@ -812,7 +819,7 @@ function CollectionCategoryCard({ cat, delay, onClick }) {
 export default function App() {
   const [products, setProducts] = useState([]);
   const [page, setPage] = useState(() =>
-    window.location.pathname === "/admin" ? "admin" : "home"
+    window.location.pathname === "/admin" ? "admin" : DEEP_LINK ? "collection" : "home"
   );
   const [activeCategory, setActiveCategory] = useState("Tout");
 
@@ -832,7 +839,8 @@ export default function App() {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [orderProduct, setOrderProduct] = useState(null);
-  const [collectionTarget, setCollectionTarget] = useState(null);
+  const [collectionTarget, setCollectionTarget] = useState(() => DEEP_LINK ? catIdFromKey(DEEP_LINK) : null);
+  const [deepLink, setDeepLink] = useState(DEEP_LINK);
   const [showLookbook, setShowLookbook] = useState(false);
   const [lang, setLang] = useState("fr");
 
@@ -1079,13 +1087,15 @@ export default function App() {
       {page === "admin" ? (
         <AdminPage onBack={() => { setPage("home"); window.history.pushState({}, "", "/"); }} />
       ) : page === "collection" ? (
-        <SwipeBack onBack={() => { setPage("home"); setCollectionTarget(null); }}>
+        <SwipeBack onBack={() => { setPage("home"); setCollectionTarget(null); setDeepLink(null); }}>
           <CollectionPage
             onBack={() => {
               setPage("home");
               setCollectionTarget(null);
+              setDeepLink(null);
             }}
             initialCategory={collectionTarget}
+            initialProductKey={deepLink}
           />
         </SwipeBack>
       ) : page === "contact" ? (
