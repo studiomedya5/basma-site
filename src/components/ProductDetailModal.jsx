@@ -130,11 +130,12 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
       <div style={{
         position: "relative",
         width: isMobile ? "100vw" : "min(940px,96vw)",
-        maxHeight: isMobile ? "94dvh" : "92vh",
+        maxHeight: isMobile ? "92dvh" : "92vh",
         display: "flex",
         flexDirection: isMobile ? "column" : "row",
         background: "white",
-        overflow: "hidden",
+        overflow: isMobile ? "auto" : "hidden",
+        WebkitOverflowScrolling: "touch",
         boxShadow: "0 30px 90px rgba(0,0,0,0.3)",
         borderRadius: isMobile ? "20px 20px 0 0" : 0,
         animation: isMobile ? "fadeUp 0.34s cubic-bezier(0.22,1,0.36,1)" : "fadeUp 0.28s ease",
@@ -157,11 +158,13 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
         <div style={{
           position: "relative",
           flex: isMobile ? "none" : "0 0 50%",
-          height: isMobile ? 320 : "auto",
+          height: "auto",
+          aspectRatio: isMobile ? "3 / 4" : "auto",
+          flexShrink: 0,
           background: "#1a1410", overflow: "hidden",
         }}>
           <img src={activeSrc} alt={product.label}
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top", display: "block" }} />
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top", display: "block" }} />
 
           {/* Flèches navigation couleurs */}
           {hasColors && (
@@ -186,7 +189,7 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
         </div>
 
         {/* ── Panneau infos ── */}
-        <div style={{ flex: 1, overflowY: "auto", padding: isMobile ? "22px 20px 32px" : "38px 34px" }}>
+        <div style={{ flex: 1, overflowY: isMobile ? "visible" : "auto", padding: isMobile ? "20px 20px 30px" : "38px 34px" }}>
           <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, letterSpacing: "3px", textTransform: "uppercase", color: GOLD, marginBottom: 8 }}>
             {product.category}
           </p>
@@ -266,18 +269,15 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
             </button>
           </div>
 
-          {/* ── Plus d'info — Envoyer un message sur Messenger ── */}
+          {/* ── Plus d'info — Envoyer un message sur Messenger (animé) ── */}
           <button onClick={openMessenger} style={{
-            width: "100%", padding: "13px 8px", fontSize: 12,
-            background: CREAM, color: DARK,
-            border: `1.5px solid ${GOLD}`,
-            cursor: "pointer", fontFamily: "'Jost',sans-serif", letterSpacing: "1px",
+            width: "100%", padding: "14px 8px", fontSize: 12,
+            background: "linear-gradient(135deg, #00B2FF 0%, #006AFF 100%)", color: "white",
+            border: "none", borderRadius: 6,
+            cursor: "pointer", fontFamily: "'Jost',sans-serif", letterSpacing: "1px", fontWeight: 500,
             display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
-            transition: "all 0.2s",
-          }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = GOLD; e.currentTarget.style.color = "white"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = CREAM; e.currentTarget.style.color = DARK; }}
-          >
+            animation: "msgBtnPulse 2.2s ease-in-out infinite",
+          }}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.19 5.44 3.14 7.19.16.14.26.35.27.57l.05 1.78c.03.57.61.94 1.13.71l1.99-.88c.17-.07.36-.09.54-.04 1.03.28 2.12.43 3.27.43 5.64 0 10-4.13 10-9.7C22 6.13 17.64 2 12 2zm6 7.46l-2.94 4.66c-.47.74-1.47.93-2.18.4l-2.34-1.75a.6.6 0 0 0-.72 0l-3.16 2.4c-.42.32-.97-.18-.69-.63l2.94-4.66c.47-.74 1.47-.93 2.18-.4l2.34 1.75a.6.6 0 0 0 .72 0l3.16-2.4c.42-.32.97.18.69.63z" />
             </svg>

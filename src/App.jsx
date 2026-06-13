@@ -1140,33 +1140,6 @@ export default function App() {
         </svg>
       </a>
 
-      {/* ── Bouton Messenger flottant animé (tout le site) ── */}
-      <a
-        href="https://m.me/basmaonlyshop"
-        target="_blank"
-        rel="noopener noreferrer"
-        title="Écrivez-nous sur Messenger"
-        style={{
-          position: "fixed",
-          bottom: 78,
-          left: 24,
-          zIndex: 901,
-          width: 50,
-          height: 50,
-          borderRadius: "50%",
-          background: "linear-gradient(135deg, #00B2FF 0%, #006AFF 100%)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          animation: "msgrPulse 2s ease-in-out infinite",
-          textDecoration: "none",
-        }}
-      >
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
-          <path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.19 5.44 3.14 7.19.16.14.26.35.27.57l.05 1.78c.03.57.61.94 1.13.71l1.99-.88c.17-.07.36-.09.54-.04 1.03.28 2.12.43 3.27.43 5.64 0 10-4.13 10-9.7C22 6.13 17.64 2 12 2zm6.01 7.46l-2.95 4.67c-.47.74-1.47.93-2.18.4l-2.34-1.76a.6.6 0 0 0-.72 0l-3.16 2.4c-.42.32-.97-.18-.69-.63l2.95-4.67c.47-.74 1.47-.93 2.18-.4l2.34 1.76a.6.6 0 0 0 .72 0l3.16-2.4c.42-.32.97.18.69.63z" />
-        </svg>
-      </a>
-
       {/* Bouton scroll-to-top uniquement sur la home (les autres pages ont le leur) */}
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}

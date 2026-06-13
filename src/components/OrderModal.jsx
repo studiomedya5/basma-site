@@ -246,9 +246,9 @@ export default function OrderModal({ product, onClose }) {
         </div>
 
         {/* ── Hero cinématique ── */}
-        <div style={{position:"relative",height:162,flexShrink:0,overflow:"hidden"}}>
+        <div style={{position:"relative",height:210,flexShrink:0,overflow:"hidden"}}>
           <img src={activeImg} alt={product.name}
-            style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top",display:"block"}}/>
+            style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 28%",display:"block"}}/>
           {/* Gradient profond */}
           <div style={{position:"absolute",inset:0,
             background:"linear-gradient(160deg,rgba(0,0,0,0.1) 0%,rgba(20,14,8,0.85) 100%)"}}/>

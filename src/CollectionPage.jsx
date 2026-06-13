@@ -1027,6 +1027,7 @@ export default function CollectionPage({ onBack, selected, onOpenCategory, goBac
       {/* Scroll to top */}
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        className="scroll-top-btn"
         style={{
           position: "fixed", bottom: 74, right: 24, zIndex: 900,
           width: 42, height: 42, borderRadius: "50%",
