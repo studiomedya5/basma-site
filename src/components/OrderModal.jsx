@@ -281,34 +281,34 @@ export default function OrderModal({ product, onClose }) {
         {/* ── Formulaire scrollable ── */}
         <div style={{overflowY:"auto",padding:"22px 20px 36px",flex:1}}>
 
-          {status==="success" && <SuccessScreen/>}
-          {status==="error"   && <ErrorScreen/>}
+          {status==="success" && SuccessScreen()}
+          {status==="error"   && ErrorScreen()}
 
           {(status==="idle"||status==="loading") && (
             <form onSubmit={handleSubmit} noValidate>
 
-              <ColorPicker/>
-              <SizePicker/>
-              <DeliveryBadge/>
+              {ColorPicker()}
+              {SizePicker()}
+              {DeliveryBadge()}
 
               {/* Nom */}
               <div style={{marginBottom:20}}>
                 <label style={T.label}>Nom et prénom *</label>
-                <MobInput k="nom" placeholder="Votre nom complet"/>
+                {MobInput({ k:"nom", placeholder:"Votre nom complet" })}
                 {errors.nom&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.nom}</p>}
               </div>
 
               {/* Téléphone */}
               <div style={{marginBottom:20}}>
                 <label style={T.label}>Téléphone *</label>
-                <MobInput k="telephone" placeholder="+216 XX XXX XXX" type="tel"/>
+                {MobInput({ k:"telephone", placeholder:"+216 XX XXX XXX", type:"tel" })}
                 {errors.telephone&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.telephone}</p>}
               </div>
 
               {/* Adresse */}
               <div style={{marginBottom:20}}>
                 <label style={T.label}>Adresse *</label>
-                <MobInput k="adresse" placeholder="Rue, numéro, ville..."/>
+                {MobInput({ k:"adresse", placeholder:"Rue, numéro, ville..." })}
                 {errors.adresse&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.adresse}</p>}
               </div>
 
@@ -331,7 +331,7 @@ export default function OrderModal({ product, onClose }) {
               {/* Email optionnel */}
               <div style={{marginBottom:24,opacity:0.7}}>
                 <label style={{...T.label}}>Email <span style={{letterSpacing:0,textTransform:"none",fontSize:9}}>(optionnel)</span></label>
-                <MobInput k="email" placeholder="votre@email.com" type="email"/>
+                {MobInput({ k:"email", placeholder:"votre@email.com", type:"email" })}
               </div>
 
               {/* Quantité + Total */}
@@ -439,8 +439,8 @@ export default function OrderModal({ product, onClose }) {
         {/* ── Formulaire ── */}
         <div className="order-modal-form" style={{flex:1,overflowY:"auto",padding:"40px 36px"}}>
 
-          {status==="success" && <SuccessScreen/>}
-          {status==="error"   && <ErrorScreen/>}
+          {status==="success" && SuccessScreen()}
+          {status==="error"   && ErrorScreen()}
 
           {(status==="idle"||status==="loading") && (
             <form onSubmit={handleSubmit} noValidate>
@@ -452,20 +452,20 @@ export default function OrderModal({ product, onClose }) {
               </h2>
               <div style={{height:1,background:`linear-gradient(to right,${GOLD},transparent)`,marginBottom:22,opacity:0.35}}/>
 
-              <ColorPicker/>
-              <SizePicker/>
-              <DeliveryBadge/>
+              {ColorPicker()}
+              {SizePicker()}
+              {DeliveryBadge()}
 
               {/* Nom + Téléphone */}
               <div className="order-form-row" style={{display:"flex",gap:14,marginBottom:14}}>
                 <div style={{flex:1}}>
                   <label style={T.label}>Nom et prénom *</label>
-                  <DeskInput k="nom" placeholder="Votre nom"/>
+                  {DeskInput({ k:"nom", placeholder:"Votre nom" })}
                   {errors.nom&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.nom}</p>}
                 </div>
                 <div style={{flex:1}}>
                   <label style={T.label}>Téléphone *</label>
-                  <DeskInput k="telephone" placeholder="+216 XX XXX XXX" type="tel"/>
+                  {DeskInput({ k:"telephone", placeholder:"+216 XX XXX XXX", type:"tel" })}
                   {errors.telephone&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.telephone}</p>}
                 </div>
               </div>
@@ -473,14 +473,14 @@ export default function OrderModal({ product, onClose }) {
               {/* Email */}
               <div style={{marginBottom:14}}>
                 <label style={{...T.label,opacity:0.7}}>Email <span style={{letterSpacing:0,textTransform:"none",fontSize:9}}>(optionnel)</span></label>
-                <DeskInput k="email" placeholder="votre@email.com" type="email"/>
+                {DeskInput({ k:"email", placeholder:"votre@email.com", type:"email" })}
               </div>
 
               {/* Adresse + Gouvernorat */}
               <div className="order-form-row" style={{display:"flex",gap:14,marginBottom:22}}>
                 <div style={{flex:1}}>
                   <label style={T.label}>Adresse *</label>
-                  <DeskInput k="adresse" placeholder="Rue, numéro..."/>
+                  {DeskInput({ k:"adresse", placeholder:"Rue, numéro..." })}
                   {errors.adresse&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.adresse}</p>}
                 </div>
                 <div style={{flex:1}}>
