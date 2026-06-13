@@ -40,22 +40,22 @@ const categories = [
     photos: ["496049480_1128525475954865_2540523400201882755_n.jpg","496263120_1128525229288223_2489261562133792631_n.jpg","497885050_1131003555707057_3874941570880894198_n.jpg","499066487_1132573475550065_5434042430597513079_n.jpg","505353945_1156440629830016_8647673457501953606_n.jpg"],
   },
   {
-    id: "pyjama", label: "Pyjama", price: 85, sizes: ["S","M","L","XL"],
+    id: "pyjama", label: "Pyjama", price: 42, sizes: ["S","M","L","XL"],
     desc: "Pyjama doux et confortable en tissu respirant pour des nuits douces et reposantes.",
     photos: ["490345086_1118998213574258_6134831431061358690_n.jpg","492617363_1119002820240464_4055654624926574235_n.jpg","579083507_1276299481177463_446330100554526195_n.jpg","589159541_17926554309179373_4773932076652099313_n.jpg"],
   },
   {
-    id: "Robe", label: "Robe", price: 130, sizes: ["36","38","40","42","44","46","48","50","52"],
+    id: "Robe", label: "Robe", price: 69, sizes: ["36","38","40","42","44","46","48","50","52"],
     desc: "Robe élégante aux couleurs vives et aux coupes flatteuses, parfaite pour toutes les occasions.",
     photos: ["649636396_1374861407987936_6370692347574891488_n.jpg","649665854_1374861444654599_6644258085429623943_n.jpg","650287811_1375865401220870_230421896988538844_n.jpg","650839941_1375865431220867_1210585044214971859_n.jpg"],
   },
   {
-    id: "Sac", label: "Sac", price: 75, sizes: ["TU"],
+    id: "Sac", label: "Sac", price: 50, sizes: ["TU"],
     desc: "Sac tendance et fonctionnel, l'accessoire indispensable pour compléter votre garde-robe.",
     photos: ["631720297_1352112070262870_4847811711877564932_n.jpg","631917370_1352111973596213_194994035129029681_n.jpg","633207472_1352112016929542_6323390260047978267_n.jpg","633375719_1352111933596217_4381281051821960200_n.jpg"],
   },
   {
-    id: "set", label: "Set", price: 150, sizes: ["S","M","L","XL"],
+    id: "set", label: "Set", price: 69, sizes: ["S","M","L","XL"],
     desc: "Set coordonné pour un look complet et soigné, alliance parfaite de style et de confort.",
     photos: ["493138870_1143811757759570_6677303497939193345_n.jpg","503595961_1144400911033988_4417601806757851793_n.jpg","549864507_1232854562188622_2760973217095054367_n.jpg","627056759_17932957533179373_8778773970641450727_n.jpg","648685767_17937284784179373_1588006055100656717_n.jpg"],
   },
@@ -144,10 +144,15 @@ const productGroups = {
 };
 
 // ── Square category card ──────────────────────────────────────
-function CategoryCard({ cat, onClick, delay, comingSoon }) {
+function CategoryCard({ cat, onClick, delay, comingSoon, coverPhotos }) {
   const [hovered, setHovered] = useState(false);
-  const src0 = `/photos/${cat.id}/${cat.photos[0]}`;
-  const src1 = `/photos/${cat.id}/${cat.photos[1] ?? cat.photos[0]}`;
+  // Photos de couverture = vraies photos produits si dispo, sinon photos statiques
+  const resolve = (p) => (p?.startsWith("http") ? p : `/photos/${cat.id}/${p}`);
+  const photos = (coverPhotos && coverPhotos.length)
+    ? coverPhotos
+    : cat.photos.map(resolve);
+  const src0 = photos[0];
+  const src1 = photos[1] ?? photos[0];
 
   return (
     <div onClick={onClick}
@@ -802,7 +807,7 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
                 value={priceMin}
                 onChange={e => setPriceMin(e.target.value)}
                 placeholder="min"
-                style={{ width: 44, padding: "4px 6px", fontSize: 9, border: "1.5px solid rgba(200,149,108,0.4)", borderRadius: 2, fontFamily: "'Jost',sans-serif", outline: "none", background: "white", color: "#2C2A20", height: 24, boxSizing: "border-box" }}
+                style={{ width: 54, padding: "4px 8px", fontSize: 9, border: "1.5px solid rgba(200,149,108,0.4)", borderRadius: 2, fontFamily: "'Jost',sans-serif", outline: "none", background: "white", color: "#2C2A20", height: 26, boxSizing: "border-box" }}
                 onFocus={e => e.target.style.borderColor = "#C9A84C"}
                 onBlur={e => e.target.style.borderColor = "rgba(200,149,108,0.4)"}
               />
@@ -812,7 +817,7 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
                 value={priceMax}
                 onChange={e => setPriceMax(e.target.value)}
                 placeholder="max"
-                style={{ width: 44, padding: "4px 6px", fontSize: 9, border: "1.5px solid rgba(200,149,108,0.4)", borderRadius: 2, fontFamily: "'Jost',sans-serif", outline: "none", background: "white", color: "#2C2A20", height: 24, boxSizing: "border-box" }}
+                style={{ width: 54, padding: "4px 8px", fontSize: 9, border: "1.5px solid rgba(200,149,108,0.4)", borderRadius: 2, fontFamily: "'Jost',sans-serif", outline: "none", background: "white", color: "#2C2A20", height: 26, boxSizing: "border-box" }}
                 onFocus={e => e.target.style.borderColor = "#C9A84C"}
                 onBlur={e => e.target.style.borderColor = "rgba(200,149,108,0.4)"}
               />
@@ -827,7 +832,7 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value)}
-              style={{ padding: "4px 20px 4px 6px", fontSize: 9, border: "1.5px solid rgba(200,149,108,0.4)", borderRadius: 2, fontFamily: "'Jost',sans-serif", outline: "none", background: "white", color: "#2C2A20", cursor: "pointer", height: 24, boxSizing: "border-box", appearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg width='8' height='5' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23C9A84C' stroke-width='1.5'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 5px center" }}
+              style={{ width: 100, padding: "4px 22px 4px 8px", fontSize: 9, border: "1.5px solid rgba(200,149,108,0.4)", borderRadius: 2, fontFamily: "'Jost',sans-serif", outline: "none", background: "white", color: "#2C2A20", cursor: "pointer", height: 26, boxSizing: "border-box", appearance: "none", textOverflow: "ellipsis", backgroundImage: `url("data:image/svg+xml,%3Csvg width='8' height='5' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23C9A84C' stroke-width='1.5'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 7px center" }}
             >
               <option value="default">par défaut</option>
               <option value="price_asc">prix croissant</option>
@@ -928,11 +933,23 @@ export default function CollectionPage({ onBack, selected, onOpenCategory, goBac
   // Clé produit issue d'un lien partagé (consommée une fois ouverte)
   const [pendingProductKey, setPendingProductKey] = useState(initialProductKey || null);
 
-  // Catégories ayant au moins un produit actif (pour tri + "Coming Soon")
+  // Catégories ayant au moins un produit actif (tri + "Coming Soon")
+  // + photos de couverture = vraies photos des produits de chaque catégorie
   const [activeCats, setActiveCats] = useState(null); // null = en cours de chargement
+  const [catCovers, setCatCovers] = useState({});     // { "Set": [url1, url2...], ... }
   useEffect(() => {
-    supabase.from("products").select("category").eq("is_active", true)
-      .then(({ data }) => setActiveCats(new Set((data ?? []).map(p => p.category))));
+    supabase.from("products").select("category, images").eq("is_active", true)
+      .then(({ data }) => {
+        const covers = {};
+        (data ?? []).forEach(p => {
+          if (Array.isArray(p.images) && p.images.length) {
+            if (!covers[p.category]) covers[p.category] = [];
+            covers[p.category].push(p.images[0]); // 1ʳᵉ photo de chaque produit
+          }
+        });
+        setCatCovers(covers);
+        setActiveCats(new Set((data ?? []).map(p => p.category)));
+      });
   }, []);
 
   // Tri : collections existantes (avec produits) en premier
@@ -1053,6 +1070,7 @@ export default function CollectionPage({ onBack, selected, onOpenCategory, goBac
                 cat={cat}
                 delay={i}
                 comingSoon={activeCats !== null && !activeCats.has(cat.label)}
+                coverPhotos={catCovers[cat.label]}
                 onClick={() => onOpenCategory(cat.id)}
               />
             ))}

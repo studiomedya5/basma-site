@@ -7,8 +7,8 @@ export default function SwipeBack({ onBack, children }) {
         className="back-btn-fixed"
         title="Retour"
         style={{
-          position: "fixed", top: 80, left: 20, zIndex: 950,
-          width: 42, height: 42, borderRadius: "50%",
+          position: "fixed", top: 124, left: 20, zIndex: 950,
+          width: 38, height: 38, borderRadius: "50%",
           background: "rgba(255,255,255,0.95)",
           border: "1px solid rgba(201,168,76,0.25)",
           boxShadow: "0 4px 16px rgba(0,0,0,0.1)",

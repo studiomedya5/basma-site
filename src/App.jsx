@@ -41,10 +41,10 @@ const COLLECTION_CATEGORIES = [
   { id: "kids",    label: "Kids",    price: 60,  photos: ["645995833_1370344885106255_9157182548210132803_n.jpg","646076253_1370344838439593_3346000056858945782_n.jpg","649876591_1375551517918925_6681548330046473505_n.jpg","650825674_1375601961247214_9084526571701164849_n.jpg"] },
   { id: "manteau", label: "Manteau", price: 200, photos: ["579423101_1277387817735296_2206184981912267833_n.jpg","579550354_1277389351068476_4317445584969625127_n.jpg","631284553_17933675226179373_5747483335467394828_n.jpg","631604059_17933767830179373_7389489587997262940_n.jpg"] },
   { id: "MDB",     label: "MDB",     price: 110, photos: ["496049480_1128525475954865_2540523400201882755_n.jpg","496263120_1128525229288223_2489261562133792631_n.jpg","497885050_1131003555707057_3874941570880894198_n.jpg","499066487_1132573475550065_5434042430597513079_n.jpg","505353945_1156440629830016_8647673457501953606_n.jpg"] },
-  { id: "pyjama",  label: "Pyjama",  price: 85,  photos: ["490345086_1118998213574258_6134831431061358690_n.jpg","492617363_1119002820240464_4055654624926574235_n.jpg","579083507_1276299481177463_446330100554526195_n.jpg","589159541_17926554309179373_4773932076652099313_n.jpg"] },
-  { id: "Robe",    label: "Robe",    price: 130, photos: ["649636396_1374861407987936_6370692347574891488_n.jpg","649665854_1374861444654599_6644258085429623943_n.jpg","650287811_1375865401220870_230421896988538844_n.jpg","650839941_1375865431220867_1210585044214971859_n.jpg"] },
-  { id: "Sac",     label: "Sac",     price: 75,  photos: ["631720297_1352112070262870_4847811711877564932_n.jpg","631917370_1352111973596213_194994035129029681_n.jpg","633207472_1352112016929542_6323390260047978267_n.jpg","633375719_1352111933596217_4381281051821960200_n.jpg"] },
-  { id: "set",     label: "Set",     price: 150, photos: ["493138870_1143811757759570_6677303497939193345_n.jpg","503595961_1144400911033988_4417601806757851793_n.jpg","549864507_1232854562188622_2760973217095054367_n.jpg","627056759_17932957533179373_8778773970641450727_n.jpg","648685767_17937284784179373_1588006055100656717_n.jpg"] },
+  { id: "pyjama",  label: "Pyjama",  price: 42,  photos: ["490345086_1118998213574258_6134831431061358690_n.jpg","492617363_1119002820240464_4055654624926574235_n.jpg","579083507_1276299481177463_446330100554526195_n.jpg","589159541_17926554309179373_4773932076652099313_n.jpg"] },
+  { id: "Robe",    label: "Robe",    price: 69,  photos: ["649636396_1374861407987936_6370692347574891488_n.jpg","649665854_1374861444654599_6644258085429623943_n.jpg","650287811_1375865401220870_230421896988538844_n.jpg","650839941_1375865431220867_1210585044214971859_n.jpg"] },
+  { id: "Sac",     label: "Sac",     price: 50,  photos: ["631720297_1352112070262870_4847811711877564932_n.jpg","631917370_1352111973596213_194994035129029681_n.jpg","633207472_1352112016929542_6323390260047978267_n.jpg","633375719_1352111933596217_4381281051821960200_n.jpg"] },
+  { id: "set",     label: "Set",     price: 69,  photos: ["493138870_1143811757759570_6677303497939193345_n.jpg","503595961_1144400911033988_4417601806757851793_n.jpg","549864507_1232854562188622_2760973217095054367_n.jpg","627056759_17932957533179373_8778773970641450727_n.jpg","648685767_17937284784179373_1588006055100656717_n.jpg"] },
 ];
 
 // ─── Static categories ──────────────────────────────────────
@@ -709,24 +709,29 @@ function AvisGrid() {
 }
 
 // ─── Homepage Collection Card (avec carrousel) ───────────────
-function CollectionCategoryCard({ cat, delay, onClick, comingSoon }) {
+function CollectionCategoryCard({ cat, delay, onClick, comingSoon, coverPhotos }) {
   const [imgIdx, setImgIdx] = useState(0);
   const [hovered, setHovered] = useState(false);
   const pausedRef = useRef(false);
+
+  // Couverture = vraies photos produits si dispo, sinon photos statiques
+  const photos = (coverPhotos && coverPhotos.length)
+    ? coverPhotos
+    : cat.photos.map((p) => `/photos/${cat.id}/${p}`);
 
   useEffect(() => {
     pausedRef.current = hovered;
   }, [hovered]);
 
   useEffect(() => {
-    if (cat.photos.length <= 1) return;
+    if (photos.length <= 1) return;
     const t = setInterval(() => {
       if (!pausedRef.current) {
-        setImgIdx((i) => (i + 1) % cat.photos.length);
+        setImgIdx((i) => (i + 1) % photos.length);
       }
     }, 2000);
     return () => clearInterval(t);
-  }, [cat.photos.length]);
+  }, [photos.length]);
 
   return (
     <div
@@ -744,10 +749,10 @@ function CollectionCategoryCard({ cat, delay, onClick, comingSoon }) {
     >
       {/* Photo carousel */}
       <div className="sq-card" style={{ margin: 0 }}>
-        {cat.photos.map((photo, i) => (
+        {photos.map((src, i) => (
           <img
-            key={photo}
-            src={`/photos/${cat.id}/${photo}`}
+            key={i}
+            src={src}
             alt={cat.label}
             loading="lazy"
             decoding="async"
@@ -793,7 +798,7 @@ function CollectionCategoryCard({ cat, delay, onClick, comingSoon }) {
           position: "absolute", bottom: 12, left: "50%", transform: "translateX(-50%)",
           display: "flex", gap: 5, zIndex: 8,
         }}>
-          {cat.photos.map((_, i) => (
+          {photos.map((_, i) => (
             <div key={i} style={{
               height: 3, borderRadius: 2,
               width: i === imgIdx ? 18 : 5,
@@ -977,6 +982,14 @@ export default function App() {
   const activeCatLabels = new Set(
     products.filter((p) => p.is_active).map((p) => p.category)
   );
+  // Photos de couverture = vraies photos des produits de chaque catégorie
+  const catCoverImages = {};
+  products.forEach((p) => {
+    if (p.is_active && Array.isArray(p.images) && p.images.length) {
+      if (!catCoverImages[p.category]) catCoverImages[p.category] = [];
+      catCoverImages[p.category].push(p.images[0]);
+    }
+  });
   const sortedCollectionCats = [...COLLECTION_CATEGORIES].sort((a, b) => {
     const ax = activeCatLabels.has(a.label) ? 0 : 1;
     const bx = activeCatLabels.has(b.label) ? 0 : 1;
@@ -1124,6 +1137,33 @@ export default function App() {
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--gold)">
           <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+        </svg>
+      </a>
+
+      {/* ── Bouton Messenger flottant animé (tout le site) ── */}
+      <a
+        href="https://m.me/basmaonlyshop"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Écrivez-nous sur Messenger"
+        style={{
+          position: "fixed",
+          bottom: 78,
+          left: 24,
+          zIndex: 901,
+          width: 50,
+          height: 50,
+          borderRadius: "50%",
+          background: "linear-gradient(135deg, #00B2FF 0%, #006AFF 100%)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          animation: "msgrPulse 2s ease-in-out infinite",
+          textDecoration: "none",
+        }}
+      >
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+          <path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.19 5.44 3.14 7.19.16.14.26.35.27.57l.05 1.78c.03.57.61.94 1.13.71l1.99-.88c.17-.07.36-.09.54-.04 1.03.28 2.12.43 3.27.43 5.64 0 10-4.13 10-9.7C22 6.13 17.64 2 12 2zm6.01 7.46l-2.95 4.67c-.47.74-1.47.93-2.18.4l-2.34-1.76a.6.6 0 0 0-.72 0l-3.16 2.4c-.42.32-.97-.18-.69-.63l2.95-4.67c.47-.74 1.47-.93 2.18-.4l2.34 1.76a.6.6 0 0 0 .72 0l3.16-2.4c.42-.32.97.18.69.63z" />
         </svg>
       </a>
 
@@ -1579,6 +1619,7 @@ export default function App() {
                   cat={cat}
                   delay={i}
                   comingSoon={productsLoaded && !activeCatLabels.has(cat.label)}
+                  coverPhotos={catCoverImages[cat.label]}
                   onClick={() => navCollection(cat.id)}
                 />
               ))}
