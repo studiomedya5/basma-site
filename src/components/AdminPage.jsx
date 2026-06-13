@@ -200,9 +200,25 @@ function DeleteConfirmModal({ order, onClose, onDeleted }) {
 
   const handleDelete = async () => {
     setDeleting(true);
-    const { error } = await supabase.from("orders").delete().eq("id", order.id);
+    // .select() permet de savoir combien de lignes ont REELLEMENT ete supprimees.
+    // Si RLS bloque le DELETE, Supabase ne renvoie pas d'erreur mais 0 ligne.
+    const { data, error } = await supabase
+      .from("orders").delete().eq("id", order.id).select();
     setDeleting(false);
-    if (!error) onDeleted(order.id);
+
+    if (error) {
+      alert("Erreur lors de la suppression : " + error.message);
+      return;
+    }
+    if (!data || data.length === 0) {
+      alert(
+        "La suppression a ete bloquee par la securite Supabase (RLS).\n\n" +
+        "Va dans Supabase > SQL Editor et execute le fichier " +
+        "supabase-rls-orders.sql (policy orders_anon_delete)."
+      );
+      return;
+    }
+    onDeleted(order.id);
   };
 
   return (
