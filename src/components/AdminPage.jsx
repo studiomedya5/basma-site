@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import AdminProducts from "./AdminProducts";
+import AdminPromoCodes from "./AdminPromoCodes";
 
 // ─── Constantes ───────────────────────────────────────────────
 const PASSWORD = "basma2024";
@@ -936,6 +937,7 @@ export default function AdminPage({ onBack }) {
         {[
           { key: "commandes", label: "Commandes" },
           { key: "produits",  label: "Produits"  },
+          { key: "promos",    label: "Codes promo" },
         ].map(({ key, label }) => (
           <button
             key={key}
@@ -959,6 +961,11 @@ export default function AdminPage({ onBack }) {
         {/* ── Onglet Produits ── */}
         {activeTab === "produits" && (
           <AdminProducts isMobile={isMobile} />
+        )}
+
+        {/* ── Onglet Codes promo ── */}
+        {activeTab === "promos" && (
+          <AdminPromoCodes isMobile={isMobile} />
         )}
 
         {/* ── Onglet Commandes ── */}

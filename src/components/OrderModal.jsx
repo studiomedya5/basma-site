@@ -37,6 +37,20 @@ export default function OrderModal({ product, onClose }) {
   const [status, setStatus]       = useState("idle");
   const [isMobile, setIsMobile]   = useState(window.innerWidth < 768);
   const [hoveredBtn, setHoveredBtn] = useState(false);
+  const [promoInput, setPromoInput] = useState("");
+  const [promoApplied, setPromoApplied] = useState(null); // code promo validé (livraison gratuite)
+  const [promoMsg, setPromoMsg]   = useState(null);       // { ok, text }
+
+  // Vérifie le code promo (existe + actif + non expiré)
+  const applyPromo = async () => {
+    const code = promoInput.trim().toUpperCase();
+    if (!code) return;
+    const { data } = await supabase.from("promo_codes").select("*").eq("code", code).eq("active", true).limit(1);
+    const promo = data && data[0];
+    if (!promo) { setPromoApplied(null); setPromoMsg({ ok:false, text: t("promo_invalid") }); return; }
+    if (promo.expires_at && new Date(promo.expires_at) < new Date()) { setPromoApplied(null); setPromoMsg({ ok:false, text: t("promo_expired") }); return; }
+    setPromoApplied(code); setPromoMsg({ ok:true, text: t("promo_free_ship") });
+  };
 
   useEffect(() => {
     const h = () => setIsMobile(window.innerWidth < 768);
@@ -71,7 +85,7 @@ export default function OrderModal({ product, onClose }) {
   const resolvePhoto = (p) => p?.startsWith("http") ? p : `/photos/${product.catId}/${p}`;
   const activeImg    = product.photos ? resolvePhoto(product.photos[colorIdx ?? 0]) : product.img;
   const subtotal     = product.price * form.qty;
-  const deliveryFee  = subtotal < FREE_THRESHOLD ? DELIVERY_FEE : 0;
+  const deliveryFee  = (subtotal >= FREE_THRESHOLD || promoApplied) ? 0 : DELIVERY_FEE;
   const totalPrice   = subtotal + deliveryFee;
 
   const set = (k, v) => { setForm(p => ({...p,[k]:v})); setErrors(p => ({...p,[k]:""})); };
@@ -97,6 +111,18 @@ export default function OrderModal({ product, onClose }) {
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setStatus("loading");
 
+    // Code promo : vérifie qu'il n'a pas déjà été utilisé par ce numéro (1 fois/client)
+    if (promoApplied) {
+      const phone = form.telephone.trim();
+      const { data: prev } = await supabase.from("orders")
+        .select("id").eq("customer_phone", phone).eq("promo_code", promoApplied).limit(1);
+      if (prev && prev.length) {
+        setPromoMsg({ ok:false, text: t("promo_used") });
+        setStatus("idle");
+        return;
+      }
+    }
+
     const orderData = {
       product_id: product.id ?? null, product_name: product.name,
       size: form.size, quantity: form.qty, total_price: totalPrice,
@@ -105,6 +131,7 @@ export default function OrderModal({ product, onClose }) {
       delegation: form.delegation, status: "en_attente",
     };
     if (form.email.trim()) orderData.customer_email = form.email.trim();
+    if (promoApplied) orderData.promo_code = promoApplied;
     // Couleur choisie (pour décrémenter le bon stock par couleur)
     if (hasColors || variants) {
       orderData.color_index = colorIdx ?? 0;
@@ -118,7 +145,7 @@ export default function OrderModal({ product, onClose }) {
     while (error && tries < 4) {
       const msg = error.message || "";
       let stripped = false;
-      for (const col of ["delegation", "customer_email", "color_index", "color_label"]) {
+      for (const col of ["delegation", "customer_email", "color_index", "color_label", "promo_code"]) {
         if (msg.includes(col) && col in orderData) { delete orderData[col]; stripped = true; }
       }
       if (!stripped) break;
@@ -223,6 +250,28 @@ export default function OrderModal({ product, onClose }) {
       </div>
     </div>
   ) : null;
+
+  /* ─── Champ code promo (livraison gratuite live) ─── */
+  const PromoField = () => (
+    <div style={{marginBottom:18}}>
+      <label style={T.label}>🎟️ {t("promo_code")}</label>
+      <div style={{display:"flex",gap:8}}>
+        <input value={promoInput} onChange={e=>{setPromoInput(e.target.value.toUpperCase());setPromoMsg(null);setPromoApplied(null);}}
+          placeholder={t("promo_placeholder")} disabled={!!promoApplied}
+          style={{flex:1,padding:"9px 12px",boxSizing:"border-box",border:`1px solid ${promoApplied?"#4caf50":"rgba(44,42,32,0.16)"}`,
+            fontFamily:"'Jost',sans-serif",fontSize:13,outline:"none",background:promoApplied?"rgba(46,125,50,0.05)":"white",
+            color:DARK,textTransform:"uppercase",borderRadius:0}} />
+        {promoApplied ? (
+          <button type="button" onClick={()=>{setPromoApplied(null);setPromoInput("");setPromoMsg(null);}}
+            style={{padding:"9px 14px",background:"transparent",color:"#999",border:"1px solid rgba(44,42,32,0.16)",cursor:"pointer",fontFamily:"'Jost',sans-serif",fontSize:11,textTransform:"uppercase"}}>✕</button>
+        ) : (
+          <button type="button" onClick={applyPromo}
+            style={{padding:"9px 16px",background:DARK,color:GOLD,border:"none",cursor:"pointer",fontFamily:"'Jost',sans-serif",fontSize:11,letterSpacing:"1px",textTransform:"uppercase",whiteSpace:"nowrap"}}>{t("promo_apply")}</button>
+        )}
+      </div>
+      {promoMsg && <p style={{...T.body,fontSize:11,marginTop:5,color:promoMsg.ok?"#2e7d32":"#e57373"}}>{promoMsg.text}</p>}
+    </div>
+  );
 
   /* ─── Livraison badge ───────────────────────── */
   const DeliveryBadge = () => (
@@ -340,6 +389,7 @@ export default function OrderModal({ product, onClose }) {
               {ColorPicker()}
               {SizePicker()}
               {DeliveryBadge()}
+              {PromoField()}
 
               {/* Nom */}
               <div style={{marginBottom:20}}>
@@ -523,6 +573,7 @@ export default function OrderModal({ product, onClose }) {
               {ColorPicker()}
               {SizePicker()}
               {DeliveryBadge()}
+              {PromoField()}
 
               {/* Nom + Téléphone */}
               <div className="order-form-row" style={{display:"flex",gap:14,marginBottom:14}}>
