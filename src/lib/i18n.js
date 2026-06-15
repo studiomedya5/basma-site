@@ -79,6 +79,9 @@ export const STR = {
     msg_sent: "Message envoyé !", contact_name: "Nom", contact_message: "Message",
     contact_message_ph: "Votre message...", send: "Envoyer",
     err_name: "Le nom est requis", err_email: "Email invalide", err_message: "Le message est requis",
+    order_saved: "Votre commande a été enregistrée.", error_word: "Erreur",
+    order_save_error: "Impossible d'enregistrer la commande. Veuillez réessayer.",
+    validate_order: "Valider la commande",
   },
   ar: {
     ticker: "🚚 توصيل مجاني لكل طلب يتجاوز 100 د.ت  ✨ الدفع عند الاستلام في كامل تونس  🌹 مجموعة جديدة متاحة الآن  ",
@@ -156,5 +159,8 @@ export const STR = {
     msg_sent: "تم إرسال الرسالة!", contact_name: "الاسم", contact_message: "الرسالة",
     contact_message_ph: "رسالتك...", send: "إرسال",
     err_name: "الاسم مطلوب", err_email: "بريد إلكتروني غير صالح", err_message: "الرسالة مطلوبة",
+    order_saved: "تم تسجيل طلبك.", error_word: "خطأ",
+    order_save_error: "تعذّر تسجيل الطلب. يرجى إعادة المحاولة.",
+    validate_order: "تأكيد الطلب",
   },
 };

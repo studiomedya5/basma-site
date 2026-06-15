@@ -41,10 +41,10 @@ export default function Cart() {
   const handleCheckout = async (e) => {
     e.preventDefault();
     const errs = {};
-    if (!form.nom.trim())       errs.nom        = "Requis";
-    if (!form.telephone.trim()) errs.telephone  = "Requis";
-    if (!form.adresse.trim())   errs.adresse    = "Requis";
-    if (!form.gouvernorat)      errs.gouvernorat = "Requis";
+    if (!form.nom.trim())       errs.nom        = t("required");
+    if (!form.telephone.trim()) errs.telephone  = t("required");
+    if (!form.adresse.trim())   errs.adresse    = t("required");
+    if (!form.gouvernorat)      errs.gouvernorat = t("required");
     if (Object.keys(errs).length) { setErrors(errs); return; }
 
     setLoading(true);
@@ -176,7 +176,7 @@ export default function Cart() {
                           <p style={{
                             fontFamily: "'Jost',sans-serif", fontSize: 11,
                             color: "var(--text-muted)", marginBottom: 10,
-                          }}>Taille : {item.size}</p>
+                          }}>{t("size")} : {item.size}</p>
                         )}
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                           {/* Qty stepper */}
@@ -257,9 +257,9 @@ export default function Cart() {
 
               {/* Fields */}
               {[
-                { k: "nom",       label: "Nom et prénom *",  placeholder: "Votre nom",            type: "text" },
-                { k: "telephone", label: "Téléphone *",      placeholder: "+216 XX XXX XXX",       type: "tel"  },
-                { k: "adresse",   label: "Adresse *",        placeholder: "Rue, numéro...",        type: "text" },
+                { k: "nom",       label: `${t("name")} *`,    placeholder: t("name_ph"),     type: "text" },
+                { k: "telephone", label: `${t("phone")} *`,   placeholder: "+216 XX XXX XXX", type: "tel"  },
+                { k: "adresse",   label: `${t("address")} *`, placeholder: t("address_ph"),  type: "text" },
               ].map(({ k, label, placeholder, type }) => (
                 <div key={k} style={{ marginBottom: 14 }}>
                   <label style={{ display: "block", fontFamily: "'Jost',sans-serif", fontSize: 11, color: "#666", marginBottom: 5 }}>
@@ -279,7 +279,7 @@ export default function Cart() {
 
               <div style={{ marginBottom: 8 }}>
                 <label style={{ display: "block", fontFamily: "'Jost',sans-serif", fontSize: 11, color: "#666", marginBottom: 5 }}>
-                  Gouvernorat *
+                  {t("governorate")} *
                 </label>
                 <select
                   value={form.gouvernorat}
@@ -293,7 +293,7 @@ export default function Cart() {
                     cursor: "pointer", borderRadius: 2,
                   }}
                 >
-                  <option value="">Choisir un gouvernorat</option>
+                  <option value="">{t("choose_gov")}</option>
                   {GOUVERNORATS.map(g => <option key={g} value={g}>{g}</option>)}
                 </select>
                 {errors.gouvernorat && <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, color: "#e57373", marginTop: 3 }}>{errors.gouvernorat}</p>}
@@ -309,14 +309,14 @@ export default function Cart() {
                 style={{ display: "block", margin: "0 auto 20px" }}>
                 <circle cx="12" cy="12" r="10" /><polyline points="20 6 9 17 4 12" />
               </svg>
-              <h2 style={{ fontSize: 22, fontWeight: 400, marginBottom: 10 }}>Commande confirmée !</h2>
+              <h2 style={{ fontSize: 22, fontWeight: 400, marginBottom: 10 }}>{t("order_confirmed")}</h2>
               <p style={{ fontFamily: "'Jost',sans-serif", color: "var(--text-muted)", fontSize: 13, lineHeight: 1.9, marginBottom: 32 }}>
-                Votre commande a été enregistrée.<br />
-                Nous vous contacterons au<br />
+                {t("order_saved")}<br />
+                {t("will_contact")}<br />
                 <strong style={{ color: "var(--dark)" }}>{form.telephone}</strong>.
               </p>
               <button className="btn-gold" onClick={closeCart} style={{ padding: "12px 40px", fontSize: 12 }}>
-                Fermer
+                {t("close")}
               </button>
             </div>
           )}
@@ -325,12 +325,12 @@ export default function Cart() {
           {step === "error" && (
             <div style={{ textAlign: "center", padding: "70px 32px" }}>
               <div style={{ fontSize: 52, marginBottom: 18 }}>⚠️</div>
-              <h2 style={{ fontSize: 20, fontWeight: 400, marginBottom: 10 }}>Erreur</h2>
+              <h2 style={{ fontSize: 20, fontWeight: 400, marginBottom: 10 }}>{t("error_word")}</h2>
               <p style={{ fontFamily: "'Jost',sans-serif", color: "var(--text-muted)", fontSize: 13, lineHeight: 1.8, marginBottom: 28 }}>
-                Impossible d'enregistrer la commande.<br />Veuillez réessayer.
+                {t("order_save_error")}
               </p>
               <button className="btn-gold" onClick={() => setStep("checkout")} style={{ padding: "12px 40px", fontSize: 12 }}>
-                Réessayer
+                {t("retry")}
               </button>
             </div>
           )}
@@ -355,7 +355,7 @@ export default function Cart() {
                   onClick={() => setStep("checkout")}
                   style={{ width: "100%", padding: "14px", fontSize: 12 }}
                 >
-                  VALIDER LA COMMANDE →
+                  {t("validate_order")} →
                 </button>
               </>
             )}
@@ -367,7 +367,7 @@ export default function Cart() {
                 disabled={loading}
                 style={{ width: "100%", padding: "14px", fontSize: 12, opacity: loading ? 0.7 : 1, cursor: loading ? "wait" : "pointer" }}
               >
-                {loading ? "Envoi en cours..." : "CONFIRMER LA COMMANDE →"}
+                {loading ? t("sending") : `${t("confirm_order")} →`}
               </button>
             )}
           </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import OrderModal from "./components/OrderModal";
+import { useLang } from "./context/LangContext";
 
 // ── Lookbook pages ─────────────────────────────────────────────
 // Ordre : Abaya → Jiba → Pyjama → Robe → Set → Manteau → Écharpe → Sac → Kids → MDB
@@ -150,6 +151,7 @@ const ArrowRight = () => (
 
 // ── Main component ─────────────────────────────────────────────
 export default function LookbookPage({ onClose, muteAudio }) {
+  const { t } = useLang();
   const [idx, setIdx] = useState(0);
   const [visible, setVisible] = useState(false);       // entrance fade
   const [fading, setFading] = useState(false);         // transition fade
@@ -268,7 +270,7 @@ export default function LookbookPage({ onClose, muteAudio }) {
             }}
             onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.16)"}
             onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.08)"}
-            title="Fermer (Échap)"
+            title={t("close")}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
@@ -401,7 +403,7 @@ export default function LookbookPage({ onClose, muteAudio }) {
               onMouseEnter={e => { e.currentTarget.style.background = "var(--gold)"; e.currentTarget.style.borderColor = "var(--gold)"; }}
               onMouseLeave={e => { e.currentTarget.style.background = "rgba(200,149,108,0.15)"; e.currentTarget.style.borderColor = "rgba(200,149,108,0.5)"; }}
             >
-              Commander
+              {t("order")}
             </button>
           </div>
         </div>
