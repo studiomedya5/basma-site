@@ -65,6 +65,10 @@ export const STR = {
     rights: "© 2026 Basma Only Shop. Tous droits réservés.", newsletter: "Newsletter", newsletter_ph: "Votre adresse email",
     stay_informed: "Restez Informée", newsletter_desc: "Recevez nos dernières créations et offres exclusives.",
     subscribe: "S'abonner", see_collection_word: "Voir la Collection",
+    testimonials: "Témoignages", what_clients_say: "Ce que disent nos clientes",
+    feat1_t: "Tissus Nobles", feat1_d: "Satin, soie et crêpe sélectionnés pour un confort exceptionnel.",
+    feat2_t: "Fait Main", feat2_d: "Chaque pièce est confectionnée avec une attention minutieuse aux détails.",
+    feat3_t: "Design Exclusif", feat3_d: "Créations uniques alliant tradition et modernité.",
   },
   ar: {
     // Navigation / général
@@ -128,5 +132,9 @@ export const STR = {
     rights: "© 2026 Basma Only Shop. كل الحقوق محفوظة.", newsletter: "النشرة البريدية", newsletter_ph: "بريدك الإلكتروني",
     stay_informed: "ابقي على اطلاع", newsletter_desc: "اطّلعي على أحدث تصاميمنا وعروضنا الحصرية.",
     subscribe: "اشتركي", see_collection_word: "شاهدي المجموعة",
+    testimonials: "آراء العميلات", what_clients_say: "ماذا تقول عميلاتنا",
+    feat1_t: "أقمشة فاخرة", feat1_d: "ساتان وحرير وكريب مختارة لراحة استثنائية.",
+    feat2_t: "صناعة يدوية", feat2_d: "كل قطعة مصنوعة بعناية فائقة بالتفاصيل.",
+    feat3_t: "تصميم حصري", feat3_d: "تصاميم فريدة تجمع بين الأصالة والعصرية.",
   },
 };

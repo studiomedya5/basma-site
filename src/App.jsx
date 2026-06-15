@@ -1622,7 +1622,7 @@ export default function App() {
                     marginBottom: 14,
                   }}
                 >
-                  Témoignages
+                  {t("testimonials")}
                 </p>
                 <h2
                   style={{
@@ -1632,7 +1632,7 @@ export default function App() {
                     color: "var(--dark)",
                   }}
                 >
-                  Ce que disent nos <em style={{ fontWeight: 500, color: "var(--gold)", fontStyle: "italic" }}>clientes</em>
+                  <em style={{ fontWeight: 500, color: "var(--gold)", fontStyle: "italic" }}>{t("what_clients_say")}</em>
                 </h2>
               </div>
 
@@ -1659,18 +1659,18 @@ export default function App() {
               {[
                 {
                   icon: "◇",
-                  title: "Tissus Nobles",
-                  desc: "Satin, soie et crêpe sélectionnés pour un confort exceptionnel.",
+                  title: t("feat1_t"),
+                  desc: t("feat1_d"),
                 },
                 {
                   icon: "✦",
-                  title: "Fait Main",
-                  desc: "Chaque pièce est confectionnée avec une attention minutieuse aux détails.",
+                  title: t("feat2_t"),
+                  desc: t("feat2_d"),
                 },
                 {
                   icon: "❋",
-                  title: "Design Exclusif",
-                  desc: "Créations uniques alliant tradition marocaine et modernité.",
+                  title: t("feat3_t"),
+                  desc: t("feat3_d"),
                 },
               ].map((f, i) => (
                 <div
