@@ -584,16 +584,17 @@ html, body {
     /* Photo en haut (plein écran à l'ouverture), texte + boutons en dessous */
     flex-direction: column-reverse !important;
     text-align: center !important;
-    padding: 0 !important;
-    gap: 0 !important;
+    padding: 12px 14px 16px !important;   /* petit espace haut/bas + côtés */
+    gap: 16px !important;                  /* espace entre la photo et le texte/boutons */
     max-width: 100vw !important;
     overflow: hidden !important;
     margin-top: 0 !important;
     flex: 1 !important;
+    box-sizing: border-box !important;
   }
   /* Bloc texte — aéré et élégant, sous la photo */
   .hero-grid > div:first-child {
-    padding: 16px 18px 18px !important;
+    padding: 4px 14px 6px !important;
     flex: 0 0 auto !important;
   }
   .hero-title {
@@ -656,6 +657,8 @@ html, body {
     aspect-ratio: unset !important;
     height: 100% !important;
     min-height: 280px !important;
+    border-radius: 16px !important;   /* coins arrondis élégants */
+    overflow: hidden !important;
   }
   .hero-deco-border { display: none !important; }
   .hero-badge {
