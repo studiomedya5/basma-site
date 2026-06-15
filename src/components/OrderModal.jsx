@@ -27,7 +27,8 @@ const T = {
 };
 
 export default function OrderModal({ product, onClose }) {
-  const { t } = useLang();
+  const { t, isAr } = useLang();
+  const displayName = isAr && product.nameAr ? product.nameAr : product.name;
   const hasColors = product.photos && product.photos.length > 1;
 
   const [colorIdx, setColorIdx]   = useState(product.initialColorIdx ?? (hasColors ? null : 0));
@@ -296,7 +297,7 @@ export default function OrderModal({ product, onClose }) {
 
         {/* ── Hero cinématique ── */}
         <div style={{position:"relative",height:210,flexShrink:0,overflow:"hidden"}}>
-          <img src={activeImg} alt={product.name}
+          <img src={activeImg} alt={displayName}
             style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 28%",display:"block"}}/>
           {/* Gradient profond */}
           <div style={{position:"absolute",inset:0,
@@ -318,7 +319,7 @@ export default function OrderModal({ product, onClose }) {
             </p>
             <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:12}}>
               <p style={{...T.serif,fontSize:19,fontWeight:500,color:"white",lineHeight:1.15,flex:1}}>
-                {product.name}
+                {displayName}
               </p>
               <span style={{...T.serif,color:GOLD,fontSize:22,fontWeight:600,flexShrink:0,letterSpacing:"-0.5px"}}>
                 {product.price}<span style={{fontFamily:"'Jost',sans-serif",fontSize:12,fontWeight:400,marginLeft:2}}>ت.د</span>
@@ -465,7 +466,7 @@ export default function OrderModal({ product, onClose }) {
 
         {/* ── Panneau photo ── */}
         <div className="order-modal-photo" style={{flex:"0 0 44%",position:"relative",background:"#1a1410",overflow:"hidden"}}>
-          <img src={activeImg} alt={product.name}
+          <img src={activeImg} alt={displayName}
             style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top",
               display:"block",transition:"transform 0.6s ease",}}
             onMouseEnter={e=>e.target.style.transform="scale(1.04)"}
@@ -482,7 +483,7 @@ export default function OrderModal({ product, onClose }) {
             <div style={{width:32,height:1,background:GOLD,marginBottom:14,opacity:0.7}}/>
             <p style={{...T.eyebrow,color:"rgba(201,168,76,0.75)",marginBottom:8}}>{product.category}</p>
             <p style={{...T.serif,fontSize:26,fontWeight:400,color:"white",lineHeight:1.1,marginBottom:10}}>
-              {product.name}
+              {displayName}
             </p>
             <span style={{...T.serif,color:GOLD,fontSize:24,fontWeight:600,letterSpacing:"-0.5px"}}>
               {product.price}
@@ -515,7 +516,7 @@ export default function OrderModal({ product, onClose }) {
               {/* En-tête document */}
               <p style={{...T.eyebrow,color:GOLD,marginBottom:6}}>{t("your_order")}</p>
               <h2 style={{...T.serif,fontSize:22,fontWeight:400,color:DARK,marginBottom:12,lineHeight:1.2}}>
-                {product.name}
+                {displayName}
               </h2>
               <div style={{height:1,background:`linear-gradient(to right,${GOLD},transparent)`,marginBottom:22,opacity:0.35}}/>
 

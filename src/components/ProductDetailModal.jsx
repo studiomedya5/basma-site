@@ -21,7 +21,9 @@ const MESSENGER_BASE = "https://m.me/basmaonlyshop";
      onClose, onOrder, onAddToCart
 ───────────────────────────────────────────────────────────── */
 export default function ProductDetailModal({ product, shareKey, onClose, onOrder, onAddToCart }) {
-  const { t } = useLang();
+  const { t, isAr } = useLang();
+  const displayName = isAr && product.labelAr ? product.labelAr : product.label;
+  const displayDesc = isAr && product.descAr ? product.descAr : product.desc;
   const photos = product.photos ?? [];
   const hasColors = photos.length > 1;
   const sizes = product.sizes ?? [];
@@ -104,7 +106,7 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
 
   // Construit le message de commande à envoyer
   const buildOrderMessage = () => {
-    const lines = [t("msg_greeting"), t("msg_want_order"), `👗 ${product.label}`];
+    const lines = [t("msg_greeting"), t("msg_want_order"), `👗 ${displayName}`];
     if (hasColors) lines.push(`🎨 ${t("color")} ${(colorIdx ?? 0) + 1}`);
     if (sizes.length > 1) lines.push(`📏 ${t("size")} ${size}`);
     lines.push(`💰 ${product.price} ت.د`);
@@ -142,6 +144,7 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
       initialColorIdx: colorIdx,
       initialSize: size,
       variants: product.variants,
+      nameAr: product.labelAr,
     });
   };
 
@@ -233,7 +236,7 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
             {product.category}
           </p>
           <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: isMobile ? 24 : 28, fontWeight: 500, color: DARK, lineHeight: 1.1, marginBottom: 10 }}>
-            {product.label}
+            {displayName}
           </h2>
           <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 26, fontWeight: 600, color: GOLD, letterSpacing: "-0.5px" }}>
             {product.price}
@@ -242,9 +245,9 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
 
           <div style={{ height: 1, background: `linear-gradient(to right,${GOLD},transparent)`, margin: "18px 0", opacity: 0.35 }} />
 
-          {product.desc && (
-            <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 13, lineHeight: 1.7, color: "var(--text-muted,#777)", marginBottom: 20 }}>
-              {product.desc}
+          {displayDesc && (
+            <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 13, lineHeight: 1.7, color: "var(--text-muted,#777)", marginBottom: 20, whiteSpace: "pre-line" }}>
+              {displayDesc}
             </p>
           )}
 

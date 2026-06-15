@@ -272,7 +272,8 @@ function CategoryCard({ cat, onClick, delay, comingSoon, coverPhotos }) {
 
 // ── Product group card (one card per color group) ─────────────
 function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpenDetail }) {
-  const { t } = useLang();
+  const { t, isAr } = useLang();
+  const displayName = isAr && group.labelAr ? group.labelAr : group.label;
   const [activeIdx, setActiveIdx] = useState(0);
   const [hovered, setHovered] = useState(false);
   const [showMiniPopup, setShowMiniPopup] = useState(false);
@@ -381,7 +382,7 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
           fontFamily: "'Jost',sans-serif", fontSize: 10, color: "var(--gold)",
           letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 4,
         }}>{cat.label}</p>
-        <h3 onClick={() => onOpenDetail?.(group)} style={{ fontSize: 15, fontWeight: 500, marginBottom: 6, lineHeight: 1.3, cursor: "pointer" }}>{group.label}</h3>
+        <h3 onClick={() => onOpenDetail?.(group)} style={{ fontSize: 15, fontWeight: 500, marginBottom: 6, lineHeight: 1.3, cursor: "pointer" }}>{displayName}</h3>
         <p style={{
           fontFamily: "'Jost',sans-serif", fontSize: 12, color: "var(--text-muted)",
           lineHeight: 1.6, marginBottom: 10,
@@ -482,6 +483,7 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
               onClick={() => onOrder({
                 id: group.supabaseId,
                 name: group.label,
+                nameAr: group.labelAr,
                 price: group.price ?? cat.price,
                 img: activeSrc,
                 category: cat.label,
@@ -640,6 +642,8 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
     price: p.price,
     sizes: p.sizes ?? cat.sizes,
     description: p.description,
+    labelAr: p.name_ar,
+    descriptionAr: p.description_ar,
     supabaseId: p.id,
     stock: p.stock,
     variants: p.variants,
@@ -967,8 +971,10 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
             catId: cat.id,
             category: cat.label,
             label: detailGroup.label,
+            labelAr: detailGroup.labelAr,
             price: detailGroup.price ?? cat.price,
             desc: detailGroup.description ?? cat.desc,
+            descAr: detailGroup.descriptionAr,
             sizes: detailGroup.sizes ?? cat.sizes ?? [],
             photos: detailGroup.photos ?? [],
             supabaseId: detailGroup.supabaseId,

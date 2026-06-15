@@ -28,7 +28,7 @@ const CATEGORY_SIZE_TYPE = {
 };
 
 const EMPTY_FORM = {
-  name: "", category: CATEGORIES[0], description: "",
+  name: "", name_ar: "", category: CATEGORIES[0], description: "", description_ar: "",
   price: "", stock: "", is_active: true,
   sizes: [], existingPhotos: [], newFiles: [],
   variants: [], // stock par couleur (aligné sur les photos : [existantes..., nouvelles...])
@@ -298,8 +298,10 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
 
       const payload = {
         name:        form.name.trim(),
+        name_ar:     form.name_ar?.trim() || null,
         category:    form.category,
         description: form.description.trim(),
+        description_ar: form.description_ar?.trim() || null,
         price:       Number(form.price),
         sizes:       form.sizes,
         images,
@@ -308,11 +310,22 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
         is_active:   form.is_active,
       };
 
-      let result;
-      if (isEdit) {
-        result = await supabase.from("products").update(payload).eq("id", initial.id).select().single();
-      } else {
-        result = await supabase.from("products").insert(payload).select().single();
+      const doSave = () => isEdit
+        ? supabase.from("products").update(payload).eq("id", initial.id).select().single()
+        : supabase.from("products").insert(payload).select().single();
+
+      let result = await doSave();
+      // Repli : retire les colonnes optionnelles absentes du schéma et réessaie
+      let tries = 0;
+      while (result.error && tries < 4) {
+        const msg = result.error.message || "";
+        let stripped = false;
+        for (const col of ["name_ar", "description_ar", "variants"]) {
+          if (msg.includes(col) && col in payload) { delete payload[col]; stripped = true; }
+        }
+        if (!stripped) break;
+        result = await doSave();
+        tries++;
       }
 
       if (result.error) throw result.error;
@@ -367,6 +380,16 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
             {errors.name && <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "#e57373", marginTop: 4 }}>{errors.name}</p>}
           </div>
 
+          {/* Nom arabe */}
+          <div style={fieldWrap}>
+            <label style={labelStyle}>الاسم بالعربية (Nom en arabe)</label>
+            <input value={form.name_ar} onChange={(e) => set("name_ar", e.target.value)}
+              dir="rtl" placeholder="مثال : فستان صيفي 2026" style={inp()}
+              onFocus={(e) => (e.target.style.borderColor = "#C9A84C")}
+              onBlur={(e) => (e.target.style.borderColor = "#ddd")}
+            />
+          </div>
+
           {/* Catégorie */}
           <div style={fieldWrap}>
             <label style={labelStyle}>Catégorie *</label>
@@ -385,6 +408,17 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
             <textarea value={form.description} onChange={(e) => set("description", e.target.value)}
               placeholder="Décrivez le produit..."
               rows={3}
+              style={{ ...inp(), resize: "vertical", lineHeight: 1.6 }}
+              onFocus={(e) => (e.target.style.borderColor = "#C9A84C")}
+              onBlur={(e) => (e.target.style.borderColor = "#ddd")}
+            />
+          </div>
+
+          {/* Description arabe */}
+          <div style={fieldWrap}>
+            <label style={labelStyle}>الوصف بالعربية (Description en arabe)</label>
+            <textarea value={form.description_ar} onChange={(e) => set("description_ar", e.target.value)}
+              dir="rtl" placeholder="وصف المنتج بالعربية..." rows={3}
               style={{ ...inp(), resize: "vertical", lineHeight: 1.6 }}
               onFocus={(e) => (e.target.style.borderColor = "#C9A84C")}
               onBlur={(e) => (e.target.style.borderColor = "#ddd")}
