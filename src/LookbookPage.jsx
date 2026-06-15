@@ -215,17 +215,34 @@ export default function LookbookPage({ onClose, muteAudio }) {
           userSelect: "none",
         }}
       >
-        {/* ── Full photo ── */}
+        {/* ── Full photo (photo entière + fond flou, jamais coupée) ── */}
         <div style={{
           position: "absolute", inset: 0,
           opacity: fading ? 0 : 1,
           transform: fading ? "scale(1.025)" : "scale(1)",
           transition: "opacity 0.38s ease, transform 0.38s ease",
         }}>
+          {/* Fond flou de la même image → remplit l'espace avec élégance */}
+          <img
+            src={page.img}
+            alt=""
+            aria-hidden="true"
+            style={{
+              position: "absolute", inset: 0, width: "100%", height: "100%",
+              objectFit: "cover", display: "block",
+              filter: "blur(30px) brightness(0.5)", transform: "scale(1.12)",
+            }}
+          />
+          {/* Photo complète, bien cadrée et centrée (aucune coupe) */}
           <img
             src={page.img}
             alt={page.name}
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            loading="eager"
+            decoding="async"
+            style={{
+              position: "absolute", inset: 0, width: "100%", height: "100%",
+              objectFit: "contain", objectPosition: "center", display: "block",
+            }}
           />
         </div>
 
