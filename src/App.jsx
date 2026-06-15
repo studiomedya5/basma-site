@@ -1000,11 +1000,9 @@ export default function App() {
       catCoverImages[p.category].push(p.images[0]);
     }
   });
-  const sortedCollectionCats = [...COLLECTION_CATEGORIES].sort((a, b) => {
-    const ax = activeCatLabels.has(a.label) ? 0 : 1;
-    const bx = activeCatLabels.has(b.label) ? 0 : 1;
-    return ax - bx;
-  });
+  // Tri : "Pack's" toujours à la une, puis collections avec produits, puis Coming Soon
+  const catRank = (c) => c.id === "pack" ? -1 : (activeCatLabels.has(c.label) ? 0 : 1);
+  const sortedCollectionCats = [...COLLECTION_CATEGORIES].sort((a, b) => catRank(a) - catRank(b));
 
   const filtered = products
     .filter((p) => activeCategory === "Tout" || p.tag === activeCategory)

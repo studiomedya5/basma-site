@@ -1061,12 +1061,9 @@ export default function CollectionPage({ onBack, selected, onOpenCategory, goBac
       });
   }, []);
 
-  // Tri : collections existantes (avec produits) en premier
-  const sortedCategories = [...categories].sort((a, b) => {
-    const ax = activeCats?.has(a.label) ? 0 : 1;
-    const bx = activeCats?.has(b.label) ? 0 : 1;
-    return ax - bx;
-  });
+  // Tri : "Pack's" toujours à la une, puis collections avec produits, puis Coming Soon
+  const catRank = (c) => c.id === "pack" ? -1 : (activeCats?.has(c.label) ? 0 : 1);
+  const sortedCategories = [...categories].sort((a, b) => catRank(a) - catRank(b));
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
