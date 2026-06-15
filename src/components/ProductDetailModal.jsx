@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { fbTrack } from "../lib/pixel";
 import { normVariants } from "../lib/variants";
+import { useLang } from "../context/LangContext";
 
 const GOLD = "#C9A84C";
 const DARK = "#2C2A20";
@@ -20,6 +21,7 @@ const MESSENGER_BASE = "https://m.me/basmaonlyshop";
      onClose, onOrder, onAddToCart
 ───────────────────────────────────────────────────────────── */
 export default function ProductDetailModal({ product, shareKey, onClose, onOrder, onAddToCart }) {
+  const { t } = useLang();
   const photos = product.photos ?? [];
   const hasColors = photos.length > 1;
   const sizes = product.sizes ?? [];
@@ -102,9 +104,9 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
 
   // Construit le message de commande à envoyer
   const buildOrderMessage = () => {
-    const lines = ["Bonjour Basma 👋", "Je souhaite commander :", `👗 ${product.label}`];
-    if (hasColors) lines.push(`🎨 Couleur ${(colorIdx ?? 0) + 1}`);
-    if (sizes.length > 1) lines.push(`📏 Taille ${size}`);
+    const lines = [t("msg_greeting"), t("msg_want_order"), `👗 ${product.label}`];
+    if (hasColors) lines.push(`🎨 ${t("color")} ${(colorIdx ?? 0) + 1}`);
+    if (sizes.length > 1) lines.push(`📏 ${t("size")} ${size}`);
     lines.push(`💰 ${product.price} ت.د`);
     if (shareKey) lines.push(`🔗 ${window.location.origin}/produit/${shareKey}`);
     return lines.join("\n");
@@ -249,7 +251,7 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
           {/* ── Couleurs disponibles ── */}
           {hasColors && (
             <div style={{ marginBottom: 20 }}>
-              <p style={labelStyle}>Couleurs disponibles · {photos.length}</p>
+              <p style={labelStyle}>{t("available_colors")} · {photos.length}</p>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {photos.map((ph, i) => {
                   const cOut = colorStock(i) <= 0;
@@ -274,14 +276,14 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
           {/* ── Tailles (grisées si non dispo pour la couleur choisie) ── */}
           {sizes.length > 1 && (
             <div style={{ marginBottom: 22 }}>
-              <p style={labelStyle}>Taille</p>
+              <p style={labelStyle}>{t("size")}</p>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {sizes.map((s) => {
                   const avail = colorSizes(colorIdx).includes(s);
                   return (
                   <button key={s} disabled={!avail}
                     onClick={() => avail && setSize(s)}
-                    title={avail ? undefined : "Taille non disponible pour cette couleur"}
+                    title={avail ? undefined : t("size_unavailable")}
                     style={{
                     padding: "6px 14px", fontSize: 12, fontFamily: "'Jost',sans-serif", fontWeight: 500,
                     cursor: avail ? "pointer" : "not-allowed", borderRadius: 2, transition: "all 0.15s",
@@ -307,10 +309,10 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
                 border: "1.5px solid #ddd9cf", cursor: "not-allowed", fontFamily: "'Jost',sans-serif",
                 letterSpacing: "1.5px", textTransform: "uppercase",
               }}>
-                Rupture de stock
+                {t("out_of_stock")}
               </button>
               <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "#999", textAlign: "center", marginTop: 8 }}>
-                Cet article n'est plus disponible pour le moment.
+                {t("product_unavailable")}
               </p>
             </div>
           ) : curColorOut ? (
@@ -320,10 +322,10 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
                 border: "1.5px solid #ddd9cf", cursor: "not-allowed", fontFamily: "'Jost',sans-serif",
                 letterSpacing: "1.5px", textTransform: "uppercase",
               }}>
-                Couleur épuisée
+                {t("color_out")}
               </button>
               <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "#999", textAlign: "center", marginTop: 8 }}>
-                Cette couleur est épuisée — choisissez-en une autre disponible.
+                {t("color_out_hint")}
               </p>
             </div>
           ) : (
@@ -334,14 +336,14 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
               letterSpacing: "1px", textTransform: "uppercase",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
             }}>
-              <span style={{ fontSize: 14 }}>🛒</span> Panier
+              <span style={{ fontSize: 14 }}>🛒</span> {t("cart")}
             </button>
             <button onClick={handleOrder} style={{
               flex: 1.4, padding: "13px 8px", fontSize: 12, background: DARK, color: GOLD,
               border: `1.5px solid ${DARK}`, cursor: "pointer", fontFamily: "'Jost',sans-serif",
               letterSpacing: "1.5px", textTransform: "uppercase",
             }}>
-              Commander
+              {t("order")}
             </button>
           </div>
           )}
@@ -358,7 +360,7 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
             <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.19 5.44 3.14 7.19.16.14.26.35.27.57l.05 1.78c.03.57.61.94 1.13.71l1.99-.88c.17-.07.36-.09.54-.04 1.03.28 2.12.43 3.27.43 5.64 0 10-4.13 10-9.7C22 6.13 17.64 2 12 2zm6 7.46l-2.94 4.66c-.47.74-1.47.93-2.18.4l-2.34-1.75a.6.6 0 0 0-.72 0l-3.16 2.4c-.42.32-.97-.18-.69-.63l2.94-4.66c.47-.74 1.47-.93 2.18-.4l2.34 1.75a.6.6 0 0 0 .72 0l3.16-2.4c.42-.32.97.18.69.63z" />
             </svg>
-            Commander par Messenger
+            {t("order_messenger")}
           </button>
 
           {/* Commander via WhatsApp (message pré-rempli automatiquement) */}
@@ -372,13 +374,11 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
             <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
               <path d="M17.5 14.4c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.79.37-.27.3-1.04 1.01-1.04 2.47s1.06 2.87 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.19 1.87.12.57-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.13-.27-.2-.57-.35zM12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.07L2 22l5.05-1.32A9.94 9.94 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2z" />
             </svg>
-            Commander par WhatsApp
+            {t("order_whatsapp")}
           </button>
 
           <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, color: msgCopied ? "#2e7d32" : "#aaa", textAlign: "center", marginTop: 8, letterSpacing: "0.5px", lineHeight: 1.5 }}>
-            {msgCopied
-              ? "✓ Votre commande est copiée — collez-la dans Messenger (appui long → Coller)"
-              : "Messenger : commande copiée à coller · WhatsApp : message déjà prêt à envoyer"}
+            {msgCopied ? t("msg_copied") : t("msg_hint")}
           </p>
         </div>
       </div>

@@ -8,6 +8,7 @@ import { supabase } from "./lib/supabase";
 import { makeProductKey } from "./lib/productKey";
 import { fbTrack } from "./lib/pixel";
 import { normVariants } from "./lib/variants";
+import { useLang } from "./context/LangContext";
 
 const categories = [
   {
@@ -146,6 +147,7 @@ const productGroups = {
 
 // ── Square category card ──────────────────────────────────────
 function CategoryCard({ cat, onClick, delay, comingSoon, coverPhotos }) {
+  const { t } = useLang();
   const [hovered, setHovered] = useState(false);
   // Photos de couverture = vraies photos produits si dispo, sinon photos statiques
   const resolve = (p) => (p?.startsWith("http") ? p : `/photos/${cat.id}/${p}`);
@@ -196,13 +198,13 @@ function CategoryCard({ cat, onClick, delay, comingSoon, coverPhotos }) {
               border: "1px solid rgba(255,255,255,0.7)", padding: "8px 18px",
               background: "rgba(201,168,76,0.85)",
             }}>
-              Coming Soon
+              {t("coming_soon")}
             </span>
             <span style={{
               fontFamily: "'Jost',sans-serif", fontSize: 10, letterSpacing: "1.5px",
               color: "rgba(255,255,255,0.85)",
             }}>
-              Bientôt disponible
+              {t("soon_available")}
             </span>
           </div>
         )}
@@ -242,7 +244,7 @@ function CategoryCard({ cat, onClick, delay, comingSoon, coverPhotos }) {
             fontSize: 11,
             color: "var(--text-muted)",
             letterSpacing: "0.5px",
-          }}>{comingSoon ? "Nouvelle collection" : "À partir de"}</span>
+          }}>{comingSoon ? t("new_collection") : t("from_price")}</span>
         </div>
         {comingSoon ? (
           <span style={{
@@ -253,7 +255,7 @@ function CategoryCard({ cat, onClick, delay, comingSoon, coverPhotos }) {
             letterSpacing: "1.5px",
             textTransform: "uppercase",
             whiteSpace: "nowrap",
-          }}>Bientôt</span>
+          }}>{t("coming_soon")}</span>
         ) : (
           <span style={{
             fontFamily: "'Jost', sans-serif",
@@ -270,6 +272,7 @@ function CategoryCard({ cat, onClick, delay, comingSoon, coverPhotos }) {
 
 // ── Product group card (one card per color group) ─────────────
 function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpenDetail }) {
+  const { t } = useLang();
   const [activeIdx, setActiveIdx] = useState(0);
   const [hovered, setHovered] = useState(false);
   const [showMiniPopup, setShowMiniPopup] = useState(false);
@@ -349,7 +352,7 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
             fontFamily: "'Jost',sans-serif", fontSize: 10, fontWeight: 600,
             letterSpacing: "1.5px", textTransform: "uppercase", padding: "6px 12px",
           }}>
-            Rupture de stock
+            {t("out_of_stock")}
           </span>
         )}
         {/* Indice "voir le produit" au survol */}
@@ -367,7 +370,7 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
-            Voir le produit
+            {t("see_product")}
           </span>
         </div>
       </div>
@@ -435,13 +438,13 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
                 fontFamily: "'Jost',sans-serif", letterSpacing: "1px", textTransform: "uppercase",
               }}
             >
-              Rupture de stock
+              {t("out_of_stock")}
             </button>
           ) : curColorOut ? (
             /* Cette couleur est épuisée (mais d'autres sont dispo) */
             <button
               disabled
-              title="Choisissez une autre couleur disponible"
+              title={t("color_out_hint")}
               style={{
                 width: "100%", padding: "12px 4px", fontSize: 11,
                 background: "#ECEAE3", color: "#9a958a",
@@ -449,7 +452,7 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
                 fontFamily: "'Jost',sans-serif", letterSpacing: "1px", textTransform: "uppercase",
               }}
             >
-              Couleur épuisée
+              {t("color_out")}
             </button>
           ) : (
           <div style={{ display: "flex", gap: 6 }}>
@@ -472,7 +475,7 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
               onMouseEnter={e => e.currentTarget.style.opacity = "0.8"}
               onMouseLeave={e => e.currentTarget.style.opacity = "1"}
             >
-              <span style={{ fontSize: 13 }}>🛒</span> Panier
+              <span style={{ fontSize: 13 }}>🛒</span> {t("cart")}
             </button>
             {/* Bouton Commander */}
             <button
@@ -500,7 +503,7 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
               onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
               onMouseLeave={e => e.currentTarget.style.opacity = "1"}
             >
-              Commander
+              {t("order")}
             </button>
           </div>
           )}
@@ -520,7 +523,7 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
               <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", color: "var(--dark)" }}>
-                Choisir les options
+                {t("choose_options")}
               </p>
               <button onClick={() => setShowMiniPopup(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#999", padding: 2 }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -605,6 +608,7 @@ const ALL_SIZES = ["36","38","40","42","44","46","48","50","52","S","M","L","XL"
 
 // ── Gallery view ──────────────────────────────────────────────
 function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
+  const { t } = useLang();
   const [orderProduct, setOrderProduct] = useState(null);
   const [detailGroup, setDetailGroup] = useState(null);
   const [toast, setToast] = useState(null);
@@ -745,7 +749,7 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
           textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 12,
         }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="15 18 9 12 15 6" /></svg>
-          Collection
+          {t("collection")}
         </button>
         <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, letterSpacing: "3px", textTransform: "uppercase", color: "var(--gold)", marginBottom: 6 }}>✦ Basma Only Shop</p>
         <h2 style={{ color: "white", fontSize: "clamp(22px,3vw,32px)", fontWeight: 300, letterSpacing: "-0.5px", marginBottom: 6 }}>{cat.label}</h2>
@@ -753,10 +757,10 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
           <div style={{ width: 32, height: 1, background: "var(--gold)" }} />
           <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "rgba(255,255,255,0.4)", letterSpacing: "2px" }}>
             {!loaded
-              ? "Chargement…"
+              ? t("loading")
               : isEmpty
-                ? "Bientôt disponible"
-                : `${groups.length} article${groups.length > 1 ? "s" : ""} · à partir de ${Math.min(...groups.map(g => g.price ?? cat.price))} ت.د`}
+                ? t("soon_available")
+                : `${groups.length} ${t("articles")} · ${t("from_price")} ${Math.min(...groups.map(g => g.price ?? cat.price))} ت.د`}
           </span>
         </div>
       </div>
@@ -779,12 +783,12 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
             fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(30px,5vw,46px)",
             fontWeight: 400, color: "var(--dark)", lineHeight: 1.1, marginBottom: 16,
           }}>
-            Coming Soon
+            {t("coming_soon")}
           </h3>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
             <div style={{ width: 28, height: 1, background: "rgba(200,149,108,0.5)" }} />
             <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 12, color: "var(--text-muted)", letterSpacing: "2px" }}>
-              Bientôt disponible
+              {t("soon_available")}
             </span>
             <div style={{ width: 28, height: 1, background: "rgba(200,149,108,0.5)" }} />
           </div>
@@ -792,14 +796,14 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
             fontFamily: "'Jost',sans-serif", fontSize: 13, color: "var(--text-muted)",
             lineHeight: 1.7, maxWidth: 380, marginBottom: 28,
           }}>
-            Notre nouvelle collection {cat.label} arrive très prochainement. Reviens vite la découvrir !
+            {t("coming_desc")}
           </p>
           <button onClick={onBack} style={{
             padding: "13px 34px", fontSize: 11, background: "var(--dark)", color: "var(--gold)",
             border: "none", cursor: "pointer", fontFamily: "'Jost',sans-serif",
             letterSpacing: "2.5px", textTransform: "uppercase",
           }}>
-            Voir les autres catégories
+            {t("see_other_cats")}
           </button>
         </div>
       ) : (
@@ -825,7 +829,7 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
             <line x1="4" y1="6" x2="20" y2="6" /><line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="18" x2="20" y2="18" />
             <circle cx="8" cy="6" r="2" fill="var(--gold)" stroke="var(--gold)" /><circle cx="16" cy="12" r="2" fill="var(--gold)" stroke="var(--gold)" /><circle cx="10" cy="18" r="2" fill="var(--gold)" stroke="var(--gold)" />
           </svg>
-          Filtrer {hasActiveFilter && <span style={{ color: "var(--gold)", fontWeight: 700 }}>●</span>}
+          {t("filter")} {hasActiveFilter && <span style={{ color: "var(--gold)", fontWeight: 700 }}>●</span>}
         </button>
 
         {/* Contenu filtres — toujours visible desktop, togglé mobile */}
@@ -835,7 +839,7 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
         }}>
           {/* Filtre taille */}
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-            <span style={labelStyle}>Taille</span>
+            <span style={labelStyle}>{t("size")}</span>
             <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
               {catSizes.map(s => (
                 <button key={s} onClick={() => setFilterSize(filterSize === s ? null : s)} style={{
@@ -858,7 +862,7 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
 
           {/* Filtre prix */}
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-            <span style={labelStyle}>Prix (DT)</span>
+            <span style={labelStyle}>{t("price_dt")}</span>
             <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
               <input
                 type="text"
@@ -886,16 +890,16 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
 
           {/* Tri */}
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-            <span style={labelStyle}>Trier par</span>
+            <span style={labelStyle}>{t("sort_by")}</span>
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value)}
               style={{ width: 100, padding: "4px 22px 4px 8px", fontSize: 9, border: "1.5px solid rgba(200,149,108,0.4)", borderRadius: 2, fontFamily: "'Jost',sans-serif", outline: "none", background: "white", color: "#2C2A20", cursor: "pointer", height: 26, boxSizing: "border-box", appearance: "none", textOverflow: "ellipsis", backgroundImage: `url("data:image/svg+xml,%3Csvg width='8' height='5' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23C9A84C' stroke-width='1.5'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 7px center" }}
             >
-              <option value="default">par défaut</option>
-              <option value="price_asc">prix croissant</option>
-              <option value="price_desc">prix décroissant</option>
-              <option value="newest">nouveautés</option>
+              <option value="default">{t("sort_default")}</option>
+              <option value="price_asc">{t("sort_price_asc")}</option>
+              <option value="price_desc">{t("sort_price_desc")}</option>
+              <option value="newest">{t("sort_new")}</option>
             </select>
           </div>
 
@@ -913,7 +917,7 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
               </svg>
-              Réinitialiser
+              {t("reset")}
             </button>
           )}
         </div>
@@ -926,14 +930,14 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
             textAlign: "center", padding: "60px 20px",
             fontFamily: "'Jost',sans-serif", color: "var(--text-muted)", fontSize: 14,
           }}>
-            Aucun article ne correspond à vos filtres.
+            {t("no_filter_match")}
             <br />
             <button onClick={resetFilters} style={{
               marginTop: 16, padding: "10px 28px", fontSize: 12,
               background: "#C9A84C", color: "white", border: "none", cursor: "pointer",
               fontFamily: "'Jost',sans-serif", letterSpacing: "1px",
             }}>
-              Réinitialiser les filtres
+              {t("reset_filters")}
             </button>
           </div>
         ) : (
@@ -985,6 +989,7 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
 
 // ── Main ──────────────────────────────────────────────────────
 export default function CollectionPage({ onBack, selected, onOpenCategory, goBack, initialProductKey }) {
+  const { t } = useLang();
   // `selected` (catégorie active) est contrôlé par App pour gérer l'historique.
   const selectedCat = categories.find(c => c.id === selected);
   const [showTop, setShowTop] = useState(false);
@@ -1045,9 +1050,9 @@ export default function CollectionPage({ onBack, selected, onOpenCategory, goBac
 
         <div className="nav-links-desktop" style={{ display: "flex", gap: 36, alignItems: "center" }}>
           {[
-            { label: "ACCUEIL",    action: onBack },
-            { label: "COLLECTION", action: () => { if (selected) goBack(); } },
-            { label: "CONTACT",    action: onBack },
+            { label: t("home"),       action: onBack },
+            { label: t("collection"), action: () => { if (selected) goBack(); } },
+            { label: t("contact"),     action: onBack },
           ].map(({ label, action }) => (
             <a key={label} className="nav-link" onClick={action}>{label}</a>
           ))}
@@ -1058,7 +1063,7 @@ export default function CollectionPage({ onBack, selected, onOpenCategory, goBac
           <button
             onClick={() => openCart(true)}
             style={{ position: "relative", background: "none", border: "none", cursor: "pointer", color: "var(--dark)", padding: 4 }}
-            title="Mon panier"
+            title={t("my_cart")}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
               <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
@@ -1079,7 +1084,7 @@ export default function CollectionPage({ onBack, selected, onOpenCategory, goBac
 
           <button className="coll-back-btn" onClick={goBack}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
-            {selected ? "Collections" : "Retour"}
+            {selected ? t("collections_word") : t("back")}
           </button>
         </div>
       </nav>
@@ -1117,10 +1122,10 @@ export default function CollectionPage({ onBack, selected, onOpenCategory, goBac
         <>
           <div className="coll-title-section">
             <p className="coll-eyebrow">✦ Basma Only Shop</p>
-            <h1 className="coll-title">Notre <em>Collection</em></h1>
+            <h1 className="coll-title">{t("our_collection")}</h1>
             <div className="coll-divider">
               <div className="coll-line" />
-              <span className="coll-sub">{categories.length} catégories</span>
+              <span className="coll-sub">{categories.length} {t("categories_word")}</span>
               <div className="coll-line" />
             </div>
           </div>

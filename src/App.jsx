@@ -12,6 +12,7 @@ import LookbookPage from "./LookbookPage";
 import OnboardingTour from "./components/OnboardingTour";
 import SwipeBack from "./components/SwipeBack";
 import { catIdFromKey } from "./lib/productKey";
+import { useLang } from "./context/LangContext";
 
 // Détecte un lien produit partagé : /produit/<clé> (sponsoring Facebook)
 const DEEP_LINK = (() => {
@@ -914,7 +915,7 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [showLookbook, setShowLookbook] = useState(false);
-  const [lang, setLang] = useState("fr");
+  const { lang, setLang, t } = useLang();
 
   const shopRef = useRef(null);
   const collectionRef = useRef(null);

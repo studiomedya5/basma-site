@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 import { fbTrack } from "../lib/pixel";
 import { DELEGATIONS } from "../lib/tunisia";
 import { normVariants } from "../lib/variants";
+import { useLang } from "../context/LangContext";
 
 const GOUVERNORATS = [
   "Ariana","Béja","Ben Arous","Bizerte","Gabès","Gafsa","Jendouba",
@@ -26,6 +27,7 @@ const T = {
 };
 
 export default function OrderModal({ product, onClose }) {
+  const { t } = useLang();
   const hasColors = product.photos && product.photos.length > 1;
 
   const [colorIdx, setColorIdx]   = useState(product.initialColorIdx ?? (hasColors ? null : 0));
@@ -78,13 +80,13 @@ export default function OrderModal({ product, onClose }) {
 
   const validate = () => {
     const e = {};
-    if (hasColors && colorIdx === null)  e.color      = "Requis";
-    else if (selColorOut)                e.color      = "Couleur épuisée";
-    if (!form.nom.trim())                e.nom        = "Requis";
-    if (!form.telephone.trim())          e.telephone  = "Requis";
-    if (!form.adresse.trim())            e.adresse    = "Requis";
-    if (!form.gouvernorat)               e.gouvernorat = "Requis";
-    if (!form.delegation)                e.delegation = "Requis";
+    if (hasColors && colorIdx === null)  e.color      = t("required");
+    else if (selColorOut)                e.color      = t("color_out");
+    if (!form.nom.trim())                e.nom        = t("required");
+    if (!form.telephone.trim())          e.telephone  = t("required");
+    if (!form.adresse.trim())            e.adresse    = t("required");
+    if (!form.gouvernorat)               e.gouvernorat = t("required");
+    if (!form.delegation)                e.delegation = t("required");
     return e;
   };
 
@@ -173,7 +175,7 @@ export default function OrderModal({ product, onClose }) {
   const ColorPicker = () => hasColors ? (
     <div style={{marginBottom:18}}>
       <span style={{...T.label,color:errors.color?"#e57373":"rgba(201,168,76,0.72)"}}>
-        Couleur {errors.color&&<span style={{letterSpacing:0,textTransform:"none",fontSize:10}}>— requis</span>}
+        {t("color")} {errors.color&&<span style={{letterSpacing:0,textTransform:"none",fontSize:10}}>— {t("required")}</span>}
       </span>
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
         {product.photos.map((ph,i)=>{
@@ -181,7 +183,7 @@ export default function OrderModal({ product, onClose }) {
           return (
           <button key={i} type="button"
             onClick={()=>{setColorIdx(i);setErrors(p=>({...p,color:""}));}}
-            title={cOut?"Couleur épuisée":undefined}
+            title={cOut?t("color_out"):undefined}
             style={{ width:36,height:36,padding:0,borderRadius:"50%",cursor:"pointer",overflow:"hidden",background:"none",
               border:i===colorIdx?`2.5px solid ${GOLD}`:"2.5px solid transparent",
               outline:i===colorIdx?`2px solid ${GOLD}`:"1.5px solid rgba(200,149,108,0.3)",
@@ -192,21 +194,21 @@ export default function OrderModal({ product, onClose }) {
           );
         })}
       </div>
-      {selColorOut && <p style={{...T.body,fontSize:10,color:"#e57373",marginTop:6}}>Cette couleur est épuisée — choisissez-en une autre.</p>}
+      {selColorOut && <p style={{...T.body,fontSize:10,color:"#e57373",marginTop:6}}>{t("color_out_hint")}</p>}
     </div>
   ) : null;
 
   /* ─── Bloc tailles ──────────────────────────── */
   const SizePicker = () => product.sizes?.length > 1 ? (
     <div style={{marginBottom:18}}>
-      <span style={T.label}>Taille</span>
+      <span style={T.label}>{t("size")}</span>
       <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
         {product.sizes.map(s=>{
           const avail = colorSizes(colorIdx ?? 0).includes(s);
           return (
           <button key={s} type="button" disabled={!avail}
             onClick={()=> avail && set("size",s)}
-            title={avail?undefined:"Taille non disponible pour cette couleur"}
+            title={avail?undefined:t("size_unavailable")}
             style={{ padding:"6px 14px", fontSize:12, fontFamily:"'Jost',sans-serif", fontWeight:500,
               cursor:avail?"pointer":"not-allowed", borderRadius:0, transition:"all 0.15s",
               border:(form.size===s&&avail)?`1.5px solid ${GOLD}`:"1.5px solid rgba(44,42,32,0.18)",
@@ -229,11 +231,11 @@ export default function OrderModal({ product, onClose }) {
       borderLeft:`3px solid ${deliveryFee===0?"#4caf50":GOLD}` }}>
       <span style={{fontSize:14}}>🚚</span>
       {deliveryFee===0 ? (
-        <span style={{...T.body,color:"#2e7d32",fontWeight:600,fontSize:12}}>Livraison gratuite</span>
+        <span style={{...T.body,color:"#2e7d32",fontWeight:600,fontSize:12}}>{t("delivery_free")}</span>
       ) : (
         <span style={{...T.body,fontSize:12,color:DARK}}>
-          Livraison <strong style={{color:GOLD}}>{DELIVERY_FEE} DT</strong>
-          <span style={{color:"#bbb",marginLeft:6,fontSize:11}}>· gratuit dès 100 DT</span>
+          {t("delivery")} <strong style={{color:GOLD}}>{DELIVERY_FEE} DT</strong>
+          <span style={{color:"#bbb",marginLeft:6,fontSize:11}}>· {t("delivery_from")}</span>
         </span>
       )}
     </div>
@@ -248,14 +250,14 @@ export default function OrderModal({ product, onClose }) {
           <polyline points="20 6 9 17 4 12"/>
         </svg>
       </div>
-      <h2 style={{...T.serif,fontSize:22,fontWeight:500,color:DARK,marginBottom:10}}>Commande confirmée</h2>
+      <h2 style={{...T.serif,fontSize:22,fontWeight:500,color:DARK,marginBottom:10}}>{t("order_confirmed")}</h2>
       <p style={{...T.body,color:"#888",fontSize:13,lineHeight:1.9,marginBottom:28}}>
-        Nous vous contacterons au<br/>
+        {t("will_contact")}<br/>
         <strong style={{color:DARK,fontWeight:600}}>{form.telephone}</strong>
       </p>
       <button onClick={onClose} style={{...T.body,padding:"14px 40px",background:DARK,color:GOLD,border:"none",
         letterSpacing:"2.5px",fontSize:11,textTransform:"uppercase",cursor:"pointer"}}>
-        Fermer
+        {t("close")}
       </button>
     </div>
   );
@@ -264,11 +266,11 @@ export default function OrderModal({ product, onClose }) {
   const ErrorScreen = () => (
     <div style={{textAlign:"center",padding:"50px 20px 30px"}}>
       <div style={{fontSize:36,marginBottom:16}}>⚠️</div>
-      <h2 style={{...T.serif,fontSize:20,fontWeight:400,color:DARK,marginBottom:8}}>Erreur inattendue</h2>
-      <p style={{...T.body,color:"#888",fontSize:13,marginBottom:24}}>Veuillez réessayer.</p>
+      <h2 style={{...T.serif,fontSize:20,fontWeight:400,color:DARK,marginBottom:8}}>{t("error_title")}</h2>
+      <p style={{...T.body,color:"#888",fontSize:13,marginBottom:24}}>{t("please_retry")}</p>
       <button onClick={()=>setStatus("idle")} style={{...T.body,padding:"14px 40px",background:DARK,color:GOLD,
         border:"none",letterSpacing:"2.5px",fontSize:11,textTransform:"uppercase",cursor:"pointer"}}>
-        Réessayer
+        {t("retry")}
       </button>
     </div>
   );
@@ -340,28 +342,28 @@ export default function OrderModal({ product, onClose }) {
 
               {/* Nom */}
               <div style={{marginBottom:20}}>
-                <label style={T.label}>Nom et prénom *</label>
-                {MobInput({ k:"nom", placeholder:"Votre nom complet" })}
+                <label style={T.label}>{t("name")} *</label>
+                {MobInput({ k:"nom", placeholder:t("name_ph") })}
                 {errors.nom&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.nom}</p>}
               </div>
 
               {/* Téléphone */}
               <div style={{marginBottom:20}}>
-                <label style={T.label}>Téléphone *</label>
+                <label style={T.label}>{t("phone")} *</label>
                 {MobInput({ k:"telephone", placeholder:"+216 XX XXX XXX", type:"tel" })}
                 {errors.telephone&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.telephone}</p>}
               </div>
 
               {/* Adresse */}
               <div style={{marginBottom:20}}>
-                <label style={T.label}>Adresse *</label>
-                {MobInput({ k:"adresse", placeholder:"Rue, numéro, ville..." })}
+                <label style={T.label}>{t("address")} *</label>
+                {MobInput({ k:"adresse", placeholder:t("address_ph") })}
                 {errors.adresse&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.adresse}</p>}
               </div>
 
               {/* Gouvernorat */}
               <div style={{marginBottom:20}}>
-                <label style={T.label}>Gouvernorat *</label>
+                <label style={T.label}>{t("governorate")} *</label>
                 <select value={form.gouvernorat} onChange={e=>setGouvernorat(e.target.value)}
                   style={{width:"100%",padding:"7px 0",background:"transparent",border:"none",
                     borderBottom:`1.5px solid ${errors.gouvernorat?"#e57373":"rgba(44,42,32,0.14)"}`,
@@ -369,7 +371,7 @@ export default function OrderModal({ product, onClose }) {
                     color:form.gouvernorat?DARK:"#bbb",outline:"none",cursor:"pointer",appearance:"none"}}
                   onFocus={e=>e.target.style.borderBottomColor=GOLD}
                   onBlur={e=>e.target.style.borderBottomColor=errors.gouvernorat?"#e57373":"rgba(44,42,32,0.14)"}>
-                  <option value="">Choisir</option>
+                  <option value="">{t("choose")}</option>
                   {GOUVERNORATS.map(g=><option key={g} value={g}>{g}</option>)}
                 </select>
                 {errors.gouvernorat&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.gouvernorat}</p>}
@@ -377,7 +379,7 @@ export default function OrderModal({ product, onClose }) {
 
               {/* Délégation (dépend du gouvernorat) */}
               <div style={{marginBottom:20}}>
-                <label style={T.label}>Délégation *</label>
+                <label style={T.label}>{t("delegation")} *</label>
                 <select value={form.delegation} onChange={e=>set("delegation",e.target.value)}
                   disabled={!form.gouvernorat}
                   style={{width:"100%",padding:"7px 0",background:"transparent",border:"none",
@@ -387,7 +389,7 @@ export default function OrderModal({ product, onClose }) {
                     appearance:"none",opacity:form.gouvernorat?1:0.5}}
                   onFocus={e=>e.target.style.borderBottomColor=GOLD}
                   onBlur={e=>e.target.style.borderBottomColor=errors.delegation?"#e57373":"rgba(44,42,32,0.14)"}>
-                  <option value="">{form.gouvernorat?"Choisir":"Choisir d'abord le gouvernorat"}</option>
+                  <option value="">{form.gouvernorat?t("choose"):t("choose_gov_first")}</option>
                   {delegationOptions.map(d=><option key={d} value={d}>{d}</option>)}
                 </select>
                 {errors.delegation&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.delegation}</p>}
@@ -395,7 +397,7 @@ export default function OrderModal({ product, onClose }) {
 
               {/* Email optionnel */}
               <div style={{marginBottom:24,opacity:0.7}}>
-                <label style={{...T.label}}>Email <span style={{letterSpacing:0,textTransform:"none",fontSize:9}}>(optionnel)</span></label>
+                <label style={{...T.label}}>{t("email")} <span style={{letterSpacing:0,textTransform:"none",fontSize:9}}>({t("optional")})</span></label>
                 {MobInput({ k:"email", placeholder:"votre@email.com", type:"email" })}
               </div>
 
@@ -405,7 +407,7 @@ export default function OrderModal({ product, onClose }) {
                 background:"white",border:`1px solid rgba(201,168,76,0.2)`,
                 borderLeft:`3px solid ${GOLD}`}}>
                 <div>
-                  <p style={{...T.label,marginBottom:10}}>Quantité</p>
+                  <p style={{...T.label,marginBottom:10}}>{t("quantity")}</p>
                   <div style={{display:"flex",alignItems:"center",gap:16}}>
                     <button type="button" onClick={()=>set("qty",Math.max(1,form.qty-1))}
                       style={{width:28,height:28,border:`1px solid rgba(44,42,32,0.2)`,background:"transparent",
@@ -423,8 +425,8 @@ export default function OrderModal({ product, onClose }) {
                   </div>
                 </div>
                 <div style={{textAlign:"right"}}>
-                  <p style={{...T.label,marginBottom:6}}>Total</p>
-                  {deliveryFee>0&&<p style={{...T.body,fontSize:10,color:"#aaa",marginBottom:3}}>{subtotal} + {DELIVERY_FEE} livraison</p>}
+                  <p style={{...T.label,marginBottom:6}}>{t("total")}</p>
+                  {deliveryFee>0&&<p style={{...T.body,fontSize:10,color:"#aaa",marginBottom:3}}>{subtotal} + {DELIVERY_FEE} {t("livraison_word")}</p>}
                   <span style={{...T.serif,fontSize:26,fontWeight:600,color:GOLD,letterSpacing:"-0.5px"}}>
                     {totalPrice}<span style={{fontFamily:"'Jost',sans-serif",fontSize:13,fontWeight:400,marginLeft:3}}>ت.د</span>
                   </span>
@@ -437,7 +439,7 @@ export default function OrderModal({ product, onClose }) {
                   color:GOLD,border:"none",fontFamily:"'Jost',sans-serif",fontSize:11,
                   letterSpacing:"3px",textTransform:"uppercase",cursor:status==="loading"?"wait":"pointer",
                   transition:"background 0.2s",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                {status==="loading" ? "Envoi en cours..." : "Commander"}
+                {status==="loading" ? t("sending") : t("order")}
               </button>
             </form>
           )}
@@ -511,7 +513,7 @@ export default function OrderModal({ product, onClose }) {
             <form onSubmit={handleSubmit} noValidate>
 
               {/* En-tête document */}
-              <p style={{...T.eyebrow,color:GOLD,marginBottom:6}}>Votre commande</p>
+              <p style={{...T.eyebrow,color:GOLD,marginBottom:6}}>{t("your_order")}</p>
               <h2 style={{...T.serif,fontSize:22,fontWeight:400,color:DARK,marginBottom:12,lineHeight:1.2}}>
                 {product.name}
               </h2>
@@ -524,12 +526,12 @@ export default function OrderModal({ product, onClose }) {
               {/* Nom + Téléphone */}
               <div className="order-form-row" style={{display:"flex",gap:14,marginBottom:14}}>
                 <div style={{flex:1}}>
-                  <label style={T.label}>Nom et prénom *</label>
-                  {DeskInput({ k:"nom", placeholder:"Votre nom" })}
+                  <label style={T.label}>{t("name")} *</label>
+                  {DeskInput({ k:"nom", placeholder:t("name_ph") })}
                   {errors.nom&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.nom}</p>}
                 </div>
                 <div style={{flex:1}}>
-                  <label style={T.label}>Téléphone *</label>
+                  <label style={T.label}>{t("phone")} *</label>
                   {DeskInput({ k:"telephone", placeholder:"+216 XX XXX XXX", type:"tel" })}
                   {errors.telephone&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.telephone}</p>}
                 </div>
@@ -537,21 +539,21 @@ export default function OrderModal({ product, onClose }) {
 
               {/* Email */}
               <div style={{marginBottom:14}}>
-                <label style={{...T.label,opacity:0.7}}>Email <span style={{letterSpacing:0,textTransform:"none",fontSize:9}}>(optionnel)</span></label>
+                <label style={{...T.label,opacity:0.7}}>{t("email")} <span style={{letterSpacing:0,textTransform:"none",fontSize:9}}>({t("optional")})</span></label>
                 {DeskInput({ k:"email", placeholder:"votre@email.com", type:"email" })}
               </div>
 
               {/* Adresse (pleine largeur) */}
               <div style={{marginBottom:14}}>
-                <label style={T.label}>Adresse *</label>
-                {DeskInput({ k:"adresse", placeholder:"Rue, numéro, ville..." })}
+                <label style={T.label}>{t("address")} *</label>
+                {DeskInput({ k:"adresse", placeholder:t("address_ph") })}
                 {errors.adresse&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.adresse}</p>}
               </div>
 
               {/* Gouvernorat + Délégation */}
               <div className="order-form-row" style={{display:"flex",gap:14,marginBottom:22}}>
                 <div style={{flex:1}}>
-                  <label style={T.label}>Gouvernorat *</label>
+                  <label style={T.label}>{t("governorate")} *</label>
                   <select value={form.gouvernorat} onChange={e=>setGouvernorat(e.target.value)}
                     style={{width:"100%",padding:"11px 14px",boxSizing:"border-box",
                       border:`1px solid ${errors.gouvernorat?"#e57373":"rgba(44,42,32,0.13)"}`,
@@ -561,13 +563,13 @@ export default function OrderModal({ product, onClose }) {
                       transition:"border-color 0.18s,border-left-color 0.18s"}}
                     onFocus={e=>{e.target.style.borderColor="rgba(201,168,76,0.4)";e.target.style.borderLeftColor=GOLD;}}
                     onBlur={e=>{e.target.style.borderColor=errors.gouvernorat?"#e57373":"rgba(44,42,32,0.13)";e.target.style.borderLeftColor=errors.gouvernorat?"#e57373":"transparent";}}>
-                    <option value="">Choisir un gouvernorat</option>
+                    <option value="">{t("choose_gov")}</option>
                     {GOUVERNORATS.map(g=><option key={g} value={g}>{g}</option>)}
                   </select>
                   {errors.gouvernorat&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.gouvernorat}</p>}
                 </div>
                 <div style={{flex:1}}>
-                  <label style={T.label}>Délégation *</label>
+                  <label style={T.label}>{t("delegation")} *</label>
                   <select value={form.delegation} onChange={e=>set("delegation",e.target.value)}
                     disabled={!form.gouvernorat}
                     style={{width:"100%",padding:"11px 14px",boxSizing:"border-box",
@@ -579,7 +581,7 @@ export default function OrderModal({ product, onClose }) {
                       transition:"border-color 0.18s,border-left-color 0.18s"}}
                     onFocus={e=>{e.target.style.borderColor="rgba(201,168,76,0.4)";e.target.style.borderLeftColor=GOLD;}}
                     onBlur={e=>{e.target.style.borderColor=errors.delegation?"#e57373":"rgba(44,42,32,0.13)";e.target.style.borderLeftColor=errors.delegation?"#e57373":"transparent";}}>
-                    <option value="">{form.gouvernorat?"Choisir une délégation":"Choisir d'abord le gouvernorat"}</option>
+                    <option value="">{form.gouvernorat?t("choose_deleg"):t("choose_gov_first")}</option>
                     {delegationOptions.map(d=><option key={d} value={d}>{d}</option>)}
                   </select>
                   {errors.delegation&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.delegation}</p>}
@@ -592,7 +594,7 @@ export default function OrderModal({ product, onClose }) {
               {/* Quantité + Total */}
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:22}}>
                 <div>
-                  <label style={{...T.label,marginBottom:8}}>Quantité</label>
+                  <label style={{...T.label,marginBottom:8}}>{t("quantity")}</label>
                   <div style={{display:"flex",alignItems:"center",border:`1px solid rgba(44,42,32,0.15)`,overflow:"hidden"}}>
                     <button type="button" onClick={()=>set("qty",Math.max(1,form.qty-1))}
                       style={{width:38,height:38,border:"none",borderRight:`1px solid rgba(44,42,32,0.12)`,
@@ -604,8 +606,8 @@ export default function OrderModal({ product, onClose }) {
                   </div>
                 </div>
                 <div style={{textAlign:"right"}}>
-                  <label style={{...T.label,marginBottom:6}}>Total à payer</label>
-                  {deliveryFee>0&&<p style={{...T.body,fontSize:11,color:"#aaa",marginBottom:2}}>{subtotal} + {DELIVERY_FEE} DT livraison</p>}
+                  <label style={{...T.label,marginBottom:6}}>{t("total_pay")}</label>
+                  {deliveryFee>0&&<p style={{...T.body,fontSize:11,color:"#aaa",marginBottom:2}}>{subtotal} + {DELIVERY_FEE} DT {t("livraison_word")}</p>}
                   <span style={{...T.serif,fontSize:26,fontWeight:600,color:GOLD,letterSpacing:"-0.5px"}}>
                     {totalPrice}
                     <span style={{fontFamily:"'Jost',sans-serif",fontSize:13,fontWeight:300,marginLeft:4}}>ت.د</span>
@@ -621,7 +623,7 @@ export default function OrderModal({ product, onClose }) {
                   fontFamily:"'Jost',sans-serif",fontSize:11,letterSpacing:"3px",
                   textTransform:"uppercase",cursor:status==="loading"?"wait":"pointer",
                   transition:"background 0.2s",opacity:status==="loading"?0.75:1}}>
-                {status==="loading" ? "Envoi en cours..." : "Confirmer la commande →"}
+                {status==="loading" ? t("sending") : `${t("confirm_order")} →`}
               </button>
             </form>
           )}

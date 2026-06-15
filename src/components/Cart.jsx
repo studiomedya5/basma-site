@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useCart, cartItemKey } from "../context/CartContext";
 import { supabase } from "../lib/supabase";
+import { useLang } from "../context/LangContext";
 
 const GOUVERNORATS = [
   "Ariana","Béja","Ben Arous","Bizerte","Gabès","Gafsa","Jendouba",
@@ -18,6 +19,7 @@ const inputStyle = (hasError) => ({
 });
 
 export default function Cart() {
+  const { t } = useLang();
   const { items, removeItem, updateQty, clearCart, total, count, isOpen, setIsOpen } = useCart();
   const [step, setStep] = useState("cart"); // cart | checkout | success | error
   const [form, setForm] = useState({ nom: "", telephone: "", adresse: "", gouvernorat: "" });
@@ -109,11 +111,11 @@ export default function Cart() {
             )}
             <div>
               <h2 style={{ fontSize: 18, fontWeight: 500, margin: 0, fontFamily: "'Cormorant Garamond', serif" }}>
-                {step === "checkout" ? "Finaliser la commande" : "Mon Panier"}
+                {step === "checkout" ? t("checkout_title") : t("my_cart")}
               </h2>
               {step === "cart" && count > 0 && (
                 <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "var(--text-muted)", margin: "2px 0 0", letterSpacing: "0.5px" }}>
-                  {count} article{count > 1 ? "s" : ""}
+                  {count} {t("articles")}
                 </p>
               )}
             </div>
@@ -138,9 +140,9 @@ export default function Cart() {
                   <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
                   <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
                 </svg>
-                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, color: "var(--text-muted)", marginBottom: 8 }}>Panier vide</p>
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, color: "var(--text-muted)", marginBottom: 8 }}>{t("cart_empty")}</p>
                 <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 12, color: "var(--text-muted)", lineHeight: 1.8 }}>
-                  Ajoutez des articles depuis<br />notre collection
+                  {t("cart_empty_sub")}
                 </p>
               </div>
             ) : (
@@ -238,7 +240,7 @@ export default function Cart() {
                   </div>
                 ))}
                 <div style={{ borderTop: "1px solid rgba(200,149,108,0.2)", paddingTop: 8, marginTop: 8, display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 12, fontWeight: 600 }}>Total</span>
+                  <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 12, fontWeight: 600 }}>{t("total")}</span>
                   <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 17, fontWeight: 700, color: "var(--gold)" }}>{total} ت.د</span>
                 </div>
               </div>
@@ -249,7 +251,7 @@ export default function Cart() {
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
                 <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 12, color: "#2e7d32", fontWeight: 500 }}>
-                  Livraison gratuite partout en Tunisie
+                  {t("free_delivery_tn")}
                 </span>
               </div>
 
@@ -345,7 +347,7 @@ export default function Cart() {
             {step === "cart" && (
               <>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                  <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 13, color: "var(--text-muted)" }}>Total</span>
+                  <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 13, color: "var(--text-muted)" }}>{t("total")}</span>
                   <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 22, fontWeight: 700, color: "var(--gold)" }}>{total} ت.د</span>
                 </div>
                 <button
