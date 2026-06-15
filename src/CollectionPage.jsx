@@ -161,8 +161,9 @@ const productGroups = {
 };
 
 // ── Square category card ──────────────────────────────────────
-function CategoryCard({ cat, onClick, delay, comingSoon, coverPhotos }) {
+function CategoryCard({ cat, onClick, delay, comingSoon, coverPhotos, minPrice }) {
   const { t } = useLang();
+  const fromPrice = minPrice != null ? minPrice : cat.price;
   const [hovered, setHovered] = useState(false);
   // Photos de couverture = vraies photos produits si dispo, sinon photos statiques
   const resolve = (p) => (p?.startsWith("http") ? p : `/photos/${cat.id}/${p}`);
@@ -282,7 +283,7 @@ function CategoryCard({ cat, onClick, delay, comingSoon, coverPhotos }) {
             fontWeight: 700,
             color: "var(--gold)",
             whiteSpace: "nowrap",
-          }}>{cat.price} ت.د</span>
+          }}>{fromPrice} ت.د</span>
         )}
       </div>
     </div>
@@ -1046,17 +1047,23 @@ export default function CollectionPage({ onBack, selected, onOpenCategory, goBac
   // + photos de couverture = vraies photos des produits de chaque catégorie
   const [activeCats, setActiveCats] = useState(null); // null = en cours de chargement
   const [catCovers, setCatCovers] = useState({});     // { "Set": [url1, url2...], ... }
+  const [catMinPrice, setCatMinPrice] = useState({}); // { "Set": 69, ... } prix minimum réel
   useEffect(() => {
-    supabase.from("products").select("category, images").eq("is_active", true)
+    supabase.from("products").select("category, images, price").eq("is_active", true)
       .then(({ data }) => {
         const covers = {};
+        const mins = {};
         (data ?? []).forEach(p => {
           if (Array.isArray(p.images) && p.images.length) {
             if (!covers[p.category]) covers[p.category] = [];
             covers[p.category].push(p.images[0]); // 1ʳᵉ photo de chaque produit
           }
+          if (p.price != null && (mins[p.category] == null || p.price < mins[p.category])) {
+            mins[p.category] = p.price;
+          }
         });
         setCatCovers(covers);
+        setCatMinPrice(mins);
         setActiveCats(new Set((data ?? []).map(p => p.category)));
       });
   }, []);
@@ -1178,6 +1185,7 @@ export default function CollectionPage({ onBack, selected, onOpenCategory, goBac
                 delay={i}
                 comingSoon={activeCats !== null && !activeCats.has(cat.label)}
                 coverPhotos={catCovers[cat.label]}
+                minPrice={catMinPrice[cat.label]}
                 onClick={() => onOpenCategory(cat.id)}
               />
             ))}

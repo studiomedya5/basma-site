@@ -714,8 +714,9 @@ function AvisGrid() {
 }
 
 // ─── Homepage Collection Card (avec carrousel) ───────────────
-function CollectionCategoryCard({ cat, delay, onClick, comingSoon, coverPhotos }) {
+function CollectionCategoryCard({ cat, delay, onClick, comingSoon, coverPhotos, minPrice }) {
   const { t } = useLang();
+  const fromPrice = minPrice != null ? minPrice : cat.price;
   const [imgIdx, setImgIdx] = useState(0);
   const [hovered, setHovered] = useState(false);
   const pausedRef = useRef(false);
@@ -854,7 +855,7 @@ function CollectionCategoryCard({ cat, delay, onClick, comingSoon, coverPhotos }
           </span>
         ) : (
           <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 18, fontWeight: 700, color: "var(--gold)", whiteSpace: "nowrap" }}>
-            {cat.price} ت.د
+            {fromPrice} ت.د
           </span>
         )}
       </div>
@@ -994,10 +995,16 @@ export default function App() {
   );
   // Photos de couverture = vraies photos des produits de chaque catégorie
   const catCoverImages = {};
+  const catMinPrice = {}; // prix minimum réel par catégorie
   products.forEach((p) => {
     if (p.is_active && Array.isArray(p.images) && p.images.length) {
       if (!catCoverImages[p.category]) catCoverImages[p.category] = [];
       catCoverImages[p.category].push(p.images[0]);
+    }
+    if (p.is_active && p.price != null) {
+      if (catMinPrice[p.category] == null || p.price < catMinPrice[p.category]) {
+        catMinPrice[p.category] = p.price;
+      }
     }
   });
   // Tri : "Pack's" toujours à la une, puis collections avec produits, puis Coming Soon
@@ -1600,6 +1607,7 @@ export default function App() {
                   delay={i}
                   comingSoon={productsLoaded && !activeCatLabels.has(cat.label)}
                   coverPhotos={catCoverImages[cat.label]}
+                  minPrice={catMinPrice[cat.label]}
                   onClick={() => navCollection(cat.id)}
                 />
               ))}
