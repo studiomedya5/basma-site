@@ -11,6 +11,8 @@ export const STR = {
     cat_Sac: "Sac", cat_set: "Set",
     cat_accessoires: "Accessoires", cat_cosmetique: "Cosmétique", cat_pack: "Pack's",
     pack_promo: "PACK PROMO", save_word: "Économisez",
+    pack_info_title: "C'est quoi un Pack ? 🎁",
+    pack_info_text: "Un Pack réunit plusieurs articles vendus ensemble à prix réduit. Le prix barré correspond à la valeur totale des articles, et tu paies moins en prenant l'ensemble. Tu économises !",
     // Navigation / général
     home: "ACCUEIL", collection: "COLLECTION", contact: "CONTACT",
     search_ph: "Rechercher un article...",
@@ -63,7 +65,7 @@ export const STR = {
     your_cart: "Votre panier", cart_empty: "Votre panier est vide",
     cart_empty_sub: "Ajoutez des articles depuis notre collection",
     cart_total: "Total", cart_checkout: "Commander", cart_continue: "Continuer mes achats",
-    remove: "Retirer", qty_short: "Qté",
+    remove: "Retirer", qty_short: "Qté", added_to_cart: "Ajouté au panier",
     checkout_title: "Finaliser la commande", free_delivery_tn: "Livraison gratuite partout en Tunisie",
     // Pied de page
     footer_about: "Mode élégante pour femme. Abayas, robes et ensembles de qualité, confectionnés avec des tissus nobles et un savoir-faire artisanal.",
@@ -93,6 +95,8 @@ export const STR = {
     cat_Sac: "حقيبة", cat_set: "طقم",
     cat_accessoires: "إكسسوارات", cat_cosmetique: "مستحضرات تجميل", cat_pack: "باقات",
     pack_promo: "باقة بسعر مخفّض", save_word: "وفّري",
+    pack_info_title: "ما هي الباقة؟ 🎁",
+    pack_info_text: "الباقة تجمع عدّة منتجات تُباع معًا بسعر مخفّض. السعر المشطوب هو القيمة الإجمالية للمنتجات، وتدفعين أقل عند أخذ المجموعة كاملة. توفّرين!",
     // Navigation / général
     home: "الرئيسية", collection: "المجموعة", contact: "تواصل",
     search_ph: "ابحث عن منتج...",
@@ -145,7 +149,7 @@ export const STR = {
     your_cart: "سلّتك", cart_empty: "سلّتك فارغة",
     cart_empty_sub: "أضيفي منتجات من مجموعتنا",
     cart_total: "المجموع", cart_checkout: "اطلبي", cart_continue: "مواصلة التسوّق",
-    remove: "إزالة", qty_short: "الكمية",
+    remove: "إزالة", qty_short: "الكمية", added_to_cart: "أُضيف إلى السلة",
     checkout_title: "إتمام الطلب", free_delivery_tn: "توصيل مجاني في كامل تونس",
     // Pied de page
     footer_about: "أزياء أنيقة للمرأة. عبايات وفساتين وأطقم بجودة عالية، مصنوعة من أرقى الأقمشة وبحرفية متقنة.",

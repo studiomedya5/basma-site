@@ -310,6 +310,15 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
   const photoSrc = (photo) => photo.startsWith("http") ? photo : `/photos/${cat.id}/${photo}`;
   const activeSrc = photoSrc(group.photos[activeIdx]);
 
+  // Pack's : défilement auto des images (pour voir tous les articles du pack), pause au survol
+  useEffect(() => {
+    if (cat.id !== "pack" || group.photos.length <= 1) return;
+    const id = setInterval(() => {
+      if (!hovered) setActiveIdx(i => (i + 1) % group.photos.length);
+    }, 2200);
+    return () => clearInterval(id);
+  }, [cat.id, group.photos.length, hovered]);
+
   // Stock par couleur (variante). Si pas de variants -> on retombe sur le stock global.
   const variants = normVariants(group.variants, effectiveSizes);
   const colorStock = (i) => variants ? (variants[i]?.stock ?? 0) : (group.stock ?? 0);
@@ -779,7 +788,7 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="3">
             <polyline points="20 6 9 17 4 12" />
           </svg>
-          Ajouté au panier
+          {t("added_to_cart")}
         </div>
       )}
 
@@ -806,6 +815,25 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
           </span>
         </div>
       </div>
+
+      {/* Bannière explicative pour la collection Pack's */}
+      {cat.id === "pack" && !isEmpty && (
+        <div style={{
+          background: "rgba(201,168,76,0.1)", borderBottom: "1px solid rgba(201,168,76,0.25)",
+          padding: "16px clamp(20px,4vw,60px)", display: "flex", alignItems: "flex-start", gap: 12,
+          maxWidth: 1300, margin: "0 auto", boxSizing: "border-box", width: "100%",
+        }}>
+          <span style={{ fontSize: 22, flexShrink: 0, lineHeight: 1.2 }}>🎁</span>
+          <div>
+            <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 13, fontWeight: 700, color: "var(--gold)", margin: "0 0 4px", letterSpacing: "0.5px" }}>
+              {t("pack_info_title")}
+            </p>
+            <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 12.5, lineHeight: 1.7, color: "var(--text-muted)", margin: 0 }}>
+              {t("pack_info_text")}
+            </p>
+          </div>
+        </div>
+      )}
 
       {isEmpty ? (
         /* ── Catégorie sans produit : Coming Soon ── */
