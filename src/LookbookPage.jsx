@@ -1,6 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import OrderModal from "./components/OrderModal";
 import { useLang } from "./context/LangContext";
+import { supabase } from "./lib/supabase";
+
+// Correspondance libellé catégorie (en base) -> id catégorie (pour la traduction)
+const LABEL_TO_ID = {
+  "Abaya": "3ibaya", "Écharpe": "echarpe", "Jiba": "jiba", "Kids": "kids",
+  "Manteau": "manteau", "Burkini": "MDB", "Pyjama": "pyjama", "Robe": "Robe",
+  "Sac": "Sac", "Set": "set", "Accessoires": "accessoires", "Cosmétique": "cosmetique",
+  "Pack's": "pack",
+};
 
 // ── Lookbook pages ─────────────────────────────────────────────
 // Ordre : Abaya → Jiba → Pyjama → Robe → Set → Manteau → Écharpe → Sac → Kids → MDB
@@ -151,19 +160,46 @@ const ArrowRight = () => (
 
 // ── Main component ─────────────────────────────────────────────
 export default function LookbookPage({ onClose, muteAudio }) {
-  const { t } = useLang();
+  const { t, isAr } = useLang();
   const [idx, setIdx] = useState(0);
   const [visible, setVisible] = useState(false);       // entrance fade
   const [fading, setFading] = useState(false);         // transition fade
   const [orderProduct, setOrderProduct] = useState(null);
+  const [pages, setPages] = useState([]);              // articles réels (Supabase)
+  const [loaded, setLoaded] = useState(false);
   const touchStartX = useRef(null);
-  const total = PAGES.length;
+  const total = pages.length;
+
+  // Charge les articles disponibles (actifs) avec leur prix réel
+  useEffect(() => {
+    supabase.from("products").select("*").eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        const built = (data ?? []).map((p) => ({
+          supabaseId: p.id,
+          img: (p.images && p.images[0]) || "",
+          photos: p.images || [],
+          category: p.category,
+          catId: LABEL_TO_ID[p.category] ?? null,
+          name: p.name,
+          nameAr: p.name_ar,
+          desc: p.description,
+          descAr: p.description_ar,
+          price: p.price,
+          originalPrice: p.original_price,
+          sizes: p.sizes || [],
+          variants: p.variants,
+        })).filter((pg) => pg.img);
+        setPages(built);
+        setLoaded(true);
+      });
+  }, []);
 
   // Entrance animation
   useEffect(() => {
     muteAudio?.();
-    const t = setTimeout(() => setVisible(true), 30);
-    return () => clearTimeout(t);
+    const tm = setTimeout(() => setVisible(true), 30);
+    return () => clearTimeout(tm);
   }, []);
 
   // Navigate with transition
@@ -198,8 +234,25 @@ export default function LookbookPage({ onClose, muteAudio }) {
     else if (dx < -55) next();
   };
 
-  const page = PAGES[idx];
+  const page = pages[idx];
   const pageLabel = `${String(idx + 1).padStart(2, "0")} / ${String(total).padStart(2, "0")}`;
+
+  // Écran de chargement / vide
+  if (!page) {
+    return (
+      <div style={{ position: "fixed", inset: 0, zIndex: 3000, background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 20 }}>
+        <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: "rgba(255,255,255,0.7)" }}>
+          {!loaded ? t("loading") : t("soon_available")}
+        </p>
+        <button onClick={onClose} style={{ padding: "10px 28px", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.25)", color: "white", cursor: "pointer", fontFamily: "'Jost',sans-serif", fontSize: 12, letterSpacing: "1px" }}>
+          {t("close")}
+        </button>
+      </div>
+    );
+  }
+  const origPrice = Number(page.originalPrice) || 0;
+  const hasPromo = origPrice > page.price;
+  const displayName = isAr && page.nameAr ? page.nameAr : page.name;
 
   return (
     <>
@@ -370,20 +423,25 @@ export default function LookbookPage({ onClose, muteAudio }) {
               fontFamily: "'Jost',sans-serif", fontSize: 10, letterSpacing: "3px",
               textTransform: "uppercase", color: "var(--gold)", marginBottom: 6,
             }}>
-              {page.category}
+              {page.catId ? t(`cat_${page.catId}`) : page.category}
             </p>
             <h2 style={{
               fontFamily: "'Cormorant Garamond', serif", color: "white",
               fontSize: "clamp(22px,3.5vw,40px)", fontWeight: 400,
               letterSpacing: "-0.3px", lineHeight: 1.1, marginBottom: 10,
             }}>
-              {page.name}
+              {displayName}
             </h2>
-            <p style={{
-              fontFamily: "'Jost',sans-serif", fontSize: 22, fontWeight: 700,
-              color: "var(--gold)", letterSpacing: "0.5px",
-            }}>
-              {page.price} ت.د
+            <p style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", margin: 0 }}>
+              <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 22, fontWeight: 700, color: "var(--gold)", letterSpacing: "0.5px" }}>
+                {page.price} ت.د
+              </span>
+              {hasPromo && (
+                <>
+                  <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 15, color: "rgba(255,255,255,0.5)", textDecoration: "line-through" }}>{origPrice} ت.د</span>
+                  <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, fontWeight: 700, color: "white", background: "#e0574a", padding: "3px 9px", borderRadius: 3 }}>-{Math.round((1 - page.price / origPrice) * 100)}%</span>
+                </>
+              )}
             </p>
           </div>
 
@@ -401,12 +459,19 @@ export default function LookbookPage({ onClose, muteAudio }) {
             </span>
             <button
               onClick={() => setOrderProduct({
+                id: page.supabaseId,
                 name: page.name,
+                nameAr: page.nameAr,
                 price: page.price,
+                originalPrice: page.originalPrice,
                 img: page.img,
                 category: page.category,
+                catId: page.catId,
                 sizes: page.sizes,
                 desc: page.desc,
+                descAr: page.descAr,
+                photos: page.photos,
+                variants: page.variants,
               })}
               style={{
                 padding: "11px 28px", fontSize: 11,
