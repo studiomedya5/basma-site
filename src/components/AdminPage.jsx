@@ -78,6 +78,12 @@ const TrashIcon2 = () => (
     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
   </svg>
 );
+const EyeIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+);
 
 // ─── Modal d'édition de commande ─────────────────────────────
 function EditOrderModal({ order, onClose, onSaved }) {
@@ -259,6 +265,70 @@ function DeleteConfirmModal({ order, onClose, onDeleted }) {
   );
 }
 
+// ─── Fenêtre détail commande (toutes les infos) ──────────────
+function OrderDetailModal({ order, onClose }) {
+  const photo = order._photo ?? null;
+  const total = Number(order.total_price);
+  const unit  = order.quantity ? total / order.quantity : total;
+
+  const Row = ({ label, children }) => (
+    <div style={{ display: "flex", justifyContent: "space-between", gap: 14, padding: "10px 0", borderBottom: "1px solid #F0EBE4" }}>
+      <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "0.5px", textTransform: "uppercase", color: "#999", flexShrink: 0 }}>{label}</span>
+      <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 13, color: "#2C2A20", textAlign: "right", fontWeight: 500, wordBreak: "break-word" }}>{children}</span>
+    </div>
+  );
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)", WebkitBackdropFilter: "blur(3px)", backdropFilter: "blur(3px)" }} />
+      <div style={{
+        position: "relative", background: "white", width: "min(480px, 96vw)", maxHeight: "92vh", overflowY: "auto",
+        borderRadius: 12, boxShadow: "0 24px 70px rgba(0,0,0,0.25)", animation: "fadeUp 0.25s ease",
+      }}>
+        {/* En-tête */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "20px 22px", borderBottom: "1px solid #EDE8E0", background: "#FDFCFA", borderRadius: "12px 12px 0 0" }}>
+          <div style={{ width: 70, height: 70, borderRadius: 10, overflow: "hidden", flexShrink: 0, background: "#F0EBE4", border: "1px solid #C9A84C", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {photo ? <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <HangerIcon />}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 20, fontWeight: 600, color: "#2C2A20", margin: "0 0 6px", lineHeight: 1.2 }}>{order.product_name}</p>
+            <StatutBadge statut={order.status} />
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#999", padding: 4, alignSelf: "flex-start" }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+          </button>
+        </div>
+
+        {/* Corps */}
+        <div style={{ padding: "8px 22px 22px" }}>
+          {/* Section commande */}
+          <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, letterSpacing: "2px", textTransform: "uppercase", color: "#C9A84C", margin: "16px 0 4px", fontWeight: 600 }}>Commande</p>
+          <Row label="N° commande">#{order.id}</Row>
+          <Row label="Taille">{order.size}</Row>
+          <Row label="Quantité">{order.quantity}</Row>
+          <Row label="Prix unitaire">{unit.toFixed(3)} ت.د</Row>
+          <Row label="Total payé"><span style={{ color: "#C9A84C", fontWeight: 700 }}>{total.toFixed(3)} ت.د</span></Row>
+          <Row label="Date">{formatDate(order.created_at)}</Row>
+
+          {/* Section cliente */}
+          <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, letterSpacing: "2px", textTransform: "uppercase", color: "#C9A84C", margin: "20px 0 4px", fontWeight: 600 }}>Cliente</p>
+          <Row label="Nom">{order.customer_name}</Row>
+          <Row label="Téléphone"><a href={`tel:${order.customer_phone}`} style={{ color: "#C9A84C", textDecoration: "none" }}>{order.customer_phone}</a></Row>
+          {order.customer_email && <Row label="Email">{order.customer_email}</Row>}
+          <Row label="Adresse">{order.address}</Row>
+          <Row label="Gouvernorat">{order.governorate}</Row>
+
+          {/* Actions rapides */}
+          <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+            <a href={`tel:${order.customer_phone}`} style={{ flex: 1, textAlign: "center", padding: "12px", background: "#C9A84C", color: "white", borderRadius: 6, textDecoration: "none", fontFamily: "'Jost',sans-serif", fontSize: 12, letterSpacing: "1px", textTransform: "uppercase" }}>Appeler</a>
+            <a href={`https://wa.me/${(order.customer_phone||"").replace(/[^0-9]/g,"")}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: "center", padding: "12px", background: "#25D366", color: "white", borderRadius: 6, textDecoration: "none", fontFamily: "'Jost',sans-serif", fontSize: 12, letterSpacing: "1px", textTransform: "uppercase" }}>WhatsApp</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Photos statiques par catégorie (fallback) ──────────────
 const STATIC_PHOTOS = {
   "3ibaya":  "/photos/3ibaya/487447137_1098233225650757_818704683323925263_n.jpg",
@@ -370,7 +440,7 @@ function StatCard({ label, value, color }) {
 }
 
 // ─── Carte commande (mobile) ──────────────────────────────────
-function OrderCard({ order, onStatutChange, onEdit, onDelete }) {
+function OrderCard({ order, onStatutChange, onEdit, onDelete, onView }) {
   const photo = order._photo ?? null;
 
   return (
@@ -462,6 +532,12 @@ function OrderCard({ order, onStatutChange, onEdit, onDelete }) {
 
         {/* Actions */}
         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", paddingTop: 4 }}>
+          <button onClick={() => onView(order)} title="Voir le détail"
+            style={{ background: "none", border: "none", cursor: "pointer", color: "#2C2A20", padding: 4, display: "flex", alignItems: "center", gap: 5, fontFamily: "'Jost',sans-serif", fontSize: 11, transition: "opacity 0.2s" }}
+            onMouseEnter={e => e.currentTarget.style.opacity = "0.65"}
+            onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+            <EyeIcon /> Détails
+          </button>
           <button onClick={() => onEdit(order)} title="Modifier"
             style={{ background: "none", border: "none", cursor: "pointer", color: "#C9A84C", padding: 4, display: "flex", alignItems: "center", gap: 5, fontFamily: "'Jost',sans-serif", fontSize: 11, transition: "opacity 0.2s" }}
             onMouseEnter={e => e.currentTarget.style.opacity = "0.65"}
@@ -488,7 +564,7 @@ const thBase = {
   textAlign: "left", borderBottom: "2px solid #EDE8E0", whiteSpace: "nowrap", background: "#FAF9F6",
 };
 
-function OrderRow({ order, onStatutChange, onEdit, onDelete, index, isTablet }) {
+function OrderRow({ order, onStatutChange, onEdit, onDelete, onView, index, isTablet }) {
   const photo = order._photo ?? null;
   const isEven = index % 2 === 0;
 
@@ -512,7 +588,8 @@ function OrderRow({ order, onStatutChange, onEdit, onDelete, index, isTablet }) 
 
       {/* Produit */}
       <td style={tdBase}>
-        <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 15, fontWeight: 600, color: "#2C2A20" }}>
+        <span onClick={() => onView(order)} title="Voir le détail"
+          style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 15, fontWeight: 600, color: "#2C2A20", cursor: "pointer", textDecoration: "underline", textDecorationColor: "rgba(201,168,76,0.4)", textUnderlineOffset: 3 }}>
           {order.product_name}
         </span>
         {isTablet && (
@@ -592,6 +669,12 @@ function OrderRow({ order, onStatutChange, onEdit, onDelete, index, isTablet }) 
       {/* Actions */}
       <td style={{ ...tdBase, whiteSpace: "nowrap" }}>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <button onClick={() => onView(order)} title="Voir le détail"
+            style={{ background: "none", border: "none", cursor: "pointer", color: "#2C2A20", padding: 4, display: "flex", transition: "opacity 0.2s" }}
+            onMouseEnter={e => e.currentTarget.style.opacity = "0.55"}
+            onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+            <EyeIcon />
+          </button>
           <button onClick={() => onEdit(order)} title="Modifier"
             style={{ background: "none", border: "none", cursor: "pointer", color: "#C9A84C", padding: 4, display: "flex", transition: "opacity 0.2s" }}
             onMouseEnter={e => e.currentTarget.style.opacity = "0.55"}
@@ -692,6 +775,7 @@ export default function AdminPage({ onBack }) {
   const [search, setSearch] = useState("");
   const [editOrder, setEditOrder] = useState(null);
   const [deleteOrder, setDeleteOrder] = useState(null);
+  const [detailOrder, setDetailOrder] = useState(null);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -962,7 +1046,7 @@ export default function AdminPage({ onBack }) {
           /* ── MOBILE : cartes empilées ── */
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {filtered.map((order) => (
-              <OrderCard key={order.id} order={order} onStatutChange={handleStatutChange} onEdit={setEditOrder} onDelete={setDeleteOrder} />
+              <OrderCard key={order.id} order={order} onStatutChange={handleStatutChange} onEdit={setEditOrder} onDelete={setDeleteOrder} onView={setDetailOrder} />
             ))}
           </div>
 
@@ -989,6 +1073,7 @@ export default function AdminPage({ onBack }) {
                       onStatutChange={handleStatutChange}
                       onEdit={setEditOrder}
                       onDelete={setDeleteOrder}
+                      onView={setDetailOrder}
                       isTablet={isTablet}
                     />
                   ))}
@@ -1014,6 +1099,9 @@ export default function AdminPage({ onBack }) {
       )}
       {deleteOrder && (
         <DeleteConfirmModal order={deleteOrder} onClose={() => setDeleteOrder(null)} onDeleted={handleOrderDeleted} />
+      )}
+      {detailOrder && (
+        <OrderDetailModal order={detailOrder} onClose={() => setDetailOrder(null)} />
       )}
     </div>
   );
