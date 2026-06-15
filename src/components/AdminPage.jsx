@@ -454,11 +454,11 @@ function OrderCard({ order, onStatutChange, onEdit, onDelete, onView }) {
         padding: "14px 16px", borderBottom: "1px solid #F0EBE4",
         background: "#FDFCFA",
       }}>
-        {/* Photo */}
-        <div style={{
+        {/* Photo — cliquable pour voir le détail */}
+        <div onClick={() => onView(order)} style={{
           width: 60, height: 60, borderRadius: 8, overflow: "hidden", flexShrink: 0,
           background: "#F0EBE4", display: "flex", alignItems: "center", justifyContent: "center",
-          border: "1px solid #C9A84C",
+          border: "1px solid #C9A84C", cursor: "pointer",
         }}>
           {photo
             ? <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -467,7 +467,7 @@ function OrderCard({ order, onStatutChange, onEdit, onDelete, onView }) {
         </div>
         {/* Produit + prix */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 17, fontWeight: 600, color: "#2C2A20", margin: "0 0 4px", lineHeight: 1.2 }}>
+          <p onClick={() => onView(order)} style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 17, fontWeight: 600, color: "#2C2A20", margin: "0 0 4px", lineHeight: 1.2, cursor: "pointer", textDecoration: "underline", textDecorationColor: "rgba(201,168,76,0.45)", textUnderlineOffset: 3 }}>
             {order.product_name}
           </p>
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
@@ -530,14 +530,14 @@ function OrderCard({ order, onStatutChange, onEdit, onDelete, onView }) {
           />
         </div>
 
+        {/* Bouton Détails — bien visible */}
+        <button onClick={() => onView(order)} title="Voir le détail complet"
+          style={{ width: "100%", background: "rgba(201,168,76,0.12)", border: "1px solid rgba(201,168,76,0.4)", borderRadius: 6, cursor: "pointer", color: "#2C2A20", padding: "10px", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, fontFamily: "'Jost',sans-serif", fontSize: 12, letterSpacing: "1px", textTransform: "uppercase", marginTop: 2 }}>
+          <EyeIcon /> Voir le détail
+        </button>
+
         {/* Actions */}
         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", paddingTop: 4 }}>
-          <button onClick={() => onView(order)} title="Voir le détail"
-            style={{ background: "none", border: "none", cursor: "pointer", color: "#2C2A20", padding: 4, display: "flex", alignItems: "center", gap: 5, fontFamily: "'Jost',sans-serif", fontSize: 11, transition: "opacity 0.2s" }}
-            onMouseEnter={e => e.currentTarget.style.opacity = "0.65"}
-            onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
-            <EyeIcon /> Détails
-          </button>
           <button onClick={() => onEdit(order)} title="Modifier"
             style={{ background: "none", border: "none", cursor: "pointer", color: "#C9A84C", padding: 4, display: "flex", alignItems: "center", gap: 5, fontFamily: "'Jost',sans-serif", fontSize: 11, transition: "opacity 0.2s" }}
             onMouseEnter={e => e.currentTarget.style.opacity = "0.65"}
