@@ -735,14 +735,15 @@ function CollectionCategoryCard({ cat, delay, onClick, comingSoon, coverPhotos }
 
   return (
     <div
-      onClick={onClick}
+      onClick={comingSoon ? undefined : onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        cursor: "pointer",
+        // Coming Soon : visible mais non cliquable (curseur normal, pas d'effet de survol)
+        cursor: comingSoon ? "default" : "pointer",
         background: "white",
-        boxShadow: hovered ? "0 16px 48px rgba(0,0,0,0.16)" : "0 2px 16px rgba(0,0,0,0.07)",
-        transform: hovered ? "translateY(-6px)" : "translateY(0)",
+        boxShadow: (hovered && !comingSoon) ? "0 16px 48px rgba(0,0,0,0.16)" : "0 2px 16px rgba(0,0,0,0.07)",
+        transform: (hovered && !comingSoon) ? "translateY(-6px)" : "translateY(0)",
         transition: "transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94), box-shadow 0.4s ease",
         animation: `fadeUp 0.6s ease ${delay * 0.06}s both`,
       }}

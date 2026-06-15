@@ -155,15 +155,16 @@ function CategoryCard({ cat, onClick, delay, comingSoon, coverPhotos }) {
   const src1 = photos[1] ?? photos[0];
 
   return (
-    <div onClick={onClick}
+    <div onClick={comingSoon ? undefined : onClick}
       onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
       style={{
-        cursor: "pointer",
+        // Coming Soon : visible mais non cliquable
+        cursor: comingSoon ? "default" : "pointer",
         background: "white",
-        boxShadow: hovered
+        boxShadow: (hovered && !comingSoon)
           ? "0 16px 48px rgba(0,0,0,0.16)"
           : "0 2px 16px rgba(0,0,0,0.07)",
-        transform: hovered ? "translateY(-6px)" : "translateY(0)",
+        transform: (hovered && !comingSoon) ? "translateY(-6px)" : "translateY(0)",
         transition: "transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94), box-shadow 0.4s ease",
         animation: `fadeUp 0.6s ease ${delay * 0.07}s both`,
       }}>
