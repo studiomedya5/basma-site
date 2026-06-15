@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "../lib/supabase";
 
 // ─── Constantes ───────────────────────────────────────────────
-const CATEGORIES = ["Abaya", "Jiba", "Pyjama", "Robe", "Set", "Sac", "Manteau", "Kids", "MDB", "Écharpe", "Accessoires", "Cosmétique", "Pack's"];
+const CATEGORIES = ["Abaya", "Jiba", "Pyjama", "Robe", "Set", "Sac", "Manteau", "Kids", "Burkini", "Écharpe", "Accessoires", "Cosmétique", "Pack's"];
 const STORAGE_BUCKET = "products";
 
 // Presets de tailles
@@ -23,6 +23,7 @@ const CATEGORY_SIZE_TYPE = {
   "Set":     "letters",
   "MDB":     "letters",
   "Kids":    "kids",
+  "Burkini": "numeric",
   "Sac":     "none",
   "Écharpe": "none",
   "Accessoires": "none",

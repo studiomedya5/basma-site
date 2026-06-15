@@ -7,7 +7,7 @@ export const STR = {
     ticker: "🚚 Livraison gratuite pour toute commande supérieure à 100 DT  ✨ Paiement à la livraison partout en Tunisie  🌹 Nouvelle collection disponible maintenant  ",
     // Catégories
     cat_3ibaya: "Abaya", cat_echarpe: "Écharpe", cat_jiba: "Jiba", cat_kids: "Kids",
-    cat_manteau: "Manteau", cat_MDB: "MDB", cat_pyjama: "Pyjama", cat_Robe: "Robe",
+    cat_manteau: "Manteau", cat_MDB: "Burkini", cat_pyjama: "Pyjama", cat_Robe: "Robe",
     cat_Sac: "Sac", cat_set: "Set",
     cat_accessoires: "Accessoires", cat_cosmetique: "Cosmétique", cat_pack: "Pack's",
     pack_promo: "PACK PROMO", save_word: "Économisez",
@@ -89,7 +89,7 @@ export const STR = {
     ticker: "🚚 توصيل مجاني لكل طلب يتجاوز 100 د.ت  ✨ الدفع عند الاستلام في كامل تونس  🌹 مجموعة جديدة متاحة الآن  ",
     // Catégories
     cat_3ibaya: "عباية", cat_echarpe: "وشاح", cat_jiba: "جبّة", cat_kids: "أطفال",
-    cat_manteau: "معطف", cat_MDB: "MDB", cat_pyjama: "بيجامة", cat_Robe: "فستان",
+    cat_manteau: "معطف", cat_MDB: "بوركيني", cat_pyjama: "بيجامة", cat_Robe: "فستان",
     cat_Sac: "حقيبة", cat_set: "طقم",
     cat_accessoires: "إكسسوارات", cat_cosmetique: "مستحضرات تجميل", cat_pack: "باقات",
     pack_promo: "باقة بسعر مخفّض", save_word: "وفّري",

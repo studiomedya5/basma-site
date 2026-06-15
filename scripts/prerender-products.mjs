@@ -25,7 +25,7 @@ const SUPABASE_KEY = "sb_publishable_F1xoahP24AUPBtHvZs3TpQ_fwQzsMLR";
 // Correspondance libellé catégorie (en base) -> id catégorie (dans les URLs)
 const CAT_ID = {
   "Abaya": "3ibaya", "Écharpe": "echarpe", "Jiba": "jiba", "Kids": "kids",
-  "Manteau": "manteau", "MDB": "MDB", "Pyjama": "pyjama", "Robe": "Robe",
+  "Manteau": "manteau", "Burkini": "MDB", "Pyjama": "pyjama", "Robe": "Robe",
   "Sac": "Sac", "Set": "set",
   "Accessoires": "accessoires", "Cosmétique": "cosmetique", "Pack's": "pack",
 };
