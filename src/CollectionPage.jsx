@@ -793,18 +793,10 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
       )}
 
       {/* Header */}
-      <div className="cat-gallery-header" style={{ background: "linear-gradient(135deg, var(--dark) 0%, #3D3328 100%)", padding: "22px clamp(20px,4vw,60px) 18px" }}>
-        <button onClick={onBack} style={{
-          display: "flex", alignItems: "center", gap: 8, background: "none", border: "none",
-          cursor: "pointer", fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "2px",
-          textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 12,
-        }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="15 18 9 12 15 6" /></svg>
-          {t("collection")}
-        </button>
-        <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, letterSpacing: "3px", textTransform: "uppercase", color: "var(--gold)", marginBottom: 6 }}>✦ Basma Only Shop</p>
-        <h2 style={{ color: "white", fontSize: "clamp(22px,3vw,32px)", fontWeight: 300, letterSpacing: "-0.5px", marginBottom: 6 }}>{t(`cat_${cat.id}`)}</h2>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <div className="cat-gallery-header" style={{ background: "linear-gradient(135deg, var(--dark) 0%, #3D3328 100%)", padding: "30px clamp(20px,4vw,60px) 26px", textAlign: "center" }}>
+        <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, letterSpacing: "3px", textTransform: "uppercase", color: "var(--gold)", marginBottom: 8 }}>✦ Basma Only Shop</p>
+        <h2 style={{ color: "white", fontSize: "clamp(26px,3.5vw,38px)", fontWeight: 300, letterSpacing: "-0.5px", marginBottom: 10 }}>{t(`cat_${cat.id}`)}</h2>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, justifyContent: "center" }}>
           <div style={{ width: 32, height: 1, background: "var(--gold)" }} />
           <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "rgba(255,255,255,0.4)", letterSpacing: "2px" }}>
             {!loaded
