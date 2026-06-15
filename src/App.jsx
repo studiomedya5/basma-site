@@ -711,6 +711,7 @@ function AvisGrid() {
 
 // ─── Homepage Collection Card (avec carrousel) ───────────────
 function CollectionCategoryCard({ cat, delay, onClick, comingSoon, coverPhotos }) {
+  const { t } = useLang();
   const [imgIdx, setImgIdx] = useState(0);
   const [hovered, setHovered] = useState(false);
   const pausedRef = useRef(false);
@@ -784,13 +785,13 @@ function CollectionCategoryCard({ cat, delay, onClick, comingSoon, coverPhotos }
               border: "1px solid rgba(255,255,255,0.7)", padding: "8px 18px",
               background: "rgba(201,168,76,0.85)",
             }}>
-              Coming Soon
+              {t("coming_soon")}
             </span>
             <span style={{
               fontFamily: "'Jost',sans-serif", fontSize: 10, letterSpacing: "1.5px",
               color: "rgba(255,255,255,0.85)",
             }}>
-              Bientôt disponible
+              {t("soon_available")}
             </span>
           </div>
         )}
@@ -837,12 +838,12 @@ function CollectionCategoryCard({ cat, delay, onClick, comingSoon, coverPhotos }
             {cat.label}
           </span>
           <span style={{ display: "block", fontFamily: "'Jost',sans-serif", fontSize: 11, color: "var(--text-muted)", letterSpacing: "0.5px" }}>
-            {comingSoon ? "Nouvelle collection" : "À partir de"}
+            {comingSoon ? t("new_collection") : t("from_price")}
           </span>
         </div>
         {comingSoon ? (
           <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, fontWeight: 600, color: "var(--gold)", letterSpacing: "1.5px", textTransform: "uppercase", whiteSpace: "nowrap" }}>
-            Bientôt
+            {t("coming_soon")}
           </span>
         ) : (
           <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 18, fontWeight: 700, color: "var(--gold)", whiteSpace: "nowrap" }}>
@@ -1464,7 +1465,7 @@ export default function App() {
                     fontWeight: 500,
                   }}
                 >
-                  ✦ Collection Été 2026
+                  ✦ {t("hero_eyebrow")}
                 </p>
 
                 <h1
@@ -1478,11 +1479,11 @@ export default function App() {
                     color: "var(--dark)",
                   }}
                 >
-                  <span className="hero-word-left">L'Élégance</span>
+                  <span className="hero-word-left">{t("hero_l1")}</span>
                   <br />
-                  <em className="hero-word-center" style={{ fontWeight: 500, color: "var(--gold)" }}>Authentique</em>
+                  <em className="hero-word-center" style={{ fontWeight: 500, color: "var(--gold)" }}>{t("hero_l2")}</em>
                   <br />
-                  <span className="hero-word-right">par Basma</span>
+                  <span className="hero-word-right">{t("hero_l3")}</span>
                 </h1>
 
                 <p
@@ -1497,16 +1498,15 @@ export default function App() {
                     fontWeight: 300,
                   }}
                 >
-                  Des abayas et djellabas d'exception, confectionnées avec des tissus nobles
-                  pour sublimer votre élégance au quotidien.
+                  {t("hero_desc")}
                 </p>
 
                 <div className="hero-btns" style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
                   <button className="btn-gold" onClick={scrollToShop} style={{ padding: "16px 40px", fontSize: 12 }}>
-                    Découvrir
+                    {t("discover")}
                   </button>
                   <button className="btn-outline-gold" onClick={() => setShowLookbook(true)} style={{ padding: "16px 40px", fontSize: 12 }}>
-                    Catalogue
+                    {t("catalogue")}
                   </button>
                 </div>
               </div>
@@ -1583,7 +1583,7 @@ export default function App() {
                 fontSize: "clamp(30px,4vw,46px)", fontWeight: 300,
                 letterSpacing: "-0.5px", color: "var(--dark)", lineHeight: 1.1,
               }}>
-                Notre <em style={{ fontWeight: 500, color: "var(--gold)", fontStyle: "italic" }}>Collection</em>
+                <em style={{ fontWeight: 500, color: "var(--gold)", fontStyle: "italic" }}>{t("our_collection")}</em>
               </h2>
             </div>
 

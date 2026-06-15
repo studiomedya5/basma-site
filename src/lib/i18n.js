@@ -10,7 +10,10 @@ export const STR = {
     // Hero
     hero_eyebrow: "Collection Été 2026",
     hero_sub: "Élégance authentique, pièces d'exception pour la femme moderne.",
-    discover: "Découvrir la collection", lookbook: "Voir le lookbook",
+    discover: "Découvrir", lookbook: "Lookbook", see_collection: "Voir la Collection",
+    catalogue: "Catalogue",
+    hero_l1: "L'Élégance", hero_l2: "Authentique", hero_l3: "par Basma",
+    hero_desc: "Des abayas et djellabas d'exception, confectionnées avec des tissus nobles pour sublimer votre élégance au quotidien.",
     // Collection / cartes
     new_collection: "Nouvelle collection", from_price: "À partir de",
     coming_soon: "Bientôt", see_product: "Voir le produit",
@@ -63,7 +66,10 @@ export const STR = {
     // Hero
     hero_eyebrow: "مجموعة صيف 2026",
     hero_sub: "أناقة أصيلة وقطع استثنائية للمرأة العصرية.",
-    discover: "اكتشفي المجموعة", lookbook: "شاهدي اللوك بوك",
+    discover: "اكتشفي", lookbook: "لوك بوك", see_collection: "شاهدي المجموعة",
+    catalogue: "الكتالوج",
+    hero_l1: "الأناقة", hero_l2: "الأصيلة", hero_l3: "من بسمة",
+    hero_desc: "عبايات وجلابات استثنائية، مصنوعة من أرقى الأقمشة لتُبرز أناقتك كل يوم.",
     // Collection / cartes
     new_collection: "مجموعة جديدة", from_price: "ابتداءً من",
     coming_soon: "قريبًا", see_product: "شاهدي المنتج",
