@@ -317,6 +317,7 @@ function OrderDetailModal({ order, onClose }) {
           {order.customer_email && <Row label="Email">{order.customer_email}</Row>}
           <Row label="Adresse">{order.address}</Row>
           <Row label="Gouvernorat">{order.governorate}</Row>
+          {order.delegation && <Row label="Délégation">{order.delegation}</Row>}
 
           {/* Actions rapides */}
           <div style={{ display: "flex", gap: 10, marginTop: 20 }}>

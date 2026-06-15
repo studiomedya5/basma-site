@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { fbTrack } from "../lib/pixel";
+import { DELEGATIONS } from "../lib/tunisia";
 
 const GOUVERNORATS = [
   "Ariana","Béja","Ben Arous","Bizerte","Gabès","Gafsa","Jendouba",
@@ -27,7 +28,7 @@ export default function OrderModal({ product, onClose }) {
   const hasColors = product.photos && product.photos.length > 1;
 
   const [colorIdx, setColorIdx]   = useState(product.initialColorIdx ?? (hasColors ? null : 0));
-  const [form, setForm]           = useState({ nom:"", telephone:"", email:"", adresse:"", gouvernorat:"", qty:1, size:product.sizes?.[0] ?? product.size ?? "TU" });
+  const [form, setForm]           = useState({ nom:"", telephone:"", email:"", adresse:"", gouvernorat:"", delegation:"", qty:1, size:product.sizes?.[0] ?? product.size ?? "TU" });
   const [errors, setErrors]       = useState({});
   const [status, setStatus]       = useState("idle");
   const [isMobile, setIsMobile]   = useState(window.innerWidth < 768);
@@ -56,6 +57,9 @@ export default function OrderModal({ product, onClose }) {
   const totalPrice   = subtotal + deliveryFee;
 
   const set = (k, v) => { setForm(p => ({...p,[k]:v})); setErrors(p => ({...p,[k]:""})); };
+  // Changer de gouvernorat réinitialise la délégation (liste dépendante)
+  const setGouvernorat = (v) => { setForm(p => ({...p, gouvernorat:v, delegation:""})); setErrors(p => ({...p, gouvernorat:"", delegation:""})); };
+  const delegationOptions = DELEGATIONS[form.gouvernorat] ?? [];
 
   const validate = () => {
     const e = {};
@@ -64,6 +68,7 @@ export default function OrderModal({ product, onClose }) {
     if (!form.telephone.trim())          e.telephone  = "Requis";
     if (!form.adresse.trim())            e.adresse    = "Requis";
     if (!form.gouvernorat)               e.gouvernorat = "Requis";
+    if (!form.delegation)                e.delegation = "Requis";
     return e;
   };
 
@@ -77,14 +82,24 @@ export default function OrderModal({ product, onClose }) {
       product_id: product.id ?? null, product_name: product.name,
       size: form.size, quantity: form.qty, total_price: totalPrice,
       customer_name: form.nom, customer_phone: form.telephone,
-      address: form.adresse, governorate: form.gouvernorat, status: "en_attente",
+      address: form.adresse, governorate: form.gouvernorat,
+      delegation: form.delegation, status: "en_attente",
     };
     if (form.email.trim()) orderData.customer_email = form.email.trim();
 
+    // Insert + repli : si une colonne optionnelle (delegation, customer_email)
+    // n'existe pas encore dans le schema, on la retire et on réessaie.
     let { error } = await supabase.from("orders").insert(orderData);
-    if (error?.message?.includes("customer_email")) {
-      delete orderData.customer_email;
+    let tries = 0;
+    while (error && tries < 3) {
+      const msg = error.message || "";
+      let stripped = false;
+      for (const col of ["delegation", "customer_email"]) {
+        if (msg.includes(col) && col in orderData) { delete orderData[col]; stripped = true; }
+      }
+      if (!stripped) break;
       ({ error } = await supabase.from("orders").insert(orderData));
+      tries++;
     }
     if (error) { console.error(error); setStatus("error"); return; }
     setStatus("success");
@@ -102,7 +117,7 @@ export default function OrderModal({ product, onClose }) {
         customer_name: form.nom, customer_phone: form.telephone, customer_email: form.email||null,
         product_name: product.name, product_image: `https://basmaonlyshop.tn${activeImg}`,
         product_price: product.price, size: form.size, quantity: form.qty, total_price: totalPrice,
-        address: form.adresse, governorate: form.gouvernorat,
+        address: form.adresse, governorate: form.gouvernorat, delegation: form.delegation,
         color_label: hasColors ? `Couleur ${(colorIdx??0)+1}` : "—",
       }),
     }).catch(()=>{});
@@ -315,7 +330,7 @@ export default function OrderModal({ product, onClose }) {
               {/* Gouvernorat */}
               <div style={{marginBottom:20}}>
                 <label style={T.label}>Gouvernorat *</label>
-                <select value={form.gouvernorat} onChange={e=>set("gouvernorat",e.target.value)}
+                <select value={form.gouvernorat} onChange={e=>setGouvernorat(e.target.value)}
                   style={{width:"100%",padding:"7px 0",background:"transparent",border:"none",
                     borderBottom:`1.5px solid ${errors.gouvernorat?"#e57373":"rgba(44,42,32,0.14)"}`,
                     fontFamily:"'Jost',sans-serif",fontSize:14,
@@ -326,6 +341,24 @@ export default function OrderModal({ product, onClose }) {
                   {GOUVERNORATS.map(g=><option key={g} value={g}>{g}</option>)}
                 </select>
                 {errors.gouvernorat&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.gouvernorat}</p>}
+              </div>
+
+              {/* Délégation (dépend du gouvernorat) */}
+              <div style={{marginBottom:20}}>
+                <label style={T.label}>Délégation *</label>
+                <select value={form.delegation} onChange={e=>set("delegation",e.target.value)}
+                  disabled={!form.gouvernorat}
+                  style={{width:"100%",padding:"7px 0",background:"transparent",border:"none",
+                    borderBottom:`1.5px solid ${errors.delegation?"#e57373":"rgba(44,42,32,0.14)"}`,
+                    fontFamily:"'Jost',sans-serif",fontSize:14,
+                    color:form.delegation?DARK:"#bbb",outline:"none",cursor:form.gouvernorat?"pointer":"not-allowed",
+                    appearance:"none",opacity:form.gouvernorat?1:0.5}}
+                  onFocus={e=>e.target.style.borderBottomColor=GOLD}
+                  onBlur={e=>e.target.style.borderBottomColor=errors.delegation?"#e57373":"rgba(44,42,32,0.14)"}>
+                  <option value="">{form.gouvernorat?"Choisir":"Choisir d'abord le gouvernorat"}</option>
+                  {delegationOptions.map(d=><option key={d} value={d}>{d}</option>)}
+                </select>
+                {errors.delegation&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.delegation}</p>}
               </div>
 
               {/* Email optionnel */}
@@ -485,7 +518,7 @@ export default function OrderModal({ product, onClose }) {
                 </div>
                 <div style={{flex:1}}>
                   <label style={T.label}>Gouvernorat *</label>
-                  <select value={form.gouvernorat} onChange={e=>set("gouvernorat",e.target.value)}
+                  <select value={form.gouvernorat} onChange={e=>setGouvernorat(e.target.value)}
                     style={{width:"100%",padding:"11px 14px",boxSizing:"border-box",
                       border:`1px solid ${errors.gouvernorat?"#e57373":"rgba(44,42,32,0.13)"}`,
                       borderLeft:`3px solid ${errors.gouvernorat?"#e57373":"transparent"}`,
@@ -498,6 +531,24 @@ export default function OrderModal({ product, onClose }) {
                     {GOUVERNORATS.map(g=><option key={g} value={g}>{g}</option>)}
                   </select>
                   {errors.gouvernorat&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.gouvernorat}</p>}
+                </div>
+                <div style={{flex:1}}>
+                  <label style={T.label}>Délégation *</label>
+                  <select value={form.delegation} onChange={e=>set("delegation",e.target.value)}
+                    disabled={!form.gouvernorat}
+                    style={{width:"100%",padding:"11px 14px",boxSizing:"border-box",
+                      border:`1px solid ${errors.delegation?"#e57373":"rgba(44,42,32,0.13)"}`,
+                      borderLeft:`3px solid ${errors.delegation?"#e57373":"transparent"}`,
+                      fontFamily:"'Jost',sans-serif",fontSize:13,outline:"none",
+                      background:"white",color:form.delegation?DARK:"#bbb",
+                      cursor:form.gouvernorat?"pointer":"not-allowed",borderRadius:0,opacity:form.gouvernorat?1:0.55,
+                      transition:"border-color 0.18s,border-left-color 0.18s"}}
+                    onFocus={e=>{e.target.style.borderColor="rgba(201,168,76,0.4)";e.target.style.borderLeftColor=GOLD;}}
+                    onBlur={e=>{e.target.style.borderColor=errors.delegation?"#e57373":"rgba(44,42,32,0.13)";e.target.style.borderLeftColor=errors.delegation?"#e57373":"transparent";}}>
+                    <option value="">{form.gouvernorat?"Choisir une délégation":"Choisir d'abord le gouvernorat"}</option>
+                    {delegationOptions.map(d=><option key={d} value={d}>{d}</option>)}
+                  </select>
+                  {errors.delegation&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.delegation}</p>}
                 </div>
               </div>
 
