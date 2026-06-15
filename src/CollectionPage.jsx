@@ -7,6 +7,7 @@ import AnnouncementBar, { ANNOUNCE_H } from "./components/AnnouncementBar";
 import { supabase } from "./lib/supabase";
 import { makeProductKey } from "./lib/productKey";
 import { fbTrack } from "./lib/pixel";
+import { normVariants } from "./lib/variants";
 
 const categories = [
   {
@@ -282,10 +283,10 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
   const activeSrc = photoSrc(group.photos[activeIdx]);
 
   // Stock par couleur (variante). Si pas de variants -> on retombe sur le stock global.
-  const variants = Array.isArray(group.variants) ? group.variants.map(n => Number(n) || 0) : null;
-  const colorStock = (i) => variants ? (variants[i] ?? 0) : (group.stock ?? 0);
-  const allOut = variants ? variants.every(v => v <= 0) : group.stock === 0;     // toutes les couleurs épuisées
-  const curColorOut = colorStock(activeIdx) <= 0;                                 // la couleur affichée est épuisée
+  const variants = normVariants(group.variants, effectiveSizes);
+  const colorStock = (i) => variants ? (variants[i]?.stock ?? 0) : (group.stock ?? 0);
+  const allOut = variants ? variants.every(v => v.stock <= 0) : group.stock === 0; // toutes les couleurs épuisées
+  const curColorOut = colorStock(activeIdx) <= 0;                                  // la couleur affichée est épuisée
   const outOfStock = allOut;
 
   const handleAddToCart = () => {

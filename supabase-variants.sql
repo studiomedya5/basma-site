@@ -3,8 +3,8 @@
 -- À exécuter dans Supabase > SQL Editor (une seule fois).
 -- Remplace l'ancien supabase-stock-trigger.sql (le trigger est recréé ici).
 -- ============================================================
--- 1) products.variants : stock par couleur, aligné sur images[]
---    ex: [2,2,2,2,5]  (2 de la 1re couleur, 2 de la 2e, ...)
+-- 1) products.variants : variante par couleur, alignée sur images[]
+--    ex: [{"stock":2,"sizes":["S","M"]}, {"stock":5,"sizes":["S","M","L"]}, ...]
 -- 2) orders.color_index / color_label : la couleur choisie par la cliente
 -- 3) Trigger : ajuste le stock total ET le stock de la couleur commandée
 -- ============================================================
@@ -65,13 +65,14 @@ begin
     set stock = greatest(0, coalesce(stock,0) + p_delta)
     where id = p_id;
 
-  -- Stock de la couleur précise (si variants existe et index valide)
+  -- Stock de la couleur précise (variants = [{stock, sizes}, ...])
   if p_color is not null then
     select variants into v from public.products where id = p_id;
-    if v is not null and jsonb_typeof(v) = 'array' and jsonb_array_length(v) > p_color then
-      cur := coalesce((v ->> p_color)::int, 0);
+    if v is not null and jsonb_typeof(v) = 'array' and jsonb_array_length(v) > p_color
+       and jsonb_typeof(v -> p_color) = 'object' then
+      cur := coalesce((v -> p_color ->> 'stock')::int, 0);
       update public.products
-        set variants = jsonb_set(variants, array[p_color::text], to_jsonb(greatest(0, cur + p_delta)))
+        set variants = jsonb_set(variants, array[p_color::text, 'stock'], to_jsonb(greatest(0, cur + p_delta)))
         where id = p_id;
     end if;
   end if;

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { fbTrack } from "../lib/pixel";
+import { normVariants } from "../lib/variants";
 
 const GOLD = "#C9A84C";
 const DARK = "#2C2A20";
@@ -22,16 +23,24 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
   const photos = product.photos ?? [];
   const hasColors = photos.length > 1;
   const sizes = product.sizes ?? [];
-  // Stock par couleur (variante) ; repli sur le stock global si absent
-  const variants = Array.isArray(product.variants) ? product.variants.map(n => Number(n) || 0) : null;
-  const colorStock = (i) => variants ? (variants[i] ?? 0) : (product.stock ?? 0);
-  const allOut = variants ? variants.every(v => v <= 0) : product.stock === 0;
+  // Variante par couleur (stock + tailles dispo) ; repli sur le stock global si absent
+  const variants = normVariants(product.variants, sizes);
+  const colorStock = (i) => variants ? (variants[i]?.stock ?? 0) : (product.stock ?? 0);
+  const colorSizes = (i) => variants ? (variants[i]?.sizes ?? sizes) : sizes; // tailles dispo pour cette couleur
+  const allOut = variants ? variants.every(v => v.stock <= 0) : product.stock === 0;
   const outOfStock = allOut;
 
   const [colorIdx, setColorIdx] = useState(product.initialColorIdx ?? 0);
   const [size, setSize] = useState(sizes[0] ?? "TU");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const curColorOut = colorStock(colorIdx) <= 0; // couleur sélectionnée épuisée
+
+  // Si la taille choisie n'est plus dispo pour la nouvelle couleur, on bascule sur la 1re dispo
+  useEffect(() => {
+    const avail = colorSizes(colorIdx);
+    if (avail.length && !avail.includes(size)) setSize(avail[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [colorIdx]);
 
   useEffect(() => {
     const h = () => setIsMobile(window.innerWidth < 768);
@@ -241,22 +250,30 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
             </div>
           )}
 
-          {/* ── Tailles ── */}
+          {/* ── Tailles (grisées si non dispo pour la couleur choisie) ── */}
           {sizes.length > 1 && (
             <div style={{ marginBottom: 22 }}>
               <p style={labelStyle}>Taille</p>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {sizes.map((s) => (
-                  <button key={s} onClick={() => setSize(s)} style={{
+                {sizes.map((s) => {
+                  const avail = colorSizes(colorIdx).includes(s);
+                  return (
+                  <button key={s} disabled={!avail}
+                    onClick={() => avail && setSize(s)}
+                    title={avail ? undefined : "Taille non disponible pour cette couleur"}
+                    style={{
                     padding: "6px 14px", fontSize: 12, fontFamily: "'Jost',sans-serif", fontWeight: 500,
-                    cursor: "pointer", borderRadius: 2, transition: "all 0.15s",
-                    border: size === s ? `1.5px solid ${GOLD}` : "1.5px solid rgba(44,42,32,0.18)",
-                    background: size === s ? GOLD : "transparent",
-                    color: size === s ? "white" : DARK,
+                    cursor: avail ? "pointer" : "not-allowed", borderRadius: 2, transition: "all 0.15s",
+                    border: size === s && avail ? `1.5px solid ${GOLD}` : "1.5px solid rgba(44,42,32,0.18)",
+                    background: size === s && avail ? GOLD : "transparent",
+                    color: !avail ? "#ccc" : (size === s ? "white" : DARK),
+                    textDecoration: avail ? "none" : "line-through",
+                    opacity: avail ? 1 : 0.6,
                   }}>
                     {s}
                   </button>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

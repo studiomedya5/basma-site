@@ -114,23 +114,45 @@ function ActiveBadge({ active }) {
   );
 }
 
-// ─── Champ stock sous une photo (couleur) ────────────────────
+// ─── Éditeur de variante sous une photo (couleur) ────────────
+// Stock + tailles disponibles pour CETTE couleur.
 // Défini au niveau racine pour ne pas perdre le focus à chaque frappe.
-function VariantStockInput({ value, onChange }) {
+function VariantEditor({ stock, onStock, allSizes, selectedSizes, onToggleSize, sizeType }) {
   return (
-    <input
-      type="number" min="0" value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder="Stock"
-      title="Stock de cette couleur"
-      style={{
-        width: "100%", marginTop: 5, padding: "5px 6px", boxSizing: "border-box",
-        border: "1px solid #ddd", borderRadius: 4, fontFamily: "'Jost',sans-serif",
-        fontSize: 12, textAlign: "center", outline: "none", color: "#2C2A20", background: "white",
-      }}
-      onFocus={(e) => (e.target.style.borderColor = "#C9A84C")}
-      onBlur={(e) => (e.target.style.borderColor = "#ddd")}
-    />
+    <div style={{ marginTop: 5 }}>
+      <input
+        type="number" min="0" value={stock}
+        onChange={(e) => onStock(e.target.value)}
+        placeholder="Stock"
+        title="Stock de cette couleur"
+        style={{
+          width: "100%", padding: "5px 6px", boxSizing: "border-box",
+          border: "1px solid #ddd", borderRadius: 4, fontFamily: "'Jost',sans-serif",
+          fontSize: 12, textAlign: "center", outline: "none", color: "#2C2A20", background: "white",
+        }}
+        onFocus={(e) => (e.target.style.borderColor = "#C9A84C")}
+        onBlur={(e) => (e.target.style.borderColor = "#ddd")}
+      />
+      {sizeType !== "none" && allSizes.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4 }}>
+          {allSizes.map((s) => {
+            const on = selectedSizes.includes(s);
+            return (
+              <button key={s} type="button" onClick={() => onToggleSize(s)}
+                title={on ? `${s} disponible` : `${s} indisponible`}
+                style={{
+                  padding: "2px 5px", fontSize: 9, borderRadius: 3, cursor: "pointer",
+                  border: on ? "1px solid #C9A84C" : "1px solid #ddd",
+                  background: on ? "#C9A84C" : "white", color: on ? "white" : "#bbb",
+                  fontFamily: "'Jost',sans-serif", lineHeight: 1.4,
+                }}>
+                {s}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -188,14 +210,29 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
   const toggleSize = (s) =>
     set("sizes", form.sizes.includes(s) ? form.sizes.filter((x) => x !== s) : [...form.sizes, s]);
 
-  // ── Stock par couleur (variante) ──
-  // variants est aligné sur l'ordre des photos : [existantes..., nouvelles...]
-  const setVariant = (idx, val) => {
-    const v = [...(form.variants ?? [])];
-    v[idx] = val;
-    setForm((p) => ({ ...p, variants: v }));
+  // ── Variante par couleur (stock + tailles dispo) ──
+  // variants aligné sur l'ordre des photos : [existantes..., nouvelles...]
+  // Chaque variante : { stock, sizes:[...] }
+  const getVariant = (i) => {
+    const v = form.variants?.[i];
+    if (v == null || v === "") return { stock: "", sizes: form.sizes };
+    if (typeof v === "number" || typeof v === "string") return { stock: v, sizes: form.sizes };
+    return { stock: v.stock ?? "", sizes: Array.isArray(v.sizes) ? v.sizes : form.sizes };
   };
-  const variantTotal = (form.variants ?? []).reduce((a, b) => a + (Number(b) || 0), 0);
+  const setVariantStock = (i, stock) => {
+    const arr = [...(form.variants ?? [])];
+    arr[i] = { ...getVariant(i), stock };
+    setForm((p) => ({ ...p, variants: arr }));
+  };
+  const toggleVariantSize = (i, size) => {
+    const arr = [...(form.variants ?? [])];
+    const cur = getVariant(i);
+    const sizes = cur.sizes.includes(size) ? cur.sizes.filter((s) => s !== size) : [...cur.sizes, size];
+    arr[i] = { ...cur, sizes };
+    setForm((p) => ({ ...p, variants: arr }));
+  };
+  const photoCount = form.existingPhotos.length + form.newFiles.length;
+  const variantTotal = Array.from({ length: photoCount }).reduce((a, _, i) => a + (Number(getVariant(i).stock) || 0), 0);
 
   const handleFiles = (e) => {
     const files = Array.from(e.target.files);
@@ -247,9 +284,17 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
       const uploadedUrls = await Promise.all(form.newFiles.map(uploadFile));
       const images = [...form.existingPhotos, ...uploadedUrls];
 
-      // Stock par couleur aligné sur l'ordre des images ; le stock total = la somme
-      const variants = images.map((_, i) => Math.max(0, Number(form.variants?.[i]) || 0));
-      const stockTotal = variants.reduce((a, b) => a + b, 0);
+      // Variante par couleur { stock, sizes } alignée sur images ; total = somme des stocks
+      const variants = images.map((_, i) => {
+        const gv = getVariant(i);
+        // On ne garde que les tailles encore proposées par le produit
+        const sizes = (gv.sizes ?? form.sizes).filter((s) => form.sizes.includes(s));
+        return {
+          stock: Math.max(0, Number(gv.stock) || 0),
+          sizes: sizes.length ? sizes : form.sizes,
+        };
+      });
+      const stockTotal = variants.reduce((a, b) => a + b.stock, 0);
 
       const payload = {
         name:        form.name.trim(),
@@ -436,7 +481,14 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
                         cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, lineHeight: 1,
                       }}>×</button>
                     </div>
-                    <VariantStockInput value={form.variants?.[i] ?? ""} onChange={(val) => setVariant(i, val)} />
+                    <VariantEditor
+                      stock={getVariant(i).stock}
+                      onStock={(val) => setVariantStock(i, val)}
+                      allSizes={form.sizes}
+                      selectedSizes={getVariant(i).sizes}
+                      onToggleSize={(s) => toggleVariantSize(i, s)}
+                      sizeType={sizeType}
+                    />
                   </div>
                 ))}
                 {form.newFiles.map((_, i) => {
@@ -452,14 +504,21 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
                       }}>×</button>
                       <span style={{ position: "absolute", bottom: 4, left: 0, right: 0, textAlign: "center", fontFamily: "'Jost',sans-serif", fontSize: 9, color: "rgba(255,255,255,0.8)" }}>Nouveau</span>
                     </div>
-                    <VariantStockInput value={form.variants?.[vIdx] ?? ""} onChange={(val) => setVariant(vIdx, val)} />
+                    <VariantEditor
+                      stock={getVariant(vIdx).stock}
+                      onStock={(val) => setVariantStock(vIdx, val)}
+                      allSizes={form.sizes}
+                      selectedSizes={getVariant(vIdx).sizes}
+                      onToggleSize={(s) => toggleVariantSize(vIdx, s)}
+                      sizeType={sizeType}
+                    />
                   </div>
                   );
                 })}
               </div>
             )}
             <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "#999", margin: "0 0 10px", lineHeight: 1.5 }}>
-              💡 Chaque photo = une couleur. Indique le stock sous chaque couleur (ex : 2 jaune, 2 rose…). Le stock total se calcule tout seul.
+              💡 Chaque photo = une couleur. Sous chaque couleur : le <strong>stock</strong> + les <strong>tailles disponibles</strong> (clique pour activer/désactiver). Sur le site, les tailles non disponibles pour la couleur choisie seront grisées. Le stock total se calcule tout seul.
             </p>
 
             {/* Zone d'upload */}

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { fbTrack } from "../lib/pixel";
 import { DELEGATIONS } from "../lib/tunisia";
+import { normVariants } from "../lib/variants";
 
 const GOUVERNORATS = [
   "Ariana","Béja","Ben Arous","Bizerte","Gabès","Gafsa","Jendouba",
@@ -50,10 +51,19 @@ export default function OrderModal({ product, onClose }) {
     });
   }, [product.name, product.category, product.price]);
 
-  // Stock par couleur (variante)
-  const variants = Array.isArray(product.variants) ? product.variants.map(n => Number(n) || 0) : null;
-  const colorStock = (i) => variants ? (variants[i] ?? 0) : (product.stock ?? 1);
+  // Variante par couleur (stock + tailles dispo)
+  const variants = normVariants(product.variants, product.sizes ?? []);
+  const colorStock = (i) => variants ? (variants[i]?.stock ?? 0) : (product.stock ?? 1);
+  const colorSizes = (i) => variants ? (variants[i]?.sizes ?? (product.sizes ?? [])) : (product.sizes ?? []);
   const selColorOut = colorIdx !== null && colorStock(colorIdx) <= 0;
+
+  // Si la taille choisie n'est plus dispo pour la couleur sélectionnée, on bascule sur la 1re dispo
+  useEffect(() => {
+    if (colorIdx === null) return;
+    const avail = colorSizes(colorIdx);
+    if (avail.length && !avail.includes(form.size)) setForm(p => ({ ...p, size: avail[0] }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [colorIdx]);
 
   const resolvePhoto = (p) => p?.startsWith("http") ? p : `/photos/${product.catId}/${p}`;
   const activeImg    = product.photos ? resolvePhoto(product.photos[colorIdx ?? 0]) : product.img;
@@ -191,16 +201,22 @@ export default function OrderModal({ product, onClose }) {
     <div style={{marginBottom:18}}>
       <span style={T.label}>Taille</span>
       <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-        {product.sizes.map(s=>(
-          <button key={s} type="button" onClick={()=>set("size",s)}
+        {product.sizes.map(s=>{
+          const avail = colorSizes(colorIdx ?? 0).includes(s);
+          return (
+          <button key={s} type="button" disabled={!avail}
+            onClick={()=> avail && set("size",s)}
+            title={avail?undefined:"Taille non disponible pour cette couleur"}
             style={{ padding:"6px 14px", fontSize:12, fontFamily:"'Jost',sans-serif", fontWeight:500,
-              cursor:"pointer", borderRadius:0, transition:"all 0.15s",
-              border:form.size===s?`1.5px solid ${GOLD}`:"1.5px solid rgba(44,42,32,0.18)",
-              background:form.size===s?GOLD:"transparent",
-              color:form.size===s?"white":DARK }}>
+              cursor:avail?"pointer":"not-allowed", borderRadius:0, transition:"all 0.15s",
+              border:(form.size===s&&avail)?`1.5px solid ${GOLD}`:"1.5px solid rgba(44,42,32,0.18)",
+              background:(form.size===s&&avail)?GOLD:"transparent",
+              color:!avail?"#ccc":(form.size===s?"white":DARK),
+              textDecoration:avail?"none":"line-through", opacity:avail?1:0.6 }}>
             {s}
           </button>
-        ))}
+          );
+        })}
       </div>
     </div>
   ) : null;
@@ -525,13 +541,15 @@ export default function OrderModal({ product, onClose }) {
                 {DeskInput({ k:"email", placeholder:"votre@email.com", type:"email" })}
               </div>
 
-              {/* Adresse + Gouvernorat */}
+              {/* Adresse (pleine largeur) */}
+              <div style={{marginBottom:14}}>
+                <label style={T.label}>Adresse *</label>
+                {DeskInput({ k:"adresse", placeholder:"Rue, numéro, ville..." })}
+                {errors.adresse&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.adresse}</p>}
+              </div>
+
+              {/* Gouvernorat + Délégation */}
               <div className="order-form-row" style={{display:"flex",gap:14,marginBottom:22}}>
-                <div style={{flex:1}}>
-                  <label style={T.label}>Adresse *</label>
-                  {DeskInput({ k:"adresse", placeholder:"Rue, numéro..." })}
-                  {errors.adresse&&<p style={{...T.body,fontSize:10,color:"#e57373",marginTop:4}}>{errors.adresse}</p>}
-                </div>
                 <div style={{flex:1}}>
                   <label style={T.label}>Gouvernorat *</label>
                   <select value={form.gouvernorat} onChange={e=>setGouvernorat(e.target.value)}
