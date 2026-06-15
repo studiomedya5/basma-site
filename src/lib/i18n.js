@@ -69,6 +69,11 @@ export const STR = {
     feat1_t: "Tissus Nobles", feat1_d: "Satin, soie et crêpe sélectionnés pour un confort exceptionnel.",
     feat2_t: "Fait Main", feat2_d: "Chaque pièce est confectionnée avec une attention minutieuse aux détails.",
     feat3_t: "Design Exclusif", feat3_d: "Créations uniques alliant tradition et modernité.",
+    // Contact
+    contact_title: "Nous Contacter", contact_sub: "On vous répond rapidement",
+    msg_sent: "Message envoyé !", contact_name: "Nom", contact_message: "Message",
+    contact_message_ph: "Votre message...", send: "Envoyer",
+    err_name: "Le nom est requis", err_email: "Email invalide", err_message: "Le message est requis",
   },
   ar: {
     // Navigation / général
@@ -136,5 +141,10 @@ export const STR = {
     feat1_t: "أقمشة فاخرة", feat1_d: "ساتان وحرير وكريب مختارة لراحة استثنائية.",
     feat2_t: "صناعة يدوية", feat2_d: "كل قطعة مصنوعة بعناية فائقة بالتفاصيل.",
     feat3_t: "تصميم حصري", feat3_d: "تصاميم فريدة تجمع بين الأصالة والعصرية.",
+    // Contact
+    contact_title: "تواصلي معنا", contact_sub: "نردّ عليك بسرعة",
+    msg_sent: "تم إرسال الرسالة!", contact_name: "الاسم", contact_message: "الرسالة",
+    contact_message_ph: "رسالتك...", send: "إرسال",
+    err_name: "الاسم مطلوب", err_email: "بريد إلكتروني غير صالح", err_message: "الرسالة مطلوبة",
   },
 };

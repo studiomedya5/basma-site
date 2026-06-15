@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import SummerDecor from "./SummerDecor";
 import AnnouncementBar, { ANNOUNCE_H } from "./components/AnnouncementBar";
+import { useLang } from "./context/LangContext";
 
 const CloseIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -19,6 +20,7 @@ const CheckIcon = () => (
 );
 
 export default function ContactPage({ onBack }) {
+  const { t } = useLang();
   const [form, setForm] = useState({ nom: "", email: "", message: "" });
   const [sent, setSent] = useState(false);
   const [errors, setErrors] = useState({});
@@ -36,9 +38,9 @@ export default function ContactPage({ onBack }) {
 
   const validate = () => {
     const e = {};
-    if (!form.nom.trim()) e.nom = "Le nom est requis";
-    if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) e.email = "Email invalide";
-    if (!form.message.trim()) e.message = "Le message est requis";
+    if (!form.nom.trim()) e.nom = t("err_name");
+    if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) e.email = t("err_email");
+    if (!form.message.trim()) e.message = t("err_message");
     return e;
   };
 
@@ -50,10 +52,9 @@ export default function ContactPage({ onBack }) {
   };
 
   const navItems = [
-    { label: "ACCUEIL",    action: onBack },
-    { label: "EXCLUSIFS",  action: onBack },
-    { label: "COLLECTION", action: onBack },
-    { label: "CONTACT",    action: () => {} },
+    { id: "home", label: t("home"),       action: onBack },
+    { id: "coll", label: t("collection"), action: onBack },
+    { id: "contact", label: t("contact"), action: () => {} },
   ];
 
   return (
@@ -74,9 +75,9 @@ export default function ContactPage({ onBack }) {
 
         {/* Nav links */}
         <div className="nav-links-desktop" style={{ display: "flex", gap: 36, alignItems: "center" }}>
-          {navItems.map(({ label, action }) => (
-            <a key={label} className="nav-link" onClick={action}
-              style={{ color: label === "CONTACT" ? "var(--gold)" : undefined }}>
+          {navItems.map(({ id, label, action }) => (
+            <a key={id} className="nav-link" onClick={action}
+              style={{ color: id === "contact" ? "var(--gold)" : undefined }}>
               {label}
             </a>
           ))}
@@ -84,7 +85,7 @@ export default function ContactPage({ onBack }) {
 
         {/* Back button */}
         <button className="coll-back-btn" onClick={onBack}>
-          <BackIcon /> Retour
+          <BackIcon /> {t("back")}
         </button>
       </header>
 
@@ -100,7 +101,7 @@ export default function ContactPage({ onBack }) {
             fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "4px",
             textTransform: "uppercase", color: "var(--gold)", marginBottom: 16,
             animation: "fadeUp 0.6s ease both"
-          }}>Nous Contacter</p>
+          }}>{t("contact_title")}</p>
           <h1 style={{
             fontSize: "clamp(34px,5vw,52px)", fontWeight: 300, letterSpacing: "-1px",
             color: "var(--dark)", lineHeight: 1.05, marginBottom: 22,
@@ -111,7 +112,7 @@ export default function ContactPage({ onBack }) {
           </h1>
           <div className="coll-divider" style={{ marginBottom: 16 }}>
             <div className="coll-line" />
-            <span className="coll-sub">On vous répond rapidement</span>
+            <span className="coll-sub">{t("contact_sub")}</span>
             <div className="coll-line" />
           </div>
         </div>
@@ -124,7 +125,7 @@ export default function ContactPage({ onBack }) {
             animation: "fadeUp 0.4s ease"
           }}>
             <div style={{ marginBottom: 20 }}><CheckIcon /></div>
-            <h2 style={{ fontSize: 26, fontWeight: 400, marginBottom: 12 }}>Message envoyé !</h2>
+            <h2 style={{ fontSize: 26, fontWeight: 400, marginBottom: 12 }}>{t("msg_sent")}</h2>
             <p style={{
               fontFamily: "'Jost',sans-serif", color: "var(--text-muted)",
               fontSize: 14, lineHeight: 1.7, marginBottom: 36
@@ -133,7 +134,7 @@ export default function ContactPage({ onBack }) {
             </p>
             <button className="btn-gold" onClick={onBack}
               style={{ padding: "14px 40px", fontSize: 12 }}>
-              Retour à l'accueil
+              {t("back")}
             </button>
           </div>
         ) : (
@@ -148,12 +149,12 @@ export default function ContactPage({ onBack }) {
                 display: "block", fontFamily: "'Jost',sans-serif", fontSize: 11,
                 letterSpacing: "2px", textTransform: "uppercase", color: "var(--dark)",
                 marginBottom: 10, fontWeight: 500
-              }}>Nom</label>
+              }}>{t("contact_name")}</label>
               <input
                 type="text"
                 value={form.nom}
                 onChange={e => { setForm(p => ({ ...p, nom: e.target.value })); setErrors(p => ({ ...p, nom: "" })); }}
-                placeholder="Votre nom complet"
+                placeholder={t("name_ph")}
                 style={{
                   width: "100%", padding: "14px 18px",
                   border: errors.nom ? "1.5px solid #e57373" : "1px solid rgba(200,149,108,0.3)",
@@ -176,7 +177,7 @@ export default function ContactPage({ onBack }) {
                 display: "block", fontFamily: "'Jost',sans-serif", fontSize: 11,
                 letterSpacing: "2px", textTransform: "uppercase", color: "var(--dark)",
                 marginBottom: 10, fontWeight: 500
-              }}>Email</label>
+              }}>{t("email")}</label>
               <input
                 type="email"
                 value={form.email}
@@ -204,11 +205,11 @@ export default function ContactPage({ onBack }) {
                 display: "block", fontFamily: "'Jost',sans-serif", fontSize: 11,
                 letterSpacing: "2px", textTransform: "uppercase", color: "var(--dark)",
                 marginBottom: 10, fontWeight: 500
-              }}>Message</label>
+              }}>{t("contact_message")}</label>
               <textarea
                 value={form.message}
                 onChange={e => { setForm(p => ({ ...p, message: e.target.value })); setErrors(p => ({ ...p, message: "" })); }}
-                placeholder="Votre message..."
+                placeholder={t("contact_message_ph")}
                 rows={6}
                 style={{
                   width: "100%", padding: "14px 18px", resize: "vertical",
@@ -229,7 +230,7 @@ export default function ContactPage({ onBack }) {
 
             <button type="submit" className="btn-gold"
               style={{ width: "100%", padding: "18px 40px", fontSize: 12 }}>
-              Envoyer le Message
+              {t("send")}
             </button>
           </form>
         )}
