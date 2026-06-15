@@ -581,7 +581,8 @@ html, body {
     display: flex !important;
   }
   .hero-grid {
-    flex-direction: column !important;
+    /* Photo en haut (plein écran à l'ouverture), texte + boutons en dessous */
+    flex-direction: column-reverse !important;
     text-align: center !important;
     padding: 0 !important;
     gap: 0 !important;
@@ -590,9 +591,9 @@ html, body {
     margin-top: 0 !important;
     flex: 1 !important;
   }
-  /* Bloc texte — aéré et élégant */
+  /* Bloc texte — aéré et élégant, sous la photo */
   .hero-grid > div:first-child {
-    padding: 14px 18px 10px !important;
+    padding: 16px 18px 18px !important;
     flex: 0 0 auto !important;
   }
   .hero-title {

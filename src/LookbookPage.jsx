@@ -581,9 +581,11 @@ export default function LookbookPage({ onClose, muteAudio }) {
         </div>
       </div>
 
-      {/* ── Order modal ── */}
+      {/* ── Order modal (au-dessus du Lookbook : z plus élevé que le conteneur z3000) ── */}
       {orderProduct && (
-        <OrderModal product={orderProduct} onClose={() => setOrderProduct(null)} />
+        <div style={{ position: "fixed", inset: 0, zIndex: 4000 }}>
+          <OrderModal product={orderProduct} onClose={() => setOrderProduct(null)} />
+        </div>
       )}
     </>
   );
