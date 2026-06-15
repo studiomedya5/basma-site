@@ -58,6 +58,13 @@ export const STR = {
     cart_total: "Total", cart_checkout: "Commander", cart_continue: "Continuer mes achats",
     remove: "Retirer", qty_short: "Qté",
     checkout_title: "Finaliser la commande", free_delivery_tn: "Livraison gratuite partout en Tunisie",
+    // Pied de page
+    footer_about: "Mode élégante pour femme. Abayas, robes et ensembles de qualité, confectionnés avec des tissus nobles et un savoir-faire artisanal.",
+    shop_word: "Boutique", service_word: "Service", follow_us: "Suivez-nous",
+    svc_cod: "Paiement à la livraison", svc_exchange: "Échange & retour", svc_contact: "Nous contacter",
+    rights: "© 2026 Basma Only Shop. Tous droits réservés.", newsletter: "Newsletter", newsletter_ph: "Votre adresse email",
+    stay_informed: "Restez Informée", newsletter_desc: "Recevez nos dernières créations et offres exclusives.",
+    subscribe: "S'abonner", see_collection_word: "Voir la Collection",
   },
   ar: {
     // Navigation / général
@@ -114,5 +121,12 @@ export const STR = {
     cart_total: "المجموع", cart_checkout: "اطلبي", cart_continue: "مواصلة التسوّق",
     remove: "إزالة", qty_short: "الكمية",
     checkout_title: "إتمام الطلب", free_delivery_tn: "توصيل مجاني في كامل تونس",
+    // Pied de page
+    footer_about: "أزياء أنيقة للمرأة. عبايات وفساتين وأطقم بجودة عالية، مصنوعة من أرقى الأقمشة وبحرفية متقنة.",
+    shop_word: "المتجر", service_word: "الخدمة", follow_us: "تابعينا",
+    svc_cod: "الدفع عند الاستلام", svc_exchange: "تبديل وإرجاع", svc_contact: "تواصلي معنا",
+    rights: "© 2026 Basma Only Shop. كل الحقوق محفوظة.", newsletter: "النشرة البريدية", newsletter_ph: "بريدك الإلكتروني",
+    stay_informed: "ابقي على اطلاع", newsletter_desc: "اطّلعي على أحدث تصاميمنا وعروضنا الحصرية.",
+    subscribe: "اشتركي", see_collection_word: "شاهدي المجموعة",
   },
 };

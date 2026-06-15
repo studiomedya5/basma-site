@@ -169,6 +169,7 @@ exclusifsData.Tout = [
 
 // ─── Animated Exclusifs Card ──────────────────────────────────
 function ExcluCard({ item, index, onNavigate }) {
+  const { t } = useLang();
   const [imgIdx, setImgIdx] = useState(0);
   const [hovered, setHovered] = useState(false);
   const pausedRef = useRef(false);
@@ -290,7 +291,7 @@ function ExcluCard({ item, index, onNavigate }) {
               padding: "8px 20px",
             }}
           >
-            Voir la Collection
+            {t("see_collection_word")}
           </span>
         </div>
       </div>
@@ -1726,9 +1727,9 @@ export default function App() {
                   marginBottom: 12,
                 }}
               >
-                Newsletter
+                {t("newsletter")}
               </p>
-              <h2 style={{ fontSize: 32, fontWeight: 400, marginBottom: 12 }}>Restez Informée</h2>
+              <h2 style={{ fontSize: 32, fontWeight: 400, marginBottom: 12 }}>{t("stay_informed")}</h2>
               <p
                 style={{
                   fontFamily: "'Jost',sans-serif",
@@ -1738,13 +1739,13 @@ export default function App() {
                   fontWeight: 300,
                 }}
               >
-                Recevez nos dernières créations et offres exclusives.
+                {t("newsletter_desc")}
               </p>
               <div style={{ display: "flex", gap: 0 }}>
                 <input
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Votre adresse email"
+                  placeholder={t("newsletter_ph")}
                   style={{
                     flex: 1,
                     padding: "16px 20px",
@@ -1757,7 +1758,7 @@ export default function App() {
                   }}
                 />
                 <button className="btn-gold" style={{ padding: "16px 32px", fontSize: 12, border: "1px solid var(--gold)", whiteSpace: "nowrap" }}>
-                  S'abonner
+                  {t("subscribe")}
                 </button>
               </div>
             </div>
@@ -1936,14 +1937,14 @@ export default function App() {
             <div>
               <img src="/images/logo.png" alt="Basma" style={{ height: 50, marginBottom: 16, filter: "brightness(10)" }} />
               <p style={{ fontFamily: "'Jost',sans-serif", color: "rgba(255,255,255,0.5)", fontSize: 13, lineHeight: 1.8, fontWeight: 300 }}>
-                Mode élégante pour femme. Abayas, robes et ensembles de qualité, confectionnés avec des tissus nobles et un savoir-faire artisanal.
+                {t("footer_about")}
               </p>
             </div>
 
             {/* Boutique */}
             <div>
               <h4 style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "2.5px", textTransform: "uppercase", color: "var(--gold)", marginBottom: 20, fontWeight: 600 }}>
-                Boutique
+                {t("shop_word")}
               </h4>
               {["Abaya", "Jiba", "Pyjama", "Robe", "Set", "Sac", "Manteau", "Kids"].map((item) => (
                 <p key={item} style={{ fontFamily: "'Jost',sans-serif", color: "rgba(255,255,255,0.5)", fontSize: 13, marginBottom: 10, fontWeight: 300, cursor: "pointer" }}>
@@ -1955,9 +1956,9 @@ export default function App() {
             {/* Service */}
             <div>
               <h4 style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "2.5px", textTransform: "uppercase", color: "var(--gold)", marginBottom: 20, fontWeight: 600 }}>
-                Service
+                {t("service_word")}
               </h4>
-              {["Livraison gratuite", "Paiement à la livraison", "Échange & retour", "Nous contacter"].map((item) => (
+              {[t("delivery_free"), t("svc_cod"), t("svc_exchange"), t("svc_contact")].map((item) => (
                 <p key={item} style={{ fontFamily: "'Jost',sans-serif", color: "rgba(255,255,255,0.5)", fontSize: 13, marginBottom: 10, fontWeight: 300 }}>
                   {item}
                 </p>
@@ -1967,7 +1968,7 @@ export default function App() {
             {/* Suivez-nous */}
             <div>
               <h4 style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "2.5px", textTransform: "uppercase", color: "var(--gold)", marginBottom: 20, fontWeight: 600 }}>
-                Suivez-nous
+                {t("follow_us")}
               </h4>
               {[
                 { label: "Instagram", href: "https://www.instagram.com/basma_onlyshop/" },
@@ -1992,7 +1993,7 @@ export default function App() {
 
           <div className="footer-bottom" style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: 24, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10, maxWidth: 1200, margin: "0 auto" }}>
             <p style={{ fontFamily: "'Jost',sans-serif", color: "rgba(255,255,255,0.3)", fontSize: 12 }}>
-              © 2026 Basma Only Shop. Tous droits réservés.
+              {t("rights")}
             </p>
             <p style={{ fontFamily: "'Jost',sans-serif", color: "rgba(255,255,255,0.3)", fontSize: 12 }}>
               Made with ♥ Medya
