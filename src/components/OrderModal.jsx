@@ -29,7 +29,7 @@ export default function OrderModal({ product, onClose }) {
   const hasColors = product.photos && product.photos.length > 1;
 
   const [colorIdx, setColorIdx]   = useState(product.initialColorIdx ?? (hasColors ? null : 0));
-  const [form, setForm]           = useState({ nom:"", telephone:"", email:"", adresse:"", gouvernorat:"", delegation:"", qty:1, size:product.sizes?.[0] ?? product.size ?? "TU" });
+  const [form, setForm]           = useState({ nom:"", telephone:"", email:"", adresse:"", gouvernorat:"", delegation:"", qty:1, size:product.initialSize ?? product.sizes?.[0] ?? product.size ?? "TU" });
   const [errors, setErrors]       = useState({});
   const [status, setStatus]       = useState("idle");
   const [isMobile, setIsMobile]   = useState(window.innerWidth < 768);

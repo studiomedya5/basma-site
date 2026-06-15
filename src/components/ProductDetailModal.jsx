@@ -33,6 +33,7 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
   const [colorIdx, setColorIdx] = useState(product.initialColorIdx ?? 0);
   const [size, setSize] = useState(sizes[0] ?? "TU");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [msgCopied, setMsgCopied] = useState(false);
   const curColorOut = colorStock(colorIdx) <= 0; // couleur sélectionnée épuisée
 
   // Si la taille choisie n'est plus dispo pour la nouvelle couleur, on bascule sur la 1re dispo
@@ -99,10 +100,29 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
   const resolvePhoto = (p) => (p?.startsWith("http") ? p : `/photos/${product.catId}/${p}`);
   const activeSrc = resolvePhoto(photos[colorIdx] ?? photos[0]);
 
-  // Ouvre Messenger vers la page Basma (ref = produit pour le contexte côté page)
-  const openMessenger = () => {
+  // Construit le message de commande à envoyer
+  const buildOrderMessage = () => {
+    const lines = ["Bonjour Basma 👋", "Je souhaite commander :", `👗 ${product.label}`];
+    if (hasColors) lines.push(`🎨 Couleur ${(colorIdx ?? 0) + 1}`);
+    if (sizes.length > 1) lines.push(`📏 Taille ${size}`);
+    lines.push(`💰 ${product.price} ت.د`);
+    if (shareKey) lines.push(`🔗 ${window.location.origin}/produit/${shareKey}`);
+    return lines.join("\n");
+  };
+
+  // Messenger ne permet pas de pré-remplir un message : on copie la commande
+  // dans le presse-papier puis on ouvre Messenger (la cliente n'a qu'à coller).
+  const openMessenger = async () => {
+    const msg = buildOrderMessage();
+    try { await navigator.clipboard.writeText(msg); setMsgCopied(true); setTimeout(() => setMsgCopied(false), 5000); } catch { /* ignore */ }
     const ref = `produit-${shareKey || ""}`.replace(/[^a-zA-Z0-9_-]/g, "");
     const url = ref ? `${MESSENGER_BASE}?ref=${ref}` : MESSENGER_BASE;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  // WhatsApp : pré-remplit nativement le message (1 clic, la cliente envoie)
+  const openWhatsApp = () => {
+    const url = `https://wa.me/21696430850?text=${encodeURIComponent(buildOrderMessage())}`;
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
@@ -118,6 +138,7 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
       photos,
       catId: product.catId,
       initialColorIdx: colorIdx,
+      initialSize: size,
       variants: product.variants,
     });
   };
@@ -339,8 +360,24 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
             </svg>
             Plus d'info — Envoyer un message
           </button>
-          <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, color: "#aaa", textAlign: "center", marginTop: 8, letterSpacing: "0.5px" }}>
-            Une question ? Écrivez-nous sur Messenger
+
+          {/* Commander via WhatsApp (message pré-rempli automatiquement) */}
+          <button onClick={openWhatsApp} style={{
+            width: "100%", padding: "13px 8px", fontSize: 12, marginTop: 8,
+            background: "#25D366", color: "white", border: "none", borderRadius: 6,
+            cursor: "pointer", fontFamily: "'Jost',sans-serif", letterSpacing: "1px", fontWeight: 500,
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
+          }}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.5 14.4c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.79.37-.27.3-1.04 1.01-1.04 2.47s1.06 2.87 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.19 1.87.12.57-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.13-.27-.2-.57-.35zM12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.07L2 22l5.05-1.32A9.94 9.94 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2z" />
+            </svg>
+            Commander par WhatsApp
+          </button>
+
+          <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, color: msgCopied ? "#2e7d32" : "#aaa", textAlign: "center", marginTop: 8, letterSpacing: "0.5px", lineHeight: 1.5 }}>
+            {msgCopied
+              ? "✓ Votre commande est copiée — collez-la dans Messenger (appui long → Coller)"
+              : "Messenger : commande copiée à coller · WhatsApp : message déjà prêt à envoyer"}
           </p>
         </div>
       </div>
