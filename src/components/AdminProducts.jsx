@@ -121,7 +121,7 @@ function HorsStockBadge() {
       background: "#FEECEC", color: "#C62828", border: "1px solid #EF9A9A",
       fontFamily: "'Jost',sans-serif", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap",
     }}>
-      Hors stock
+      Rupture de stock
     </span>
   );
 }
