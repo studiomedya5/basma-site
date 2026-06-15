@@ -154,12 +154,10 @@ export default function OrderModal({ product, onClose }) {
     }
     if (error) { console.error(error); setStatus("error"); return; }
     setStatus("success");
-    fbTrack("Purchase", {
-      value: totalPrice,
-      content_name: product.name,
-      content_category: product.category,
-      content_type: "product",
-    });
+    // NB : on ne déclenche PLUS "Purchase" ici (placement). En modèle COD,
+    // la source UNIQUE de Purchase est la Conversions API serveur, déclenchée
+    // au passage en "confirmée" (event_id = purchase_{id}, dédupliqué/idempotent).
+    // Le tunnel garde ViewContent → AddToCart → InitiateCheckout.
 
     fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-order-email`, {
       method:"POST",

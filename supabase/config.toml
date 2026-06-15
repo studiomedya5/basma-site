@@ -1,4 +1,11 @@
 
+[functions.meta-capi-purchase]
+enabled = true
+# On vérifie nous-mêmes un secret partagé (x-webhook-secret) → pas de JWT requis.
+verify_jwt = false
+import_map = "./functions/meta-capi-purchase/deno.json"
+entrypoint = "./functions/meta-capi-purchase/index.ts"
+
 [functions.send-order-email]
 enabled = true
 verify_jwt = true

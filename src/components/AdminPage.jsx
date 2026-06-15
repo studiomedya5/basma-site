@@ -271,6 +271,19 @@ function OrderDetailModal({ order, onClose }) {
   const photo = order._photo ?? null;
   const total = Number(order.total_price);
   const unit  = order.quantity ? total / order.quantity : total;
+  const [capiMsg, setCapiMsg] = useState(null);
+
+  // Backfill : redemande l'envoi du Purchase à Meta (CAPI) pour cette commande.
+  // On remet capi_sent_at à null + on touche capi_resend_at → le Database Webhook
+  // ré-appelle l'Edge Function (qui refait le claim atomique + l'envoi).
+  const resendCapi = async () => {
+    setCapiMsg("…");
+    const { error } = await supabase.from("orders")
+      .update({ capi_sent_at: null, capi_resend_at: new Date().toISOString() })
+      .eq("id", order.id);
+    setCapiMsg(error ? "Erreur (colonnes CAPI manquantes ?)" : "✓ Renvoi demandé à Meta");
+    setTimeout(() => setCapiMsg(null), 4000);
+  };
 
   const Row = ({ label, children }) => (
     <div style={{ display: "flex", justifyContent: "space-between", gap: 14, padding: "10px 0", borderBottom: "1px solid #F0EBE4" }}>
@@ -325,6 +338,13 @@ function OrderDetailModal({ order, onClose }) {
             <a href={`tel:${order.customer_phone}`} style={{ flex: 1, textAlign: "center", padding: "12px", background: "#C9A84C", color: "white", borderRadius: 6, textDecoration: "none", fontFamily: "'Jost',sans-serif", fontSize: 12, letterSpacing: "1px", textTransform: "uppercase" }}>Appeler</a>
             <a href={`https://wa.me/${(order.customer_phone||"").replace(/[^0-9]/g,"")}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: "center", padding: "12px", background: "#25D366", color: "white", borderRadius: 6, textDecoration: "none", fontFamily: "'Jost',sans-serif", fontSize: 12, letterSpacing: "1px", textTransform: "uppercase" }}>WhatsApp</a>
           </div>
+
+          {/* Backfill CAPI Meta */}
+          <button onClick={resendCapi} title="Renvoyer l'achat à Meta (Conversions API)"
+            style={{ width: "100%", marginTop: 10, padding: "10px", background: "#F0EBE4", color: "#2C2A20", border: "1px solid #ddd9cf", borderRadius: 6, cursor: "pointer", fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "1px", textTransform: "uppercase" }}>
+            ↻ Renvoyer à Meta (CAPI)
+          </button>
+          {capiMsg && <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: capiMsg.startsWith("✓") ? "#2e7d32" : "#999", textAlign: "center", marginTop: 6 }}>{capiMsg}</p>}
         </div>
       </div>
     </div>
