@@ -280,6 +280,9 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
   const photoSrc = (photo) => photo.startsWith("http") ? photo : `/photos/${cat.id}/${photo}`;
   const activeSrc = photoSrc(group.photos[activeIdx]);
 
+  // Rupture de stock : empêche la commande et l'ajout au panier
+  const outOfStock = group.stock === 0;
+
   const handleAddToCart = () => {
     if (group.photos.length > 1 && popupColorIdx === null) {
       setPopupError("Veuillez choisir une couleur");
@@ -327,10 +330,22 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
           style={{
             width: "100%", height: "100%", objectFit: "cover", display: "block",
             transition: "transform 0.5s",
+            filter: outOfStock ? "grayscale(0.85) brightness(0.92)" : "none",
           }}
           onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.05)"; }}
           onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
         />
+        {/* Badge rupture de stock */}
+        {outOfStock && (
+          <span style={{
+            position: "absolute", top: 12, left: 12, zIndex: 3,
+            background: "rgba(44,42,32,0.92)", color: "white",
+            fontFamily: "'Jost',sans-serif", fontSize: 10, fontWeight: 600,
+            letterSpacing: "1.5px", textTransform: "uppercase", padding: "6px 12px",
+          }}>
+            Rupture de stock
+          </span>
+        )}
         {/* Indice "voir le produit" au survol */}
         <div style={{
           position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
@@ -398,6 +413,20 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
               {group.price ?? cat.price} ت.د
             </span>
           </div>
+          {outOfStock ? (
+            /* Produit en rupture : un seul bouton désactivé */
+            <button
+              disabled
+              style={{
+                width: "100%", padding: "12px 4px", fontSize: 11,
+                background: "#ECEAE3", color: "#9a958a",
+                border: "1.5px solid #ddd9cf", cursor: "not-allowed",
+                fontFamily: "'Jost',sans-serif", letterSpacing: "1px", textTransform: "uppercase",
+              }}
+            >
+              Rupture de stock
+            </button>
+          ) : (
           <div style={{ display: "flex", gap: 6 }}>
             {/* Bouton Panier */}
             <button
@@ -448,6 +477,7 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
               Commander
             </button>
           </div>
+          )}
         </div>
       </div>
 
@@ -581,6 +611,7 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
     sizes: p.sizes ?? cat.sizes,
     description: p.description,
     supabaseId: p.id,
+    stock: p.stock,
   })).filter(g => g.photos.length > 0);
   const groups = dynamicGroups;
 
@@ -910,6 +941,7 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
             sizes: detailGroup.sizes ?? cat.sizes ?? [],
             photos: detailGroup.photos ?? [],
             supabaseId: detailGroup.supabaseId,
+            stock: detailGroup.stock,
           }}
           onClose={() => setDetailGroup(null)}
           onOrder={(p) => { setDetailGroup(null); setOrderProduct(p); }}

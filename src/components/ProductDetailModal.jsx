@@ -22,6 +22,7 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
   const photos = product.photos ?? [];
   const hasColors = photos.length > 1;
   const sizes = product.sizes ?? [];
+  const outOfStock = product.stock === 0;
 
   const [colorIdx, setColorIdx] = useState(product.initialColorIdx ?? 0);
   const [size, setSize] = useState(sizes[0] ?? "TU");
@@ -251,6 +252,20 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
           )}
 
           {/* ── Boutons commande ── */}
+          {outOfStock ? (
+            <div style={{ marginBottom: 14 }}>
+              <button disabled style={{
+                width: "100%", padding: "14px 8px", fontSize: 12, background: "#ECEAE3", color: "#9a958a",
+                border: "1.5px solid #ddd9cf", cursor: "not-allowed", fontFamily: "'Jost',sans-serif",
+                letterSpacing: "1.5px", textTransform: "uppercase",
+              }}>
+                Rupture de stock
+              </button>
+              <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "#999", textAlign: "center", marginTop: 8 }}>
+                Cet article n'est plus disponible pour le moment.
+              </p>
+            </div>
+          ) : (
           <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
             <button onClick={handleAddToCart} style={{
               flex: 1, padding: "13px 8px", fontSize: 12, background: "white", color: GOLD,
@@ -268,6 +283,7 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
               Commander
             </button>
           </div>
+          )}
 
           {/* ── Plus d'info — Envoyer un message sur Messenger (animé) ── */}
           <button onClick={openMessenger} style={{
