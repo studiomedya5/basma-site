@@ -26,21 +26,21 @@ declare
   cur int;
 begin
   if (TG_OP = 'INSERT') then
-    if NEW.product_id is not null and NEW.status is distinct from 'annulee' then
+    if NEW.product_id is not null and NEW.status ::text is distinct from 'annulée' then
       perform apply_stock_delta(NEW.product_id, NEW.color_index, -NEW.quantity);
     end if;
     return NEW;
 
   elsif (TG_OP = 'DELETE') then
-    if OLD.product_id is not null and OLD.status is distinct from 'annulee' then
+    if OLD.product_id is not null and OLD.status ::text is distinct from 'annulée' then
       perform apply_stock_delta(OLD.product_id, OLD.color_index, OLD.quantity);
     end if;
     return OLD;
 
   elsif (TG_OP = 'UPDATE') then
-    if OLD.status is distinct from 'annulee' and NEW.status = 'annulee' and NEW.product_id is not null then
+    if OLD.status ::text is distinct from 'annulée' and NEW.status ::text = 'annulée' and NEW.product_id is not null then
       perform apply_stock_delta(NEW.product_id, NEW.color_index, NEW.quantity);   -- restitue
-    elsif OLD.status = 'annulee' and NEW.status is distinct from 'annulee' and NEW.product_id is not null then
+    elsif OLD.status ::text = 'annulée' and NEW.status ::text is distinct from 'annulée' and NEW.product_id is not null then
       perform apply_stock_delta(NEW.product_id, NEW.color_index, -NEW.quantity);  -- redéduit
     end if;
     return NEW;
