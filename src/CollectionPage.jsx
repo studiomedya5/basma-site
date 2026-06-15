@@ -61,6 +61,21 @@ const categories = [
     desc: "Set coordonné pour un look complet et soigné, alliance parfaite de style et de confort.",
     photos: ["493138870_1143811757759570_6677303497939193345_n.jpg","503595961_1144400911033988_4417601806757851793_n.jpg","549864507_1232854562188622_2760973217095054367_n.jpg","627056759_17932957533179373_8778773970641450727_n.jpg","648685767_17937284784179373_1588006055100656717_n.jpg"],
   },
+  {
+    id: "accessoires", label: "Accessoires", price: 0, sizes: ["TU"],
+    desc: "Accessoires tendance pour compléter votre look avec élégance.",
+    photos: [],
+  },
+  {
+    id: "cosmetique", label: "Cosmétique", price: 0, sizes: ["TU"],
+    desc: "Produits de beauté et cosmétiques soigneusement sélectionnés.",
+    photos: [],
+  },
+  {
+    id: "pack", label: "Pack's", price: 0, sizes: ["TU"],
+    desc: "Nos packs exclusifs : plusieurs articles réunis à prix réduit.",
+    photos: [],
+  },
 ];
 
 // Full photo lists per category
@@ -174,10 +189,14 @@ function CategoryCard({ cat, onClick, delay, comingSoon, coverPhotos }) {
 
       {/* ── Photo zone ── */}
       <div className="sq-card" style={{ margin: 0 }}>
+        {src0 ? (<>
         <img src={src0} alt="" loading="lazy" className="sq-img sq-img-a"
           style={{ opacity: hovered ? 0 : 1, filter: comingSoon ? "grayscale(0.55) brightness(0.9)" : "none" }} />
         <img src={src1} alt="" loading="lazy" className="sq-img sq-img-b"
           style={{ opacity: hovered ? 1 : 0, filter: comingSoon ? "grayscale(0.55) brightness(0.9)" : "none" }} />
+        </>) : (
+        <div className="sq-img" style={{ background: "linear-gradient(135deg, #efe7da 0%, #e3d4bf 100%)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(201,168,76,0.6)", fontFamily: "'Cormorant Garamond',serif", fontSize: 48 }}>✦</div>
+        )}
         <div style={{
           position: "absolute", bottom: 0, left: 0, right: 0, height: "28%",
           background: "linear-gradient(transparent, rgba(0,0,0,0.18))",
@@ -274,6 +293,10 @@ function CategoryCard({ cat, onClick, delay, comingSoon, coverPhotos }) {
 function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpenDetail }) {
   const { t, isAr } = useLang();
   const displayName = isAr && group.labelAr ? group.labelAr : group.label;
+  const price = group.price ?? cat.price;
+  const origPrice = Number(group.originalPrice) || 0;
+  const hasPromo = origPrice > price;                       // prix barré (pack/promo)
+  const promoPct = hasPromo ? Math.round((1 - price / origPrice) * 100) : 0;
   const [activeIdx, setActiveIdx] = useState(0);
   const [hovered, setHovered] = useState(false);
   const [showMiniPopup, setShowMiniPopup] = useState(false);
@@ -423,10 +446,22 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
 
         {/* Prix + deux boutons */}
         <div style={{ marginTop: "auto" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-            <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 18, fontWeight: 700, color: "var(--gold)" }}>
-              {group.price ?? cat.price} ت.د
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, gap: 8, flexWrap: "wrap" }}>
+            <span style={{ display: "flex", alignItems: "baseline", gap: 7 }}>
+              <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 18, fontWeight: 700, color: "var(--gold)" }}>
+                {price} ت.د
+              </span>
+              {hasPromo && (
+                <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 12, color: "#aaa", textDecoration: "line-through" }}>
+                  {origPrice} ت.د
+                </span>
+              )}
             </span>
+            {hasPromo && (
+              <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, fontWeight: 700, color: "white", background: "#e0574a", padding: "3px 8px", borderRadius: 3, letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
+                -{promoPct}%
+              </span>
+            )}
           </div>
           {outOfStock ? (
             /* Produit en rupture : un seul bouton désactivé */
@@ -485,6 +520,7 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
                 name: group.label,
                 nameAr: group.labelAr,
                 price: group.price ?? cat.price,
+                originalPrice: group.originalPrice,
                 img: activeSrc,
                 category: cat.label,
                 sizes: effectiveSizes,
@@ -644,6 +680,7 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
     description: p.description,
     labelAr: p.name_ar,
     descriptionAr: p.description_ar,
+    originalPrice: p.original_price,
     supabaseId: p.id,
     stock: p.stock,
     variants: p.variants,
@@ -973,6 +1010,7 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
             label: detailGroup.label,
             labelAr: detailGroup.labelAr,
             price: detailGroup.price ?? cat.price,
+            originalPrice: detailGroup.originalPrice,
             desc: detailGroup.description ?? cat.desc,
             descAr: detailGroup.descriptionAr,
             sizes: detailGroup.sizes ?? cat.sizes ?? [],

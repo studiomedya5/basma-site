@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "../lib/supabase";
 
 // ─── Constantes ───────────────────────────────────────────────
-const CATEGORIES = ["Abaya", "Jiba", "Pyjama", "Robe", "Set", "Sac", "Manteau", "Kids", "MDB", "Écharpe"];
+const CATEGORIES = ["Abaya", "Jiba", "Pyjama", "Robe", "Set", "Sac", "Manteau", "Kids", "MDB", "Écharpe", "Accessoires", "Cosmétique", "Pack's"];
 const STORAGE_BUCKET = "products";
 
 // Presets de tailles
@@ -25,11 +25,14 @@ const CATEGORY_SIZE_TYPE = {
   "Kids":    "kids",
   "Sac":     "none",
   "Écharpe": "none",
+  "Accessoires": "none",
+  "Cosmétique":  "none",
+  "Pack's":      "none",
 };
 
 const EMPTY_FORM = {
   name: "", name_ar: "", category: CATEGORIES[0], description: "", description_ar: "",
-  price: "", stock: "", is_active: true,
+  price: "", original_price: "", stock: "", is_active: true,
   sizes: [], existingPhotos: [], newFiles: [],
   variants: [], // stock par couleur (aligné sur les photos : [existantes..., nouvelles...])
 };
@@ -303,6 +306,7 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
         description: form.description.trim(),
         description_ar: form.description_ar?.trim() || null,
         price:       Number(form.price),
+        original_price: form.original_price ? Number(form.original_price) : null,
         sizes:       form.sizes,
         images,
         variants,
@@ -320,7 +324,7 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
       while (result.error && tries < 4) {
         const msg = result.error.message || "";
         let stripped = false;
-        for (const col of ["name_ar", "description_ar", "variants"]) {
+        for (const col of ["name_ar", "description_ar", "variants", "original_price"]) {
           if (msg.includes(col) && col in payload) { delete payload[col]; stripped = true; }
         }
         if (!stripped) break;
@@ -445,6 +449,21 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
               </div>
               <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, color: "#999", marginTop: 4 }}>= somme du stock par couleur ↓</p>
             </div>
+          </div>
+
+          {/* Prix barré (promo / pack) */}
+          <div style={fieldWrap}>
+            <label style={labelStyle}>Prix barré (avant promo) — optionnel</label>
+            <input type="number" min="0" step="0.001" value={form.original_price}
+              onChange={(e) => set("original_price", e.target.value)}
+              placeholder="Ex : 200 (pour un pack vendu 170)"
+              style={inp()}
+              onFocus={(e) => (e.target.style.borderColor = "#C9A84C")}
+              onBlur={(e) => (e.target.style.borderColor = "#ddd")}
+            />
+            <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, color: "#999", marginTop: 4 }}>
+              Si renseigné et supérieur au prix, un badge promo s'affiche (prix barré). Idéal pour les Packs.
+            </p>
           </div>
 
           {/* Tailles */}

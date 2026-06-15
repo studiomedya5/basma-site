@@ -27,6 +27,7 @@ const CAT_ID = {
   "Abaya": "3ibaya", "Écharpe": "echarpe", "Jiba": "jiba", "Kids": "kids",
   "Manteau": "manteau", "MDB": "MDB", "Pyjama": "pyjama", "Robe": "Robe",
   "Sac": "Sac", "Set": "set",
+  "Accessoires": "accessoires", "Cosmétique": "cosmetique", "Pack's": "pack",
 };
 
 const slugify = (s) => (s || "")

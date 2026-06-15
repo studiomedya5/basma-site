@@ -24,6 +24,9 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
   const { t, isAr } = useLang();
   const displayName = isAr && product.labelAr ? product.labelAr : product.label;
   const displayDesc = isAr && product.descAr ? product.descAr : product.desc;
+  const origPrice = Number(product.originalPrice) || 0;
+  const hasPromo = origPrice > product.price;
+  const promoPct = hasPromo ? Math.round((1 - product.price / origPrice) * 100) : 0;
   const photos = product.photos ?? [];
   const hasColors = photos.length > 1;
   const sizes = product.sizes ?? [];
@@ -145,6 +148,7 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
       initialSize: size,
       variants: product.variants,
       nameAr: product.labelAr,
+      originalPrice: product.originalPrice,
     });
   };
 
@@ -238,9 +242,17 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
           <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: isMobile ? 24 : 28, fontWeight: 500, color: DARK, lineHeight: 1.1, marginBottom: 10 }}>
             {displayName}
           </h2>
-          <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 26, fontWeight: 600, color: GOLD, letterSpacing: "-0.5px" }}>
-            {product.price}
-            <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 13, fontWeight: 400, marginLeft: 4 }}>ت.د</span>
+          <span style={{ display: "inline-flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+            <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 26, fontWeight: 600, color: GOLD, letterSpacing: "-0.5px" }}>
+              {product.price}
+              <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 13, fontWeight: 400, marginLeft: 4 }}>ت.د</span>
+            </span>
+            {hasPromo && (
+              <>
+                <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 15, color: "#aaa", textDecoration: "line-through" }}>{origPrice} ت.د</span>
+                <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, fontWeight: 700, color: "white", background: "#e0574a", padding: "3px 9px", borderRadius: 3 }}>-{promoPct}%</span>
+              </>
+            )}
           </span>
 
           <div style={{ height: 1, background: `linear-gradient(to right,${GOLD},transparent)`, margin: "18px 0", opacity: 0.35 }} />

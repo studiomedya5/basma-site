@@ -46,6 +46,9 @@ const COLLECTION_CATEGORIES = [
   { id: "Robe",    label: "Robe",    price: 69,  photos: ["649636396_1374861407987936_6370692347574891488_n.jpg","649665854_1374861444654599_6644258085429623943_n.jpg","650287811_1375865401220870_230421896988538844_n.jpg","650839941_1375865431220867_1210585044214971859_n.jpg"] },
   { id: "Sac",     label: "Sac",     price: 50,  photos: ["631720297_1352112070262870_4847811711877564932_n.jpg","631917370_1352111973596213_194994035129029681_n.jpg","633207472_1352112016929542_6323390260047978267_n.jpg","633375719_1352111933596217_4381281051821960200_n.jpg"] },
   { id: "set",     label: "Set",     price: 69,  photos: ["493138870_1143811757759570_6677303497939193345_n.jpg","503595961_1144400911033988_4417601806757851793_n.jpg","549864507_1232854562188622_2760973217095054367_n.jpg","627056759_17932957533179373_8778773970641450727_n.jpg","648685767_17937284784179373_1588006055100656717_n.jpg"] },
+  { id: "accessoires", label: "Accessoires", price: 0, photos: [] },
+  { id: "cosmetique",  label: "Cosmétique",  price: 0, photos: [] },
+  { id: "pack",        label: "Pack's",      price: 0, photos: [] },
 ];
 
 // ─── Static categories ──────────────────────────────────────
@@ -753,6 +756,9 @@ function CollectionCategoryCard({ cat, delay, onClick, comingSoon, coverPhotos }
     >
       {/* Photo carousel */}
       <div className="sq-card" style={{ margin: 0 }}>
+        {photos.length === 0 && (
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, #efe7da 0%, #e3d4bf 100%)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(201,168,76,0.6)", fontFamily: "'Cormorant Garamond',serif", fontSize: 54, zIndex: 1 }}>✦</div>
+        )}
         {photos.map((src, i) => (
           <img
             key={i}

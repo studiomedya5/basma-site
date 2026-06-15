@@ -9,6 +9,8 @@ export const STR = {
     cat_3ibaya: "Abaya", cat_echarpe: "Écharpe", cat_jiba: "Jiba", cat_kids: "Kids",
     cat_manteau: "Manteau", cat_MDB: "MDB", cat_pyjama: "Pyjama", cat_Robe: "Robe",
     cat_Sac: "Sac", cat_set: "Set",
+    cat_accessoires: "Accessoires", cat_cosmetique: "Cosmétique", cat_pack: "Pack's",
+    pack_promo: "PACK PROMO", save_word: "Économisez",
     // Navigation / général
     home: "ACCUEIL", collection: "COLLECTION", contact: "CONTACT",
     search_ph: "Rechercher un article...",
@@ -89,6 +91,8 @@ export const STR = {
     cat_3ibaya: "عباية", cat_echarpe: "وشاح", cat_jiba: "جبّة", cat_kids: "أطفال",
     cat_manteau: "معطف", cat_MDB: "MDB", cat_pyjama: "بيجامة", cat_Robe: "فستان",
     cat_Sac: "حقيبة", cat_set: "طقم",
+    cat_accessoires: "إكسسوارات", cat_cosmetique: "مستحضرات تجميل", cat_pack: "باقات",
+    pack_promo: "باقة بسعر مخفّض", save_word: "وفّري",
     // Navigation / général
     home: "الرئيسية", collection: "المجموعة", contact: "تواصل",
     search_ph: "ابحث عن منتج...",
