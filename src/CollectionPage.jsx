@@ -281,8 +281,12 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
   const photoSrc = (photo) => photo.startsWith("http") ? photo : `/photos/${cat.id}/${photo}`;
   const activeSrc = photoSrc(group.photos[activeIdx]);
 
-  // Rupture de stock : empêche la commande et l'ajout au panier
-  const outOfStock = group.stock === 0;
+  // Stock par couleur (variante). Si pas de variants -> on retombe sur le stock global.
+  const variants = Array.isArray(group.variants) ? group.variants.map(n => Number(n) || 0) : null;
+  const colorStock = (i) => variants ? (variants[i] ?? 0) : (group.stock ?? 0);
+  const allOut = variants ? variants.every(v => v <= 0) : group.stock === 0;     // toutes les couleurs épuisées
+  const curColorOut = colorStock(activeIdx) <= 0;                                 // la couleur affichée est épuisée
+  const outOfStock = allOut;
 
   const handleAddToCart = () => {
     if (group.photos.length > 1 && popupColorIdx === null) {
@@ -382,28 +386,33 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
         {/* Aperçu couleurs (cliquables pour changer la photo) */}
         {group.photos.length > 1 && (
           <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap", alignItems: "center" }}>
-            {group.photos.map((photo, i) => (
+            {group.photos.map((photo, i) => {
+              const cOut = colorStock(i) <= 0;
+              return (
               <button
                 key={i}
                 onClick={() => setActiveIdx(i)}
-                title={`Couleur ${i + 1}`}
+                title={cOut ? `Couleur ${i + 1} — épuisée` : `Couleur ${i + 1}`}
                 style={{
                   width: 30, height: 30, padding: 0, borderRadius: "50%",
                   border: i === activeIdx ? "2.5px solid var(--gold)" : "2.5px solid transparent",
                   outline: i === activeIdx ? "2px solid var(--gold)" : "1.5px solid rgba(200,149,108,0.3)",
                   outlineOffset: 2,
-                  cursor: "pointer", overflow: "hidden", background: "none", flexShrink: 0,
+                  cursor: "pointer", overflow: "hidden", background: "none", flexShrink: 0, position: "relative",
                   transition: "border-color 0.2s, transform 0.15s",
                   transform: i === activeIdx ? "scale(1.12)" : "scale(1)",
+                  opacity: cOut ? 0.4 : 1,
                 }}
               >
                 <img
                   src={photoSrc(photo)}
                   loading="lazy" alt=""
-                  style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%", display: "block" }}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%", display: "block",
+                    filter: cOut ? "grayscale(1)" : "none" }}
                 />
               </button>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -426,6 +435,20 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
               }}
             >
               Rupture de stock
+            </button>
+          ) : curColorOut ? (
+            /* Cette couleur est épuisée (mais d'autres sont dispo) */
+            <button
+              disabled
+              title="Choisissez une autre couleur disponible"
+              style={{
+                width: "100%", padding: "12px 4px", fontSize: 11,
+                background: "#ECEAE3", color: "#9a958a",
+                border: "1.5px solid #ddd9cf", cursor: "not-allowed",
+                fontFamily: "'Jost',sans-serif", letterSpacing: "1px", textTransform: "uppercase",
+              }}
+            >
+              Couleur épuisée
             </button>
           ) : (
           <div style={{ display: "flex", gap: 6 }}>
@@ -463,6 +486,7 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
                 photos: group.photos,
                 catId: cat.id,
                 initialColorIdx: activeIdx,
+                variants: group.variants,
               })}
               style={{
                 flex: 1, padding: "11px 4px", fontSize: 11,
@@ -613,6 +637,7 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
     description: p.description,
     supabaseId: p.id,
     stock: p.stock,
+    variants: p.variants,
   })).filter(g => g.photos.length > 0);
   const groups = dynamicGroups;
 
@@ -943,6 +968,7 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
             photos: detailGroup.photos ?? [],
             supabaseId: detailGroup.supabaseId,
             stock: detailGroup.stock,
+            variants: detailGroup.variants,
           }}
           onClose={() => setDetailGroup(null)}
           onOrder={(p) => { setDetailGroup(null); setOrderProduct(p); }}

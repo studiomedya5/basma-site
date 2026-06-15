@@ -50,6 +50,11 @@ export default function OrderModal({ product, onClose }) {
     });
   }, [product.name, product.category, product.price]);
 
+  // Stock par couleur (variante)
+  const variants = Array.isArray(product.variants) ? product.variants.map(n => Number(n) || 0) : null;
+  const colorStock = (i) => variants ? (variants[i] ?? 0) : (product.stock ?? 1);
+  const selColorOut = colorIdx !== null && colorStock(colorIdx) <= 0;
+
   const resolvePhoto = (p) => p?.startsWith("http") ? p : `/photos/${product.catId}/${p}`;
   const activeImg    = product.photos ? resolvePhoto(product.photos[colorIdx ?? 0]) : product.img;
   const subtotal     = product.price * form.qty;
@@ -64,6 +69,7 @@ export default function OrderModal({ product, onClose }) {
   const validate = () => {
     const e = {};
     if (hasColors && colorIdx === null)  e.color      = "Requis";
+    else if (selColorOut)                e.color      = "Couleur épuisée";
     if (!form.nom.trim())                e.nom        = "Requis";
     if (!form.telephone.trim())          e.telephone  = "Requis";
     if (!form.adresse.trim())            e.adresse    = "Requis";
@@ -86,15 +92,20 @@ export default function OrderModal({ product, onClose }) {
       delegation: form.delegation, status: "en_attente",
     };
     if (form.email.trim()) orderData.customer_email = form.email.trim();
+    // Couleur choisie (pour décrémenter le bon stock par couleur)
+    if (hasColors || variants) {
+      orderData.color_index = colorIdx ?? 0;
+      orderData.color_label = `Couleur ${(colorIdx ?? 0) + 1}`;
+    }
 
-    // Insert + repli : si une colonne optionnelle (delegation, customer_email)
+    // Insert + repli : si une colonne optionnelle (delegation, color_index...)
     // n'existe pas encore dans le schema, on la retire et on réessaie.
     let { error } = await supabase.from("orders").insert(orderData);
     let tries = 0;
-    while (error && tries < 3) {
+    while (error && tries < 4) {
       const msg = error.message || "";
       let stripped = false;
-      for (const col of ["delegation", "customer_email"]) {
+      for (const col of ["delegation", "customer_email", "color_index", "color_label"]) {
         if (msg.includes(col) && col in orderData) { delete orderData[col]; stripped = true; }
       }
       if (!stripped) break;
@@ -155,18 +166,23 @@ export default function OrderModal({ product, onClose }) {
         Couleur {errors.color&&<span style={{letterSpacing:0,textTransform:"none",fontSize:10}}>— requis</span>}
       </span>
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-        {product.photos.map((ph,i)=>(
+        {product.photos.map((ph,i)=>{
+          const cOut = colorStock(i) <= 0;
+          return (
           <button key={i} type="button"
             onClick={()=>{setColorIdx(i);setErrors(p=>({...p,color:""}));}}
+            title={cOut?"Couleur épuisée":undefined}
             style={{ width:36,height:36,padding:0,borderRadius:"50%",cursor:"pointer",overflow:"hidden",background:"none",
               border:i===colorIdx?`2.5px solid ${GOLD}`:"2.5px solid transparent",
               outline:i===colorIdx?`2px solid ${GOLD}`:"1.5px solid rgba(200,149,108,0.3)",
               outlineOffset:2, transition:"transform 0.15s",
-              transform:i===colorIdx?"scale(1.1)":"scale(1)" }}>
-            <img src={resolvePhoto(ph)} alt="" style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:"50%",display:"block"}} />
+              transform:i===colorIdx?"scale(1.1)":"scale(1)", opacity:cOut?0.4:1 }}>
+            <img src={resolvePhoto(ph)} alt="" style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:"50%",display:"block",filter:cOut?"grayscale(1)":"none"}} />
           </button>
-        ))}
+          );
+        })}
       </div>
+      {selColorOut && <p style={{...T.body,fontSize:10,color:"#e57373",marginTop:6}}>Cette couleur est épuisée — choisissez-en une autre.</p>}
     </div>
   ) : null;
 

@@ -31,6 +31,7 @@ const EMPTY_FORM = {
   name: "", category: CATEGORIES[0], description: "",
   price: "", stock: "", is_active: true,
   sizes: [], existingPhotos: [], newFiles: [],
+  variants: [], // stock par couleur (aligné sur les photos : [existantes..., nouvelles...])
 };
 
 // ─── Icônes ───────────────────────────────────────────────────
@@ -113,6 +114,26 @@ function ActiveBadge({ active }) {
   );
 }
 
+// ─── Champ stock sous une photo (couleur) ────────────────────
+// Défini au niveau racine pour ne pas perdre le focus à chaque frappe.
+function VariantStockInput({ value, onChange }) {
+  return (
+    <input
+      type="number" min="0" value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder="Stock"
+      title="Stock de cette couleur"
+      style={{
+        width: "100%", marginTop: 5, padding: "5px 6px", boxSizing: "border-box",
+        border: "1px solid #ddd", borderRadius: 4, fontFamily: "'Jost',sans-serif",
+        fontSize: 12, textAlign: "center", outline: "none", color: "#2C2A20", background: "white",
+      }}
+      onFocus={(e) => (e.target.style.borderColor = "#C9A84C")}
+      onBlur={(e) => (e.target.style.borderColor = "#ddd")}
+    />
+  );
+}
+
 // ─── Badge hors stock ─────────────────────────────────────────
 function HorsStockBadge() {
   return (
@@ -167,19 +188,40 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
   const toggleSize = (s) =>
     set("sizes", form.sizes.includes(s) ? form.sizes.filter((x) => x !== s) : [...form.sizes, s]);
 
+  // ── Stock par couleur (variante) ──
+  // variants est aligné sur l'ordre des photos : [existantes..., nouvelles...]
+  const setVariant = (idx, val) => {
+    const v = [...(form.variants ?? [])];
+    v[idx] = val;
+    setForm((p) => ({ ...p, variants: v }));
+  };
+  const variantTotal = (form.variants ?? []).reduce((a, b) => a + (Number(b) || 0), 0);
+
   const handleFiles = (e) => {
     const files = Array.from(e.target.files);
     const total = form.existingPhotos.length + form.newFiles.length + files.length;
     if (total > 8) { setErrors((p) => ({ ...p, photos: "Maximum 8 photos" })); return; }
-    set("newFiles", [...form.newFiles, ...files]);
+    setForm((p) => ({
+      ...p,
+      newFiles: [...p.newFiles, ...files],
+      variants: [...(p.variants ?? []), ...files.map(() => "")], // une case stock par nouvelle photo
+    }));
     e.target.value = "";
   };
 
   const removeExisting = (idx) =>
-    set("existingPhotos", form.existingPhotos.filter((_, i) => i !== idx));
+    setForm((p) => ({
+      ...p,
+      existingPhotos: p.existingPhotos.filter((_, i) => i !== idx),
+      variants: (p.variants ?? []).filter((_, i) => i !== idx),
+    }));
 
   const removeNew = (idx) =>
-    set("newFiles", form.newFiles.filter((_, i) => i !== idx));
+    setForm((p) => ({
+      ...p,
+      newFiles: p.newFiles.filter((_, i) => i !== idx),
+      variants: (p.variants ?? []).filter((_, i) => i !== p.existingPhotos.length + idx),
+    }));
 
   const validate = () => {
     const e = {};
@@ -205,6 +247,10 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
       const uploadedUrls = await Promise.all(form.newFiles.map(uploadFile));
       const images = [...form.existingPhotos, ...uploadedUrls];
 
+      // Stock par couleur aligné sur l'ordre des images ; le stock total = la somme
+      const variants = images.map((_, i) => Math.max(0, Number(form.variants?.[i]) || 0));
+      const stockTotal = variants.reduce((a, b) => a + b, 0);
+
       const payload = {
         name:        form.name.trim(),
         category:    form.category,
@@ -212,7 +258,8 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
         price:       Number(form.price),
         sizes:       form.sizes,
         images,
-        stock:       Number(form.stock) || 0,
+        variants,
+        stock:       stockTotal,
         is_active:   form.is_active,
       };
 
@@ -313,14 +360,11 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
               {errors.price && <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "#e57373", marginTop: 4 }}>{errors.price}</p>}
             </div>
             <div style={{ flex: 1 }}>
-              <label style={labelStyle}>Stock</label>
-              <input type="number" min="0" value={form.stock}
-                onChange={(e) => set("stock", e.target.value)}
-                placeholder="0"
-                style={inp()}
-                onFocus={(e) => (e.target.style.borderColor = "#C9A84C")}
-                onBlur={(e) => (e.target.style.borderColor = "#ddd")}
-              />
+              <label style={labelStyle}>Stock total (auto)</label>
+              <div style={{ ...inp({ background: "#F7F4ED", color: "#C9A84C", fontWeight: 700, display: "flex", alignItems: "center" }) }}>
+                {variantTotal} {variantTotal > 1 ? "pièces" : "pièce"}
+              </div>
+              <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, color: "#999", marginTop: 4 }}>= somme du stock par couleur ↓</p>
             </div>
           </div>
 
@@ -383,28 +427,40 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
             {(form.existingPhotos.length > 0 || form.newFiles.length > 0) && (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 10 }}>
                 {form.existingPhotos.map((url, i) => (
-                  <div key={`ex-${i}`} style={{ position: "relative", aspectRatio: "3/4", borderRadius: 6, overflow: "hidden" }}>
-                    <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    <button type="button" onClick={() => removeExisting(i)} style={{
-                      position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: "50%",
-                      background: "rgba(0,0,0,0.6)", border: "none", color: "white",
-                      cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, lineHeight: 1,
-                    }}>×</button>
+                  <div key={`ex-${i}`}>
+                    <div style={{ position: "relative", aspectRatio: "3/4", borderRadius: 6, overflow: "hidden" }}>
+                      <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <button type="button" onClick={() => removeExisting(i)} style={{
+                        position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: "50%",
+                        background: "rgba(0,0,0,0.6)", border: "none", color: "white",
+                        cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, lineHeight: 1,
+                      }}>×</button>
+                    </div>
+                    <VariantStockInput value={form.variants?.[i] ?? ""} onChange={(val) => setVariant(i, val)} />
                   </div>
                 ))}
-                {form.newFiles.map((_, i) => (
-                  <div key={`nw-${i}`} style={{ position: "relative", aspectRatio: "3/4", borderRadius: 6, overflow: "hidden", border: "2px dashed #C9A84C" }}>
-                    <img src={previews[i]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    <button type="button" onClick={() => removeNew(i)} style={{
-                      position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: "50%",
-                      background: "rgba(0,0,0,0.6)", border: "none", color: "white",
-                      cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, lineHeight: 1,
-                    }}>×</button>
-                    <span style={{ position: "absolute", bottom: 4, left: 0, right: 0, textAlign: "center", fontFamily: "'Jost',sans-serif", fontSize: 9, color: "rgba(255,255,255,0.8)" }}>Nouveau</span>
+                {form.newFiles.map((_, i) => {
+                  const vIdx = form.existingPhotos.length + i;
+                  return (
+                  <div key={`nw-${i}`}>
+                    <div style={{ position: "relative", aspectRatio: "3/4", borderRadius: 6, overflow: "hidden", border: "2px dashed #C9A84C" }}>
+                      <img src={previews[i]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <button type="button" onClick={() => removeNew(i)} style={{
+                        position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: "50%",
+                        background: "rgba(0,0,0,0.6)", border: "none", color: "white",
+                        cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, lineHeight: 1,
+                      }}>×</button>
+                      <span style={{ position: "absolute", bottom: 4, left: 0, right: 0, textAlign: "center", fontFamily: "'Jost',sans-serif", fontSize: 9, color: "rgba(255,255,255,0.8)" }}>Nouveau</span>
+                    </div>
+                    <VariantStockInput value={form.variants?.[vIdx] ?? ""} onChange={(val) => setVariant(vIdx, val)} />
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
+            <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "#999", margin: "0 0 10px", lineHeight: 1.5 }}>
+              💡 Chaque photo = une couleur. Indique le stock sous chaque couleur (ex : 2 jaune, 2 rose…). Le stock total se calcule tout seul.
+            </p>
 
             {/* Zone d'upload */}
             {(form.existingPhotos.length + form.newFiles.length) < 8 && (
@@ -717,7 +773,7 @@ export default function AdminProducts({ isMobile }) {
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {filtered.map((p) => (
             <ProductCard key={p.id} product={p}
-              onEdit={(prod) => setFormProduct({ ...prod, existingPhotos: prod.images ?? [], newFiles: [] })}
+              onEdit={(prod) => setFormProduct({ ...prod, existingPhotos: prod.images ?? [], newFiles: [], variants: (prod.variants && prod.variants.length) ? prod.variants : (prod.images ?? []).map(() => "") })}
               onDelete={setDeleteTarget}
             />
           ))}
@@ -737,7 +793,7 @@ export default function AdminProducts({ isMobile }) {
               <tbody>
                 {filtered.map((p, i) => (
                   <ProductRow key={p.id} product={p} index={i}
-                    onEdit={(prod) => setFormProduct({ ...prod, existingPhotos: prod.images ?? [], newFiles: [] })}
+                    onEdit={(prod) => setFormProduct({ ...prod, existingPhotos: prod.images ?? [], newFiles: [], variants: (prod.variants && prod.variants.length) ? prod.variants : (prod.images ?? []).map(() => "") })}
                     onDelete={setDeleteTarget}
                   />
                 ))}

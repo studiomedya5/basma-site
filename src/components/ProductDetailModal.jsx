@@ -22,11 +22,16 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
   const photos = product.photos ?? [];
   const hasColors = photos.length > 1;
   const sizes = product.sizes ?? [];
-  const outOfStock = product.stock === 0;
+  // Stock par couleur (variante) ; repli sur le stock global si absent
+  const variants = Array.isArray(product.variants) ? product.variants.map(n => Number(n) || 0) : null;
+  const colorStock = (i) => variants ? (variants[i] ?? 0) : (product.stock ?? 0);
+  const allOut = variants ? variants.every(v => v <= 0) : product.stock === 0;
+  const outOfStock = allOut;
 
   const [colorIdx, setColorIdx] = useState(product.initialColorIdx ?? 0);
   const [size, setSize] = useState(sizes[0] ?? "TU");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const curColorOut = colorStock(colorIdx) <= 0; // couleur sélectionnée épuisée
 
   useEffect(() => {
     const h = () => setIsMobile(window.innerWidth < 768);
@@ -104,6 +109,7 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
       photos,
       catId: product.catId,
       initialColorIdx: colorIdx,
+      variants: product.variants,
     });
   };
 
@@ -215,18 +221,22 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
             <div style={{ marginBottom: 20 }}>
               <p style={labelStyle}>Couleurs disponibles · {photos.length}</p>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {photos.map((ph, i) => (
-                  <button key={i} onClick={() => setColorIdx(i)} title={`Couleur ${i + 1}`}
+                {photos.map((ph, i) => {
+                  const cOut = colorStock(i) <= 0;
+                  return (
+                  <button key={i} onClick={() => setColorIdx(i)} title={cOut ? `Couleur ${i + 1} — épuisée` : `Couleur ${i + 1}`}
                     style={{
-                      width: 46, height: 46, padding: 0, borderRadius: 6, overflow: "hidden",
+                      width: 46, height: 46, padding: 0, borderRadius: 6, overflow: "hidden", position: "relative",
                       border: i === colorIdx ? `2.5px solid ${GOLD}` : "2px solid transparent",
                       outline: i === colorIdx ? `1px solid ${GOLD}` : "1px solid rgba(200,149,108,0.3)",
                       outlineOffset: 1, cursor: "pointer", background: "none", flexShrink: 0,
                       transform: i === colorIdx ? "scale(1.06)" : "scale(1)", transition: "all 0.15s",
+                      opacity: cOut ? 0.45 : 1,
                     }}>
-                    <img src={resolvePhoto(ph)} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                    <img src={resolvePhoto(ph)} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", filter: cOut ? "grayscale(1)" : "none" }} />
                   </button>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -263,6 +273,19 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
               </button>
               <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "#999", textAlign: "center", marginTop: 8 }}>
                 Cet article n'est plus disponible pour le moment.
+              </p>
+            </div>
+          ) : curColorOut ? (
+            <div style={{ marginBottom: 14 }}>
+              <button disabled style={{
+                width: "100%", padding: "14px 8px", fontSize: 12, background: "#ECEAE3", color: "#9a958a",
+                border: "1.5px solid #ddd9cf", cursor: "not-allowed", fontFamily: "'Jost',sans-serif",
+                letterSpacing: "1.5px", textTransform: "uppercase",
+              }}>
+                Couleur épuisée
+              </button>
+              <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "#999", textAlign: "center", marginTop: 8 }}>
+                Cette couleur est épuisée — choisissez-en une autre disponible.
               </p>
             </div>
           ) : (
