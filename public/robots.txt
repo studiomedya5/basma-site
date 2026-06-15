@@ -1,0 +1,10 @@
+# robots.txt — Basma Only Shop
+# Autorise tous les moteurs de recherche à indexer tout le site
+User-agent: *
+Allow: /
+
+# Bloque l'admin (inutile dans Google)
+Disallow: /admin
+
+# Emplacement du sitemap
+Sitemap: https://basmaonlyshop.tn/sitemap.xml
