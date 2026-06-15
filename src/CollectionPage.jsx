@@ -237,7 +237,7 @@ function CategoryCard({ cat, onClick, delay, comingSoon, coverPhotos }) {
             letterSpacing: "0.2px",
             lineHeight: 1.2,
             marginBottom: 4,
-          }}>{cat.label}</span>
+          }}>{t(`cat_${cat.id}`)}</span>
           <span style={{
             display: "block",
             fontFamily: "'Jost', sans-serif",
@@ -381,7 +381,7 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
         <p style={{
           fontFamily: "'Jost',sans-serif", fontSize: 10, color: "var(--gold)",
           letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 4,
-        }}>{cat.label}</p>
+        }}>{t(`cat_${cat.id}`)}</p>
         <h3 onClick={() => onOpenDetail?.(group)} style={{ fontSize: 15, fontWeight: 500, marginBottom: 6, lineHeight: 1.3, cursor: "pointer" }}>{displayName}</h3>
         <p style={{
           fontFamily: "'Jost',sans-serif", fontSize: 12, color: "var(--text-muted)",
@@ -756,7 +756,7 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
           {t("collection")}
         </button>
         <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, letterSpacing: "3px", textTransform: "uppercase", color: "var(--gold)", marginBottom: 6 }}>✦ Basma Only Shop</p>
-        <h2 style={{ color: "white", fontSize: "clamp(22px,3vw,32px)", fontWeight: 300, letterSpacing: "-0.5px", marginBottom: 6 }}>{cat.label}</h2>
+        <h2 style={{ color: "white", fontSize: "clamp(22px,3vw,32px)", fontWeight: 300, letterSpacing: "-0.5px", marginBottom: 6 }}>{t(`cat_${cat.id}`)}</h2>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ width: 32, height: 1, background: "var(--gold)" }} />
           <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "rgba(255,255,255,0.4)", letterSpacing: "2px" }}>
@@ -781,7 +781,7 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
             fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "4px",
             textTransform: "uppercase", color: "var(--gold)", marginBottom: 14,
           }}>
-            {cat.label}
+            {t(`cat_${cat.id}`)}
           </p>
           <h3 style={{
             fontFamily: "'Cormorant Garamond',serif", fontSize: "clamp(30px,5vw,46px)",

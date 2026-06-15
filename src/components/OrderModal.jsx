@@ -315,7 +315,7 @@ export default function OrderModal({ product, onClose }) {
           {/* Infos produit sur photo */}
           <div style={{position:"absolute",bottom:14,left:16,right:16}}>
             <p style={{...T.eyebrow,color:"rgba(201,168,76,0.8)",marginBottom:5}}>
-              {product.category}
+              {t(`cat_${product.catId}`)}
             </p>
             <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:12}}>
               <p style={{...T.serif,fontSize:19,fontWeight:500,color:"white",lineHeight:1.15,flex:1}}>
@@ -481,7 +481,7 @@ export default function OrderModal({ product, onClose }) {
           {/* Infos */}
           <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"0 28px 28px"}}>
             <div style={{width:32,height:1,background:GOLD,marginBottom:14,opacity:0.7}}/>
-            <p style={{...T.eyebrow,color:"rgba(201,168,76,0.75)",marginBottom:8}}>{product.category}</p>
+            <p style={{...T.eyebrow,color:"rgba(201,168,76,0.75)",marginBottom:8}}>{t(`cat_${product.catId}`)}</p>
             <p style={{...T.serif,fontSize:26,fontWeight:400,color:"white",lineHeight:1.1,marginBottom:10}}>
               {displayName}
             </p>

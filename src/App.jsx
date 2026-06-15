@@ -836,7 +836,7 @@ function CollectionCategoryCard({ cat, delay, onClick, comingSoon, coverPhotos }
       }}>
         <div>
           <span style={{ display: "block", fontFamily: "'Cormorant Garamond',serif", fontSize: 19, fontWeight: 500, color: "var(--dark)", letterSpacing: "0.2px", lineHeight: 1.2, marginBottom: 4 }}>
-            {cat.label}
+            {t(`cat_${cat.id}`)}
           </span>
           <span style={{ display: "block", fontFamily: "'Jost',sans-serif", fontSize: 11, color: "var(--text-muted)", letterSpacing: "0.5px" }}>
             {comingSoon ? t("new_collection") : t("from_price")}
@@ -1225,7 +1225,7 @@ export default function App() {
           )}
 
           {/* ── Announcement bar ── */}
-          <AnnouncementBar text={TRANSLATIONS[lang].ticker} />
+          <AnnouncementBar />
 
           {/* ── Nav ── */}
           <nav
@@ -1946,7 +1946,7 @@ export default function App() {
               <h4 style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, letterSpacing: "2.5px", textTransform: "uppercase", color: "var(--gold)", marginBottom: 20, fontWeight: 600 }}>
                 {t("shop_word")}
               </h4>
-              {["Abaya", "Jiba", "Pyjama", "Robe", "Set", "Sac", "Manteau", "Kids"].map((item) => (
+              {["3ibaya", "jiba", "pyjama", "Robe", "set", "Sac", "manteau", "kids"].map((id) => t(`cat_${id}`)).map((item) => (
                 <p key={item} style={{ fontFamily: "'Jost',sans-serif", color: "rgba(255,255,255,0.5)", fontSize: 13, marginBottom: 10, fontWeight: 300, cursor: "pointer" }}>
                   {item}
                 </p>

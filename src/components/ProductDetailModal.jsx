@@ -233,7 +233,7 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
         {/* ── Panneau infos ── */}
         <div style={{ flex: 1, overflowY: isMobile ? "visible" : "auto", padding: isMobile ? "20px 20px 30px" : "38px 34px" }}>
           <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, letterSpacing: "3px", textTransform: "uppercase", color: GOLD, marginBottom: 8 }}>
-            {product.category}
+            {t(`cat_${product.catId}`)}
           </p>
           <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: isMobile ? 24 : 28, fontWeight: 500, color: DARK, lineHeight: 1.1, marginBottom: 10 }}>
             {displayName}

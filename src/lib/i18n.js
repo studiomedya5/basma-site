@@ -4,6 +4,11 @@
 
 export const STR = {
   fr: {
+    ticker: "🚚 Livraison gratuite pour toute commande supérieure à 100 DT  ✨ Paiement à la livraison partout en Tunisie  🌹 Nouvelle collection disponible maintenant  ",
+    // Catégories
+    cat_3ibaya: "Abaya", cat_echarpe: "Écharpe", cat_jiba: "Jiba", cat_kids: "Kids",
+    cat_manteau: "Manteau", cat_MDB: "MDB", cat_pyjama: "Pyjama", cat_Robe: "Robe",
+    cat_Sac: "Sac", cat_set: "Set",
     // Navigation / général
     home: "ACCUEIL", collection: "COLLECTION", contact: "CONTACT",
     search_ph: "Rechercher un article...",
@@ -76,6 +81,11 @@ export const STR = {
     err_name: "Le nom est requis", err_email: "Email invalide", err_message: "Le message est requis",
   },
   ar: {
+    ticker: "🚚 توصيل مجاني لكل طلب يتجاوز 100 د.ت  ✨ الدفع عند الاستلام في كامل تونس  🌹 مجموعة جديدة متاحة الآن  ",
+    // Catégories
+    cat_3ibaya: "عباية", cat_echarpe: "وشاح", cat_jiba: "جبّة", cat_kids: "أطفال",
+    cat_manteau: "معطف", cat_MDB: "MDB", cat_pyjama: "بيجامة", cat_Robe: "فستان",
+    cat_Sac: "حقيبة", cat_set: "طقم",
     // Navigation / général
     home: "الرئيسية", collection: "المجموعة", contact: "تواصل",
     search_ph: "ابحث عن منتج...",

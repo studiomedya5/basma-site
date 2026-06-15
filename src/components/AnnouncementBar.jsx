@@ -1,9 +1,10 @@
+import { useLang } from "../context/LangContext";
+
 export const ANNOUNCE_H = 36;
 
-const TICKER_TEXT = "🚚 Livraison gratuite pour toute commande supérieure à 100 DT  ✨ Paiement à la livraison partout en Tunisie  🌹 Nouvelle collection disponible maintenant  ";
-
 export default function AnnouncementBar({ text }) {
-  const ticker = text || TICKER_TEXT;
+  const { t } = useLang();
+  const ticker = text || t("ticker");
   return (
     <div style={{
       position: "fixed", top: 0, left: 0, right: 0, zIndex: 1001,
