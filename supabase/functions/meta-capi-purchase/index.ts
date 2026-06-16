@@ -19,8 +19,8 @@ import { buildPurchaseEvent, type OrderRow } from "./lib.ts";
 
 const PIXEL_ID = Deno.env.get("META_PIXEL_ID") ?? "";
 const CAPI_TOKEN = Deno.env.get("META_CAPI_TOKEN") ?? "";
-const WEBHOOK_SECRET = Deno.env.get("META_WEBHOOK_SECRET") ?? "";
-const TEST_EVENT_CODE = Deno.env.get("META_TEST_EVENT_CODE") ?? "";
+const WEBHOOK_SECRET = (Deno.env.get("META_WEBHOOK_SECRET") ?? "").trim();
+const TEST_EVENT_CODE = (Deno.env.get("META_TEST_EVENT_CODE") ?? "").trim();
 const CAPI_ENABLED = (Deno.env.get("META_CAPI_ENABLED") ?? "true").toLowerCase() === "true";
 const GRAPH_VERSION = Deno.env.get("GRAPH_API_VERSION") ?? "v23.0"; // surchargeable sans toucher au code
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -93,7 +93,7 @@ async function postToMeta(payload: unknown): Promise<{ ok: boolean; status: numb
 Deno.serve(async (req) => {
   // 1) Sécurité : secret partagé obligatoire (posé par le Database Webhook).
   if (req.method !== "POST") return json(405, { error: "method_not_allowed" });
-  if (!WEBHOOK_SECRET || req.headers.get("x-webhook-secret") !== WEBHOOK_SECRET) {
+  if (!WEBHOOK_SECRET || (req.headers.get("x-webhook-secret") ?? "").trim() !== WEBHOOK_SECRET) {
     return json(401, { error: "unauthorized" });
   }
 
