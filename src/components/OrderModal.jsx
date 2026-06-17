@@ -41,14 +41,17 @@ export default function OrderModal({ product, onClose }) {
   const [promoApplied, setPromoApplied] = useState(null); // code promo validé (livraison gratuite)
   const [promoMsg, setPromoMsg]   = useState(null);       // { ok, text }
 
-  // Vérifie le code promo (existe + actif + non expiré)
+  // Vérifie le code promo via une fonction serveur sécurisée (SECURITY DEFINER).
+  // La table promo_codes n'est PLUS exposée à anon ; on passe par validate_promo_code.
   const applyPromo = async () => {
     const code = promoInput.trim().toUpperCase();
     if (!code) return;
-    const { data } = await supabase.from("promo_codes").select("*").eq("code", code).eq("active", true).limit(1);
-    const promo = data && data[0];
-    if (!promo) { setPromoApplied(null); setPromoMsg({ ok:false, text: t("promo_invalid") }); return; }
-    if (promo.expires_at && new Date(promo.expires_at) < new Date()) { setPromoApplied(null); setPromoMsg({ ok:false, text: t("promo_expired") }); return; }
+    const { data: r } = await supabase.rpc("validate_promo_code", { p_code: code, p_phone: null });
+    if (!r || !r.valid) {
+      setPromoApplied(null);
+      setPromoMsg({ ok:false, text: r?.reason === "expired" ? t("promo_expired") : t("promo_invalid") });
+      return;
+    }
     setPromoApplied(code); setPromoMsg({ ok:true, text: t("promo_free_ship") });
   };
 
@@ -111,13 +114,15 @@ export default function OrderModal({ product, onClose }) {
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setStatus("loading");
 
-    // Code promo : vérifie qu'il n'a pas déjà été utilisé par ce numéro (1 fois/client)
+    // Code promo : revalide côté serveur (existe + actif + non expiré + pas déjà
+    // utilisé par ce numéro). anon ne lit plus la table orders directement.
     if (promoApplied) {
-      const phone = form.telephone.trim();
-      const { data: prev } = await supabase.from("orders")
-        .select("id").eq("customer_phone", phone).eq("promo_code", promoApplied).limit(1);
-      if (prev && prev.length) {
-        setPromoMsg({ ok:false, text: t("promo_used") });
+      const { data: chk } = await supabase.rpc("validate_promo_code", {
+        p_code: promoApplied, p_phone: form.telephone.trim(),
+      });
+      if (!chk || !chk.valid) {
+        setPromoMsg({ ok:false, text: chk?.reason === "used" ? t("promo_used")
+          : chk?.reason === "expired" ? t("promo_expired") : t("promo_invalid") });
         setStatus("idle");
         return;
       }

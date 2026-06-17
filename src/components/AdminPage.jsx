@@ -4,7 +4,6 @@ import AdminProducts from "./AdminProducts";
 import AdminPromoCodes from "./AdminPromoCodes";
 
 // ─── Constantes ───────────────────────────────────────────────
-const PASSWORD = "basma2024";
 const STATUTS = ["en_attente", "confirmée", "livrée", "annulée"];
 const STATUT_STYLE = {
   en_attente: { bg: "#FFF8E7", color: "#B8860B", border: "#F0C940", label: "En attente" },
@@ -716,14 +715,22 @@ function OrderRow({ order, onStatutChange, onEdit, onDelete, onView, index, isTa
 }
 
 // ─── Écran login ──────────────────────────────────────────────
-function LoginScreen({ onLogin }) {
+function LoginScreen() {
+  const [email, setEmail] = useState("");
   const [pwd, setPwd] = useState("");
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  // Authentification réelle via Supabase Auth (plus de mot de passe en dur).
+  // En cas de succès, le parent bascule l'affichage via onAuthStateChange.
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (pwd === PASSWORD) { onLogin(); }
-    else { setError(true); setPwd(""); }
+    setLoading(true); setError(false);
+    const { error: authErr } = await supabase.auth.signInWithPassword({
+      email: email.trim(), password: pwd,
+    });
+    setLoading(false);
+    if (authErr) { setError(true); setPwd(""); }
   };
 
   return (
@@ -743,10 +750,25 @@ function LoginScreen({ onLogin }) {
         </div>
         <form onSubmit={handleSubmit}>
           <label style={{ display: "block", fontFamily: "'Jost',sans-serif", fontSize: 11, color: "#666", marginBottom: 6 }}>
+            Email
+          </label>
+          <input
+            type="email" value={email} autoFocus autoComplete="username"
+            onChange={(e) => { setEmail(e.target.value); setError(false); }}
+            placeholder="email@exemple.com"
+            style={{
+              width: "100%", padding: "12px 16px", boxSizing: "border-box",
+              border: `1px solid ${error ? "#e57373" : "#ddd"}`, borderRadius: 4,
+              fontFamily: "'Jost',sans-serif", fontSize: 14, outline: "none", marginBottom: 14,
+            }}
+            onFocus={(e) => (e.target.style.borderColor = "#C9A84C")}
+            onBlur={(e) => (e.target.style.borderColor = error ? "#e57373" : "#ddd")}
+          />
+          <label style={{ display: "block", fontFamily: "'Jost',sans-serif", fontSize: 11, color: "#666", marginBottom: 6 }}>
             Mot de passe
           </label>
           <input
-            type="password" value={pwd} autoFocus
+            type="password" value={pwd} autoComplete="current-password"
             onChange={(e) => { setPwd(e.target.value); setError(false); }}
             placeholder="••••••••"
             style={{
@@ -759,21 +781,21 @@ function LoginScreen({ onLogin }) {
           />
           {error && (
             <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, color: "#e57373", marginBottom: 12 }}>
-              Mot de passe incorrect
+              Email ou mot de passe incorrect
             </p>
           )}
           <button
-            type="submit"
+            type="submit" disabled={loading}
             style={{
               width: "100%", padding: "14px", marginTop: error ? 0 : 16,
               background: "#C9A84C", color: "white", border: "none", borderRadius: 4,
               fontFamily: "'Jost',sans-serif", fontSize: 12, letterSpacing: "1.5px",
-              textTransform: "uppercase", cursor: "pointer",
+              textTransform: "uppercase", cursor: loading ? "wait" : "pointer", opacity: loading ? 0.6 : 1,
             }}
             onMouseEnter={(e) => (e.currentTarget.style.background = "#b8943e")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "#C9A84C")}
           >
-            Accéder
+            {loading ? "Connexion…" : "Accéder"}
           </button>
         </form>
       </div>
@@ -789,7 +811,23 @@ export default function AdminPage({ onBack }) {
   const isDesktop = width >= 1024;
 
   const [auth, setAuth] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const [activeTab, setActiveTab] = useState("commandes");
+
+  // Session Supabase Auth : source de vérité de l'accès admin.
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!active) return;
+      setAuth(!!data.session);
+      setAuthChecked(true);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuth(!!session);
+      setAuthChecked(true);
+    });
+    return () => { active = false; sub.subscription.unsubscribe(); };
+  }, []);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -864,7 +902,8 @@ export default function AdminPage({ onBack }) {
     setDeleteOrder(null);
   };
 
-  if (!auth) return <LoginScreen onLogin={() => setAuth(true)} />;
+  if (!authChecked) return <div style={{ minHeight: "100vh", background: "#FAF9F6" }} />;
+  if (!auth) return <LoginScreen />;
 
   // Filtrage (avec null-safety)
   const filtered = orders.filter((o) => {
@@ -934,7 +973,7 @@ export default function AdminPage({ onBack }) {
             {!isMobile && "Actualiser"}
           </button>
           <button
-            onClick={() => setAuth(false)}
+            onClick={() => supabase.auth.signOut()}
             style={{
               display: "flex", alignItems: "center", gap: 5,
               background: "none", border: "1px solid rgba(255,255,255,0.15)",
