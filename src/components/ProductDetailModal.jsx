@@ -104,7 +104,7 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const resolvePhoto = (p) => (p?.startsWith("http") ? p : `/photos/${product.catId}/${p}`);
+  const resolvePhoto = (p) => (/^(https?:|\/)/.test(p || "") ? p : `/photos/${product.catId}/${p}`);
   const activeSrc = resolvePhoto(photos[colorIdx] ?? photos[0]);
 
   // Construit le message de commande à envoyer

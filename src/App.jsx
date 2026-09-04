@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "./lib/supabase";
+import { chargerProduits } from "./lib/catalog";
 import CollectionPage from "./CollectionPage";
 import ContactPage from "./ContactPage";
 import SummerDecor from "./SummerDecor";
@@ -867,6 +868,7 @@ function CollectionCategoryCard({ cat, delay, onClick, comingSoon, coverPhotos, 
 export default function App() {
   const [products, setProducts] = useState([]);
   const [productsLoaded, setProductsLoaded] = useState(false);
+  const [modeSecours, setModeSecours] = useState(false); // backend indisponible -> instantane
   const [page, setPage] = useState(() =>
     window.location.pathname === "/admin" ? "admin" : DEEP_LINK ? "collection" : "home"
   );
@@ -936,25 +938,10 @@ export default function App() {
 
   useEffect(() => {
     const loadProducts = async () => {
-
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .order("id", { ascending: true });
-
-
-      if (error) {
-        console.error("Erreur chargement produits:", error);
-        return;
-      }
-
-      setProducts(
-        (data || []).map((p) => ({
-          ...p,
-          oldPrice: p.oldPrice ?? p.old_price ?? null,
-          sizes: p.sizes ?? ["S", "M", "L", "XL"],
-        }))
-      );
+      // Supabase si disponible, sinon instantané /catalogue.json (mode secours)
+      const { produits, secours } = await chargerProduits({ order: "id" });
+      setProducts(produits);
+      setModeSecours(secours && produits.length > 0);
       setProductsLoaded(true);
     };
 
@@ -1237,6 +1224,29 @@ export default function App() {
 
           {/* ── Announcement bar ── */}
           <AnnouncementBar />
+
+          {/* ── Mode secours : la base est injoignable, le catalogue affiché
+                 vient de l'instantané Cloudflare. On bascule les commandes
+                 sur WhatsApp pour ne perdre aucune vente. ── */}
+          {modeSecours && (
+            <div style={{
+              position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 1500,
+              background: "#2C2A20", color: "#F5EFE1",
+              padding: "10px 16px", display: "flex", flexWrap: "wrap",
+              alignItems: "center", justifyContent: "center", gap: 10,
+              fontFamily: "'Jost',sans-serif", fontSize: 12, letterSpacing: "0.5px",
+              boxShadow: "0 -4px 20px rgba(0,0,0,0.25)",
+            }}>
+              <span>{lang === "ar"
+                ? "الطلب عبر الموقع غير متوفر مؤقتاً — اطلبي عبر واتساب"
+                : "Commande en ligne momentanément indisponible — commandez par WhatsApp"}</span>
+              <a href="https://wa.me/21629930212" target="_blank" rel="noreferrer" style={{
+                background: "#25D366", color: "#fff", textDecoration: "none",
+                padding: "7px 16px", borderRadius: 20, fontSize: 11,
+                textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: 600,
+              }}>WhatsApp</a>
+            </div>
+          )}
 
           {/* ── Nav ── */}
           <nav

@@ -85,7 +85,7 @@ export default function OrderModal({ product, onClose }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [colorIdx]);
 
-  const resolvePhoto = (p) => p?.startsWith("http") ? p : `/photos/${product.catId}/${p}`;
+  const resolvePhoto = (p) => /^(https?:|\/)/.test(p || "") ? p : `/photos/${product.catId}/${p}`;
   const activeImg    = product.photos ? resolvePhoto(product.photos[colorIdx ?? 0]) : product.img;
   const subtotal     = product.price * form.qty;
   const deliveryFee  = (subtotal >= FREE_THRESHOLD || promoApplied) ? 0 : DELIVERY_FEE;
@@ -169,7 +169,9 @@ export default function OrderModal({ product, onClose }) {
       headers:{ "Content-Type":"application/json", "Authorization":`Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` },
       body: JSON.stringify({
         customer_name: form.nom, customer_phone: form.telephone, customer_email: form.email||null,
-        product_name: product.name, product_image: `https://basmaonlyshop.tn${activeImg}`,
+        product_name: product.name,
+        // URL absolue quel que soit le format (/img/..., /photos/..., http...)
+        product_image: /^https?:/.test(activeImg) ? activeImg : `https://basmaonlyshop.tn${activeImg}`,
         product_price: product.price, size: form.size, quantity: form.qty, total_price: totalPrice,
         address: form.adresse, governorate: form.gouvernorat, delegation: form.delegation,
         color_label: hasColors ? `Couleur ${(colorIdx??0)+1}` : "—",
@@ -315,12 +317,38 @@ export default function OrderModal({ product, onClose }) {
     </div>
   );
 
+  /* ─── Filet de sécurité : commande par WhatsApp ──
+     Si la base ne répond pas (quota, panne, coupure réseau de la cliente),
+     on ne perd PAS la vente : le message est pré-rempli, il ne reste qu'à
+     l'envoyer. Indispensable pendant une campagne de pub payante. */
+  const WHATSAPP_BOUTIQUE = "21629930212";
+  const lienWhatsappCommande = () => {
+    const l = [
+      "Bonjour Basma, je souhaite commander :",
+      `• Article : ${product?.name || ""}`,
+      form.size ? `• Taille : ${form.size}` : null,
+      (hasColors || variants) ? `• Couleur : ${(colorIdx ?? 0) + 1}` : null,
+      `• Quantité : ${form.qty}`,
+      `• Total : ${totalPrice} DT`,
+      "",
+      `Nom : ${form.nom}`,
+      `Téléphone : ${form.telephone}`,
+      `Adresse : ${form.adresse}, ${form.delegation} (${form.gouvernorat})`,
+    ].filter(Boolean).join(String.fromCharCode(10));
+    return `https://wa.me/${WHATSAPP_BOUTIQUE}?text=${encodeURIComponent(l)}`;
+  };
+
   /* ─── Écran erreur ──────────────────────────── */
   const ErrorScreen = () => (
     <div style={{textAlign:"center",padding:"50px 20px 30px"}}>
       <div style={{fontSize:36,marginBottom:16}}>⚠️</div>
       <h2 style={{...T.serif,fontSize:20,fontWeight:400,color:DARK,marginBottom:8}}>{t("error_title")}</h2>
-      <p style={{...T.body,color:"#888",fontSize:13,marginBottom:24}}>{t("please_retry")}</p>
+      <p style={{...T.body,color:"#888",fontSize:13,marginBottom:20}}>{t("please_retry")}</p>
+      <a href={lienWhatsappCommande()} target="_blank" rel="noreferrer"
+        style={{...T.body,display:"block",padding:"14px 20px",background:"#25D366",color:"#fff",
+          textDecoration:"none",letterSpacing:"2px",fontSize:11,textTransform:"uppercase",marginBottom:12}}>
+        {t("order_whatsapp")}
+      </a>
       <button onClick={()=>setStatus("idle")} style={{...T.body,padding:"14px 40px",background:DARK,color:GOLD,
         border:"none",letterSpacing:"2.5px",fontSize:11,textTransform:"uppercase",cursor:"pointer"}}>
         {t("retry")}

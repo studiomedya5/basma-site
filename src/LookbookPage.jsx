@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import OrderModal from "./components/OrderModal";
 import { useLang } from "./context/LangContext";
-import { supabase } from "./lib/supabase";
+import { chargerProduits } from "./lib/catalog";
 
 // Correspondance libellé catégorie (en base) -> id catégorie (pour la traduction)
 const LABEL_TO_ID = {
@@ -179,10 +179,9 @@ export default function LookbookPage({ onClose, muteAudio }) {
 
   // Charge les articles disponibles (actifs) avec leur prix réel
   useEffect(() => {
-    supabase.from("products").select("*").eq("is_active", true)
-      .order("created_at", { ascending: false })
-      .then(({ data }) => {
-        const built = (data ?? []).map((p) => ({
+    chargerProduits({ activesSeulement: true, order: "created_desc" })
+      .then(({ produits }) => {
+        const built = produits.map((p) => ({
           supabaseId: p.id,
           img: (p.images && p.images[0]) || "",
           photos: p.images || [],

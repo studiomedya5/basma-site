@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "../lib/supabase";
+import { photoUrl } from "../lib/images";
 
 // ─── Constantes ───────────────────────────────────────────────
 const CATEGORIES = ["Abaya", "Jiba", "Pyjama", "Robe", "Set", "Sac", "Manteau", "Kids", "Burkini", "Écharpe", "Accessoires", "Cosmétique", "Pack's"];
@@ -87,10 +88,47 @@ const inp = (style) => ({
   ...style,
 });
 
+// ─── Optimisation des photos avant envoi ─────────────────────
+// Une photo de téléphone pèse 3 à 6 Mo. Multipliée par 5 photos et
+// 100 produits, c'est ce qui a fait exploser le quota Supabase.
+// On redimensionne (1600 px max) et on convertit en WebP : la photo
+// tombe à ~150-250 Ko, soit 20x moins de stockage ET de bande passante,
+// sans différence visible sur mobile.
+const MAX_COTE = 1600;   // côté le plus long, en pixels
+const QUALITE  = 0.82;   // qualité WebP
+
+async function compresserImage(file) {
+  if (!file || !file.type?.startsWith("image/") || file.type === "image/gif") return file;
+  try {
+    const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
+    const ratio = Math.min(1, MAX_COTE / Math.max(bitmap.width, bitmap.height));
+    const w = Math.round(bitmap.width * ratio);
+    const h = Math.round(bitmap.height * ratio);
+    const canvas = document.createElement("canvas");
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    bitmap.close?.();
+    let blob = await new Promise((r) => canvas.toBlob(r, "image/webp", QUALITE));
+    if (!blob) blob = await new Promise((r) => canvas.toBlob(r, "image/jpeg", 0.85));
+    if (!blob || blob.size >= file.size) return file; // déjà bien optimisée
+    const ext = blob.type === "image/webp" ? "webp" : "jpg";
+    return new File([blob], file.name.replace(/\.[^.]+$/, "") + "." + ext, { type: blob.type });
+  } catch (_) {
+    return file; // navigateur trop ancien : on envoie l'original
+  }
+}
+
 async function uploadFile(file) {
-  const ext  = file.name.split(".").pop();
+  const photo = await compresserImage(file);
+  const ext  = (photo.name.split(".").pop() || "jpg").toLowerCase();
   const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(path, file, { upsert: false });
+  const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(path, photo, {
+    upsert: false,
+    contentType: photo.type,
+    cacheControl: "31536000", // 1 an : le CDN Cloudflare garde la photo
+  });
   if (error) throw error;
   const { data } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path);
   return data.publicUrl;
@@ -169,6 +207,21 @@ function HorsStockBadge() {
       fontFamily: "'Jost',sans-serif", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap",
     }}>
       Rupture de stock
+    </span>
+  );
+}
+
+// ─── Badge stock faible (<= 3) ───────────────────────────────
+// Signale d'un coup d'oeil les articles a reapprovisionner : indispensable
+// quand une pub envoie du trafic sur la boutique.
+function StockFaibleBadge({ stock }) {
+  return (
+    <span style={{
+      display: "inline-block", padding: "3px 10px", borderRadius: 20,
+      background: "#FFF4E0", color: "#B8860B", border: "1px solid #E8C87A",
+      fontFamily: "'Jost',sans-serif", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap",
+    }}>
+      Plus que {stock} !
     </span>
   );
 }
@@ -528,7 +581,7 @@ function ProductForm({ initial, onSave, onClose, isMobile }) {
                 {form.existingPhotos.map((url, i) => (
                   <div key={`ex-${i}`}>
                     <div style={{ position: "relative", aspectRatio: "3/4", borderRadius: 6, overflow: "hidden" }}>
-                      <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <img src={photoUrl(url)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       <button type="button" onClick={() => removeExisting(i)} style={{
                         position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: "50%",
                         background: "rgba(0,0,0,0.6)", border: "none", color: "white",
@@ -711,7 +764,9 @@ function ProductCard({ product, onEdit, onDelete }) {
             </span>
             {product.stock === 0
               ? <HorsStockBadge />
-              : <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 12, color: "#999" }}>Stock : {product.stock}</span>
+              : product.stock <= 3
+                ? <StockFaibleBadge stock={product.stock} />
+                : <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 12, color: "#999" }}>Stock : {product.stock}</span>
             }
           </div>
           <div style={{ display: "flex", gap: 6 }}>
@@ -744,7 +799,7 @@ function ProductRow({ product, onEdit, onDelete, index }) {
     <tr style={{ background: index % 2 === 0 ? "white" : "#FDFCFA", verticalAlign: "middle" }}>
       <td style={tdS}>
         <div style={{ width: 48, height: 60, borderRadius: 4, overflow: "hidden", background: "#F0EBE4", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          {photo ? <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "#C9A84C", opacity: 0.4 }}><PackageIcon /></span>}
+          {photo ? <img src={photoUrl(photo)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "#C9A84C", opacity: 0.4 }}><PackageIcon /></span>}
         </div>
       </td>
       <td style={tdS}>
@@ -756,7 +811,9 @@ function ProductRow({ product, onEdit, onDelete, index }) {
       <td style={{ ...tdS, textAlign: "center" }}>
         {product.stock === 0
           ? <HorsStockBadge />
-          : <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 14, fontWeight: 600 }}>{product.stock}</span>
+          : product.stock <= 3
+            ? <StockFaibleBadge stock={product.stock} />
+            : <span style={{ fontFamily: "'Jost',sans-serif", fontSize: 14, fontWeight: 600 }}>{product.stock}</span>
         }
       </td>
       <td style={tdS}><div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>{(product.sizes ?? []).map((s) => <span key={s} style={{ fontFamily: "'Jost',sans-serif", fontSize: 11, background: "#F5F5F5", border: "1px solid #EDE8E0", padding: "1px 7px", borderRadius: 4 }}>{s}</span>)}</div></td>

@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
+import { photoUrl } from "../lib/images";
+import AdminStats from "./AdminStats";
+import AdminSante from "./AdminSante";
 import AdminProducts from "./AdminProducts";
 import AdminPromoCodes from "./AdminPromoCodes";
 
@@ -301,7 +304,7 @@ function OrderDetailModal({ order, onClose }) {
         {/* En-tête */}
         <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "20px 22px", borderBottom: "1px solid #EDE8E0", background: "#FDFCFA", borderRadius: "12px 12px 0 0" }}>
           <div style={{ width: 70, height: 70, borderRadius: 10, overflow: "hidden", flexShrink: 0, background: "#F0EBE4", border: "1px solid #C9A84C", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            {photo ? <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <HangerIcon />}
+            {photo ? <img src={photoUrl(photo)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <HangerIcon />}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 20, fontWeight: 600, color: "#2C2A20", margin: "0 0 6px", lineHeight: 1.2 }}>{order.product_name}</p>
@@ -482,7 +485,7 @@ function OrderCard({ order, onStatutChange, onEdit, onDelete, onView }) {
           border: "1px solid #C9A84C", cursor: "pointer",
         }}>
           {photo
-            ? <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ? <img src={photoUrl(photo)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             : <HangerIcon />
           }
         </div>
@@ -600,7 +603,7 @@ function OrderRow({ order, onStatutChange, onEdit, onDelete, onView, index, isTa
             border: "1px solid #C9A84C",
           }}>
             {photo
-              ? <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ? <img src={photoUrl(photo)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               : <HangerIcon />
             }
           </div>
@@ -997,6 +1000,8 @@ export default function AdminPage({ onBack }) {
           { key: "commandes", label: "Commandes" },
           { key: "produits",  label: "Produits"  },
           { key: "promos",    label: "Codes promo" },
+          { key: "stats",     label: "Statistiques" },
+          { key: "sante",     label: "Santé" },
         ].map(({ key, label }) => (
           <button
             key={key}
@@ -1025,6 +1030,16 @@ export default function AdminPage({ onBack }) {
         {/* ── Onglet Codes promo ── */}
         {activeTab === "promos" && (
           <AdminPromoCodes isMobile={isMobile} />
+        )}
+
+        {/* ── Onglet Statistiques ── */}
+        {activeTab === "stats" && (
+          <AdminStats orders={orders} isMobile={isMobile} />
+        )}
+
+        {/* ── Onglet Santé (checklist avant campagne) ── */}
+        {activeTab === "sante" && (
+          <AdminSante isMobile={isMobile} />
         )}
 
         {/* ── Onglet Commandes ── */}

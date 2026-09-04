@@ -10,12 +10,13 @@
 //   dist/<slug>/index.html          -> jolie URL avec le nom, redirige vers la fiche
 // ============================================================
 
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { readFile, writeFile, mkdir, copyFile } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIST = join(__dirname, "..", "dist");
+const PUBLIC = join(__dirname, "..", "public");
 const ORIGIN = "https://basmaonlyshop.tn";
 
 // Clés Supabase (publiques — déjà présentes dans le bundle client)
@@ -28,6 +29,14 @@ const CAT_ID = {
   "Manteau": "manteau", "Burkini": "MDB", "Pyjama": "pyjama", "Robe": "Robe",
   "Sac": "Sac", "Set": "set",
   "Accessoires": "accessoires", "Cosmétique": "cosmetique", "Pack's": "pack",
+};
+
+// Réécrit une URL Supabase Storage vers le CDN Cloudflare (/img/<fichier>).
+// Les robots Facebook/WhatsApp iront chercher la photo sur Cloudflare :
+// bande passante Supabase économisée + photo servie même si Supabase tombe.
+const cdn = (url) => {
+  const m = /supabase\.co\/storage\/v1\/object\/public\/[^/]+\/(.+)$/.exec(url || "");
+  return m ? `${ORIGIN}/img/${m[1]}` : url;
 };
 
 const slugify = (s) => (s || "")
@@ -47,15 +56,37 @@ function setMeta(html, attr, key, value) {
 
 async function main() {
   // 1. Récupère les produits actifs
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/products?is_active=eq.true&select=id,name,category,description,images`,
-    { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
-  );
-  if (!res.ok) {
-    console.warn(`[prerender] Supabase indisponible (${res.status}) — étape ignorée.`);
-    return;
+  let products = null;
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/products?is_active=eq.true&select=*`,
+      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+    );
+    if (res.ok) products = await res.json();
+    else console.warn(`[prerender] Supabase a répondu ${res.status}.`);
+  } catch (e) {
+    console.warn(`[prerender] Supabase injoignable : ${e.message}`);
   }
-  const products = await res.json();
+
+  // ── Instantané du catalogue (mode secours du site) ──
+  // Si Supabase répond : on rafraîchit public/catalogue.json (versionné dans git)
+  // Sinon : on réutilise le dernier instantané connu, le site reste vivant.
+  if (Array.isArray(products) && products.length) {
+    const json = JSON.stringify(products);
+    await writeFile(join(PUBLIC, "catalogue.json"), json, "utf8");
+    await writeFile(join(DIST, "catalogue.json"), json, "utf8");
+    console.log(`[prerender] instantané catalogue : ${products.length} produit(s).`);
+  } else {
+    try {
+      await copyFile(join(PUBLIC, "catalogue.json"), join(DIST, "catalogue.json"));
+      const old = JSON.parse(await readFile(join(PUBLIC, "catalogue.json"), "utf8"));
+      console.warn(`[prerender] ancien instantané conservé (${old.length} produit(s)).`);
+      products = old;
+    } catch (_) {
+      console.warn("[prerender] aucun instantané disponible — pages produits non générées.");
+      return;
+    }
+  }
 
   // 2. Lit le template index.html généré par Vite
   const template = await readFile(join(DIST, "index.html"), "utf8");
@@ -63,7 +94,7 @@ async function main() {
   let count = 0;
   for (const p of products) {
     const catId = CAT_ID[p.category];
-    const image = Array.isArray(p.images) ? p.images[0] : null;
+    const image = Array.isArray(p.images) ? cdn(p.images[0]) : null;
     if (!catId || !image) continue; // catégorie inconnue ou pas de photo -> on saute
 
     const key = `${catId}--sb-${p.id}`;

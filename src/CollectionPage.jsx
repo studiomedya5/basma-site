@@ -4,7 +4,7 @@ import OrderModal from "./components/OrderModal";
 import ProductDetailModal from "./components/ProductDetailModal";
 import { useCart } from "./context/CartContext";
 import AnnouncementBar, { ANNOUNCE_H } from "./components/AnnouncementBar";
-import { supabase } from "./lib/supabase";
+import { chargerProduits } from "./lib/catalog";
 import { makeProductKey } from "./lib/productKey";
 import { fbTrack } from "./lib/pixel";
 import { normVariants } from "./lib/variants";
@@ -166,7 +166,8 @@ function CategoryCard({ cat, onClick, delay, comingSoon, coverPhotos, minPrice }
   const fromPrice = minPrice != null ? minPrice : cat.price;
   const [hovered, setHovered] = useState(false);
   // Photos de couverture = vraies photos produits si dispo, sinon photos statiques
-  const resolve = (p) => (p?.startsWith("http") ? p : `/photos/${cat.id}/${p}`);
+  // "http..." ou "/img/..." (CDN Cloudflare) = deja une URL complete
+  const resolve = (p) => (/^(https?:|\/)/.test(p || "") ? p : `/photos/${cat.id}/${p}`);
   const photos = (coverPhotos && coverPhotos.length)
     ? coverPhotos
     : cat.photos.map(resolve);
@@ -307,7 +308,7 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
   const [popupError, setPopupError] = useState("");
 
   // Support URLs absolues (Supabase) et chemins relatifs (statiques)
-  const photoSrc = (photo) => photo.startsWith("http") ? photo : `/photos/${cat.id}/${photo}`;
+  const photoSrc = (photo) => /^(https?:|\/)/.test(photo || "") ? photo : `/photos/${cat.id}/${photo}`;
   const activeSrc = photoSrc(group.photos[activeIdx]);
 
   // Pack's : défilement auto des images (pour voir tous les articles du pack), pause au survol
@@ -325,6 +326,10 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
   const allOut = variants ? variants.every(v => v.stock <= 0) : group.stock === 0; // toutes les couleurs épuisées
   const curColorOut = colorStock(activeIdx) <= 0;                                  // la couleur affichée est épuisée
   const outOfStock = allOut;
+  // Stock total restant, pour le badge d'urgence "Plus que X"
+  const stockRestant = variants
+    ? variants.reduce((s, v) => s + Math.max(0, Number(v.stock) || 0), 0)
+    : Math.max(0, Number(group.stock) || 0);
 
   const handleAddToCart = () => {
     if (group.photos.length > 1 && popupColorIdx === null) {
@@ -387,6 +392,17 @@ function ProductGroupCard({ cat, group, groupIndex, onOrder, onAddToCart, onOpen
             letterSpacing: "1.5px", textTransform: "uppercase", padding: "6px 12px",
           }}>
             {t("out_of_stock")}
+          </span>
+        )}
+        {/* Badge urgence : rassure sur la disponibilite et pousse a l'achat */}
+        {!outOfStock && stockRestant > 0 && stockRestant <= 3 && (
+          <span style={{
+            position: "absolute", top: 12, left: 12, zIndex: 3,
+            background: "rgba(198,40,40,0.92)", color: "white",
+            fontFamily: "'Jost',sans-serif", fontSize: 10, fontWeight: 600,
+            letterSpacing: "1.2px", textTransform: "uppercase", padding: "6px 12px",
+          }}>
+            {t("only_left").replace("{n}", stockRestant)}
           </span>
         )}
         {/* Indice "voir le produit" au survol */}
@@ -668,13 +684,11 @@ function CategoryGallery({ cat, onBack, openProductKey, onDeepLinkConsumed }) {
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase
-        .from("products")
-        .select("*")
-        .eq("category", cat.label)
-        .eq("is_active", true)
-        .order("created_at", { ascending: false });
-      setSupabaseProducts(data ?? []);
+      // Supabase, ou instantané /catalogue.json si le backend est indisponible
+      const { produits } = await chargerProduits({
+        category: cat.label, activesSeulement: true, order: "created_desc",
+      });
+      setSupabaseProducts(produits);
       setLoaded(true);
     };
     load();
@@ -1069,23 +1083,22 @@ export default function CollectionPage({ onBack, selected, onOpenCategory, goBac
   const [catCovers, setCatCovers] = useState({});     // { "Set": [url1, url2...], ... }
   const [catMinPrice, setCatMinPrice] = useState({}); // { "Set": 69, ... } prix minimum réel
   useEffect(() => {
-    supabase.from("products").select("category, images, price").eq("is_active", true)
-      .then(({ data }) => {
-        const covers = {};
-        const mins = {};
-        (data ?? []).forEach(p => {
-          if (Array.isArray(p.images) && p.images.length) {
-            if (!covers[p.category]) covers[p.category] = [];
-            covers[p.category].push(p.images[0]); // 1ʳᵉ photo de chaque produit
-          }
-          if (p.price != null && (mins[p.category] == null || p.price < mins[p.category])) {
-            mins[p.category] = p.price;
-          }
-        });
-        setCatCovers(covers);
-        setCatMinPrice(mins);
-        setActiveCats(new Set((data ?? []).map(p => p.category)));
+    chargerProduits({ activesSeulement: true }).then(({ produits }) => {
+      const covers = {};
+      const mins = {};
+      produits.forEach(p => {
+        if (Array.isArray(p.images) && p.images.length) {
+          if (!covers[p.category]) covers[p.category] = [];
+          covers[p.category].push(p.images[0]); // 1ʳᵉ photo de chaque produit
+        }
+        if (p.price != null && (mins[p.category] == null || p.price < mins[p.category])) {
+          mins[p.category] = p.price;
+        }
       });
+      setCatCovers(covers);
+      setCatMinPrice(mins);
+      setActiveCats(new Set(produits.map(p => p.category)));
+    });
   }, []);
 
   // Tri : "Pack's" toujours à la une, puis collections avec produits, puis Coming Soon
