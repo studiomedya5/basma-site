@@ -52,7 +52,7 @@ function Erreur({ children }) {
 }
 
 export default function CommandeInline({
-  product, colorIdx, size, hasColors, variants, onClose, onDone,
+  product, colorIdx, size, hasColors, variants, onDone,
 }) {
   const { t } = useLang();
   const blocRef = useRef(null);
@@ -79,14 +79,6 @@ export default function CommandeInline({
       value: product.price,
     });
   }, [product.name, product.category, product.price]);
-
-  // On amène le formulaire sous les yeux de la cliente à l'ouverture
-  useEffect(() => {
-    const id = setTimeout(() => {
-      blocRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }, 60);
-    return () => clearTimeout(id);
-  }, []);
 
   const set = (k, v) => {
     setForm((p) => ({ ...p, [k]: v }));
@@ -197,9 +189,7 @@ export default function CommandeInline({
         <span style={{ ...jost, fontSize: 11, letterSpacing: "2.5px", textTransform: "uppercase", color: DARK, fontWeight: 600 }}>
           {t("your_info")}
         </span>
-        <button type="button" onClick={onClose} aria-label={t("close")} style={{
-          ...jost, background: "none", border: "none", color: "#aaa", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 4,
-        }}>✕</button>
+        <span style={{ ...jost, fontSize: 10.5, color: "#999" }}>{t("cod_hint")}</span>
       </div>
 
       {/* Grille auto-adaptative : 2 colonnes si la place le permet, sinon 1 */}
@@ -323,9 +313,6 @@ export default function CommandeInline({
         {status === "loading" ? t("sending") : t("confirm_order")}
       </button>
 
-      <p style={{ ...jost, fontSize: 10.5, color: "#999", textAlign: "center", marginTop: 9, lineHeight: 1.5 }}>
-        {t("cod_hint")}
-      </p>
     </form>
   );
 }

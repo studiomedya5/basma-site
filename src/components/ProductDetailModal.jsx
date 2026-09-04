@@ -42,7 +42,6 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
   const [size, setSize] = useState(sizes[0] ?? "TU");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [msgCopied, setMsgCopied] = useState(false);
-  const [formOuvert, setFormOuvert] = useState(false); // bloc de commande integre
   const curColorOut = colorStock(colorIdx) <= 0; // couleur sélectionnée épuisée
 
   // Si la taille choisie n'est plus dispo pour la nouvelle couleur, on bascule sur la 1re dispo
@@ -364,41 +363,31 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
               </p>
             </div>
           ) : (
-          <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+          <div style={{ marginBottom: 4 }}>
             <button onClick={handleAddToCart} style={{
-              flex: 1, padding: "13px 8px", fontSize: 12, background: "white", color: GOLD,
+              width: "100%", padding: "13px 8px", fontSize: 12, background: "white", color: GOLD,
               border: `1.5px solid ${GOLD}`, cursor: "pointer", fontFamily: "'Jost',sans-serif",
               letterSpacing: "1px", textTransform: "uppercase",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
             }}>
               <span style={{ fontSize: 14 }}>🛒</span> {t("cart")}
             </button>
-            <button onClick={() => setFormOuvert(true)} style={{
-              flex: 1.4, padding: "13px 8px", fontSize: 12,
-              background: formOuvert ? "#4a4636" : DARK, color: GOLD,
-              border: `1.5px solid ${formOuvert ? "#4a4636" : DARK}`, cursor: "pointer",
-              fontFamily: "'Jost',sans-serif", letterSpacing: "1.5px", textTransform: "uppercase",
-            }}>
-              {t("order")}
-            </button>
           </div>
           )}
 
           {/* ── Formulaire de commande intégré (coordonnées + validation) ── */}
-          {formOuvert && !outOfStock && !curColorOut && (
+          {!outOfStock && !curColorOut && (
             <CommandeInline
               product={produitCommande()}
               colorIdx={colorIdx}
               size={size}
               hasColors={hasColors}
               variants={product.variants}
-              onClose={() => setFormOuvert(false)}
               onDone={onClose}
             />
           )}
 
           {/* ── Plus d'info — Envoyer un message sur Messenger (animé) ── */}
-          {!formOuvert && <>
           <button onClick={openMessenger} style={{
             width: "100%", padding: "14px 8px", fontSize: 12,
             background: "linear-gradient(135deg, #00B2FF 0%, #006AFF 100%)", color: "white",
@@ -430,7 +419,6 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
           <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, color: msgCopied ? "#2e7d32" : "#aaa", textAlign: "center", marginTop: 8, letterSpacing: "0.5px", lineHeight: 1.5 }}>
             {msgCopied ? t("msg_copied") : t("msg_hint")}
           </p>
-          </>}
         </div>
       </div>
     </div>
