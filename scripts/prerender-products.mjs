@@ -56,6 +56,17 @@ function setMeta(html, attr, key, value) {
 
 async function main() {
   // 1. Récupère les produits actifs
+  // ── Empreinte de la version deployee ──
+  // Permet de verifier depuis l'exterieur QUELLE version est reellement en
+  // ligne (Cloudflare fournit CF_PAGES_COMMIT_SHA pendant ses builds).
+  const version = {
+    build: new Date().toISOString(),
+    commit: (process.env.CF_PAGES_COMMIT_SHA || "local").slice(0, 7),
+    branche: process.env.CF_PAGES_BRANCH || "local",
+  };
+  await writeFile(join(DIST, "version.json"), JSON.stringify(version), "utf8");
+  console.log(`[prerender] version : ${version.commit} (${version.build})`);
+
   let products = null;
   try {
     const res = await fetch(
