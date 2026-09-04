@@ -1,19 +1,13 @@
 import { useState, useEffect } from "react";
-import { supabase } from "../lib/supabase";
 import { fbTrack } from "../lib/pixel";
 import { DELEGATIONS } from "../lib/tunisia";
 import { normVariants } from "../lib/variants";
+import {
+  GOUVERNORATS, DELIVERY_FEE, FREE_THRESHOLD,
+  calculerTotaux, validerCommande, verifierPromo, envoyerCommande,
+} from "../lib/commande";
 import { useLang } from "../context/LangContext";
 
-const GOUVERNORATS = [
-  "Ariana","Béja","Ben Arous","Bizerte","Gabès","Gafsa","Jendouba",
-  "Kairouan","Kasserine","Kébili","Kef","Mahdia","Manouba","Médenine",
-  "Monastir","Nabeul","Sfax","Sidi Bouzid","Siliana","Sousse","Tataouine",
-  "Tozeur","Tunis","Zaghouan",
-];
-
-const DELIVERY_FEE  = 8;
-const FREE_THRESHOLD = 100;
 const GOLD  = "#C9A84C";
 const DARK  = "#2C2A20";
 const CREAM = "#FAF9F6";
@@ -46,8 +40,8 @@ export default function OrderModal({ product, onClose }) {
   const applyPromo = async () => {
     const code = promoInput.trim().toUpperCase();
     if (!code) return;
-    const { data: r } = await supabase.rpc("validate_promo_code", { p_code: code, p_phone: null });
-    if (!r || !r.valid) {
+    const r = await verifierPromo(code);
+    if (!r.valid) {
       setPromoApplied(null);
       setPromoMsg({ ok:false, text: r?.reason === "expired" ? t("promo_expired") : t("promo_invalid") });
       return;
@@ -87,26 +81,16 @@ export default function OrderModal({ product, onClose }) {
 
   const resolvePhoto = (p) => /^(https?:|\/)/.test(p || "") ? p : `/photos/${product.catId}/${p}`;
   const activeImg    = product.photos ? resolvePhoto(product.photos[colorIdx ?? 0]) : product.img;
-  const subtotal     = product.price * form.qty;
-  const deliveryFee  = (subtotal >= FREE_THRESHOLD || promoApplied) ? 0 : DELIVERY_FEE;
-  const totalPrice   = subtotal + deliveryFee;
+  const { subtotal, deliveryFee, total: totalPrice } =
+    calculerTotaux({ price: product.price, qty: form.qty, promoApplied });
 
   const set = (k, v) => { setForm(p => ({...p,[k]:v})); setErrors(p => ({...p,[k]:""})); };
   // Changer de gouvernorat réinitialise la délégation (liste dépendante)
   const setGouvernorat = (v) => { setForm(p => ({...p, gouvernorat:v, delegation:""})); setErrors(p => ({...p, gouvernorat:"", delegation:""})); };
   const delegationOptions = DELEGATIONS[form.gouvernorat] ?? [];
 
-  const validate = () => {
-    const e = {};
-    if (hasColors && colorIdx === null)  e.color      = t("required");
-    else if (selColorOut)                e.color      = t("color_out");
-    if (!form.nom.trim())                e.nom        = t("required");
-    if (!form.telephone.trim())          e.telephone  = t("required");
-    if (!form.adresse.trim())            e.adresse    = t("required");
-    if (!form.gouvernorat)               e.gouvernorat = t("required");
-    if (!form.delegation)                e.delegation = t("required");
-    return e;
-  };
+  const validate = () =>
+    validerCommande(form, { hasColors, colorIdx, colorEpuisee: selColorOut }, t);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -114,69 +98,23 @@ export default function OrderModal({ product, onClose }) {
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setStatus("loading");
 
-    // Code promo : revalide côté serveur (existe + actif + non expiré + pas déjà
-    // utilisé par ce numéro). anon ne lit plus la table orders directement.
-    if (promoApplied) {
-      const { data: chk } = await supabase.rpc("validate_promo_code", {
-        p_code: promoApplied, p_phone: form.telephone.trim(),
-      });
-      if (!chk || !chk.valid) {
-        setPromoMsg({ ok:false, text: chk?.reason === "used" ? t("promo_used")
-          : chk?.reason === "expired" ? t("promo_expired") : t("promo_invalid") });
-        setStatus("idle");
-        return;
-      }
-    }
+    // Toute la logique (revalidation du code promo, enregistrement,
+    // email de confirmation) vit dans src/lib/commande.js — partagée
+    // avec le formulaire intégré à la fiche produit.
+    const r = await envoyerCommande({
+      product, form, colorIdx, hasColors, variants, promoApplied,
+      totalPrice, activeImg,
+    });
 
-    const orderData = {
-      product_id: product.id ?? null, product_name: product.name,
-      size: form.size, quantity: form.qty, total_price: totalPrice,
-      customer_name: form.nom, customer_phone: form.telephone,
-      address: form.adresse, governorate: form.gouvernorat,
-      delegation: form.delegation, status: "en_attente",
-    };
-    if (form.email.trim()) orderData.customer_email = form.email.trim();
-    if (promoApplied) orderData.promo_code = promoApplied;
-    // Couleur choisie (pour décrémenter le bon stock par couleur)
-    if (hasColors || variants) {
-      orderData.color_index = colorIdx ?? 0;
-      orderData.color_label = `Couleur ${(colorIdx ?? 0) + 1}`;
+    if (!r.ok && r.motif === "promo") {
+      setPromoApplied(null);
+      setPromoMsg({ ok:false, text: r.raison === "used" ? t("promo_used")
+        : r.raison === "expired" ? t("promo_expired") : t("promo_invalid") });
+      setStatus("idle");
+      return;
     }
-
-    // Insert + repli : si une colonne optionnelle (delegation, color_index...)
-    // n'existe pas encore dans le schema, on la retire et on réessaie.
-    let { error } = await supabase.from("orders").insert(orderData);
-    let tries = 0;
-    while (error && tries < 4) {
-      const msg = error.message || "";
-      let stripped = false;
-      for (const col of ["delegation", "customer_email", "color_index", "color_label", "promo_code"]) {
-        if (msg.includes(col) && col in orderData) { delete orderData[col]; stripped = true; }
-      }
-      if (!stripped) break;
-      ({ error } = await supabase.from("orders").insert(orderData));
-      tries++;
-    }
-    if (error) { console.error(error); setStatus("error"); return; }
+    if (!r.ok) { setStatus("error"); return; }
     setStatus("success");
-    // NB : on ne déclenche PLUS "Purchase" ici (placement). En modèle COD,
-    // la source UNIQUE de Purchase est la Conversions API serveur, déclenchée
-    // au passage en "confirmée" (event_id = purchase_{id}, dédupliqué/idempotent).
-    // Le tunnel garde ViewContent → AddToCart → InitiateCheckout.
-
-    fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-order-email`, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json", "Authorization":`Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` },
-      body: JSON.stringify({
-        customer_name: form.nom, customer_phone: form.telephone, customer_email: form.email||null,
-        product_name: product.name,
-        // URL absolue quel que soit le format (/img/..., /photos/..., http...)
-        product_image: /^https?:/.test(activeImg) ? activeImg : `https://basmaonlyshop.tn${activeImg}`,
-        product_price: product.price, size: form.size, quantity: form.qty, total_price: totalPrice,
-        address: form.adresse, governorate: form.gouvernorat, delegation: form.delegation,
-        color_label: hasColors ? `Couleur ${(colorIdx??0)+1}` : "—",
-      }),
-    }).catch(()=>{});
   };
 
   /* ─── Input desktop ─────────────────────────── */

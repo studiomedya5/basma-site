@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { fbTrack } from "../lib/pixel";
 import { normVariants } from "../lib/variants";
 import { useLang } from "../context/LangContext";
+import CommandeInline from "./CommandeInline";
 
 const GOLD = "#C9A84C";
 const DARK = "#2C2A20";
@@ -41,6 +42,7 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
   const [size, setSize] = useState(sizes[0] ?? "TU");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [msgCopied, setMsgCopied] = useState(false);
+  const [formOuvert, setFormOuvert] = useState(false); // bloc de commande integre
   const curColorOut = colorStock(colorIdx) <= 0; // couleur sélectionnée épuisée
 
   // Si la taille choisie n'est plus dispo pour la nouvelle couleur, on bascule sur la 1re dispo
@@ -132,6 +134,24 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
     const url = `https://wa.me/21696430850?text=${encodeURIComponent(buildOrderMessage())}`;
     window.open(url, "_blank", "noopener,noreferrer");
   };
+
+  // Donnees produit attendues par le formulaire de commande
+  const produitCommande = () => ({
+    id: product.supabaseId,
+    name: product.label,
+    price: product.price,
+    img: activeSrc,
+    category: product.category,
+    sizes,
+    desc: product.desc,
+    photos,
+    catId: product.catId,
+    initialColorIdx: colorIdx,
+    initialSize: size,
+    variants: product.variants,
+    nameAr: product.labelAr,
+    originalPrice: product.originalPrice,
+  });
 
   const handleOrder = () => {
     onOrder({
@@ -353,17 +373,32 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
             }}>
               <span style={{ fontSize: 14 }}>🛒</span> {t("cart")}
             </button>
-            <button onClick={handleOrder} style={{
-              flex: 1.4, padding: "13px 8px", fontSize: 12, background: DARK, color: GOLD,
-              border: `1.5px solid ${DARK}`, cursor: "pointer", fontFamily: "'Jost',sans-serif",
-              letterSpacing: "1.5px", textTransform: "uppercase",
+            <button onClick={() => setFormOuvert(true)} style={{
+              flex: 1.4, padding: "13px 8px", fontSize: 12,
+              background: formOuvert ? "#4a4636" : DARK, color: GOLD,
+              border: `1.5px solid ${formOuvert ? "#4a4636" : DARK}`, cursor: "pointer",
+              fontFamily: "'Jost',sans-serif", letterSpacing: "1.5px", textTransform: "uppercase",
             }}>
               {t("order")}
             </button>
           </div>
           )}
 
+          {/* ── Formulaire de commande intégré (coordonnées + validation) ── */}
+          {formOuvert && !outOfStock && !curColorOut && (
+            <CommandeInline
+              product={produitCommande()}
+              colorIdx={colorIdx}
+              size={size}
+              hasColors={hasColors}
+              variants={product.variants}
+              onClose={() => setFormOuvert(false)}
+              onDone={onClose}
+            />
+          )}
+
           {/* ── Plus d'info — Envoyer un message sur Messenger (animé) ── */}
+          {!formOuvert && <>
           <button onClick={openMessenger} style={{
             width: "100%", padding: "14px 8px", fontSize: 12,
             background: "linear-gradient(135deg, #00B2FF 0%, #006AFF 100%)", color: "white",
@@ -395,6 +430,7 @@ export default function ProductDetailModal({ product, shareKey, onClose, onOrder
           <p style={{ fontFamily: "'Jost',sans-serif", fontSize: 10, color: msgCopied ? "#2e7d32" : "#aaa", textAlign: "center", marginTop: 8, letterSpacing: "0.5px", lineHeight: 1.5 }}>
             {msgCopied ? t("msg_copied") : t("msg_hint")}
           </p>
+          </>}
         </div>
       </div>
     </div>
