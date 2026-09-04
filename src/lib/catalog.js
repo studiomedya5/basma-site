@@ -71,7 +71,13 @@ export async function chargerProduits({
       ? q.order("created_at", { ascending: false })
       : q.order("id", { ascending: true });
 
-    const { data, error } = await q;
+    // Garde-fou : si Supabase met plus de 7 s a repondre (projet en pause,
+    // incident reseau), on n'attend pas — la cliente venue d'une pub part
+    // au bout de 3 s. On bascule directement sur l'instantane.
+    const { data, error } = await Promise.race([
+      q,
+      new Promise((_, rej) => setTimeout(() => rej(new Error("delai depasse")), 7000)),
+    ]);
     if (error) throw error;
     if (Array.isArray(data)) {
       return { produits: data.map(normaliser), secours: false };
