@@ -44,10 +44,16 @@ export async function onRequestGet(context) {
   }
 
   // ── 1. Cache edge ───────────────────────────────────────────
+  // Garde-fou : si une reponse HTML a ete mise en cache sous cette URL
+  // (cas vecu quand la Function n'etait pas encore deployee et que la page
+  // SPA repondait a la place), on l'ignore et on refait le travail.
+  // Sans ca, une photo pouvait rester "empoisonnee" pendant un an.
   const cache = caches.default;
   const cacheKey = new Request(new URL(request.url).origin + "/img/" + path, request);
   const cached = await cache.match(cacheKey);
-  if (cached) return cached;
+  if (cached && (cached.headers.get("Content-Type") || "").startsWith("image/")) {
+    return cached;
+  }
 
   const headers = {
     "Content-Type": contentType(path),
@@ -76,10 +82,10 @@ export async function onRequestGet(context) {
       cf: { cacheTtl: 31536000, cacheEverything: true },
     });
   } catch (_) {
-    return new Response("Image indisponible", { status: 502 });
+    return new Response("Image indisponible", { status: 404 });
   }
   if (!upstream.ok) {
-    return new Response("Image introuvable", { status: upstream.status === 404 ? 404 : 502 });
+    return new Response("Image introuvable", { status: 404 });
   }
 
   const buf = await upstream.arrayBuffer();
